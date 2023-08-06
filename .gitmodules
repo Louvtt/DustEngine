@@ -1,0 +1,18 @@
+[submodule "ext/glfw"]
+	path = extern/glfw
+	url = git@github.com:glfw/glfw.git
+[submodule "extern/imgui"]
+	path = extern/imgui
+	url = git@github.com:ocornut/imgui.git
+[submodule "extern/spdlog"]
+	path = extern/spdlog
+	url = git@github.com:gabime/spdlog.git
+[submodule "extern/yaml"]
+	path = extern/yaml
+	url = git@github.com:jbeder/yaml-cpp.git
+[submodule "extern/glm"]
+	path = extern/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "extern/glfw"]
+	path = extern/glfw
+	url = git@github.com:glfw/glfw.git
