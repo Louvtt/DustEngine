@@ -23,14 +23,17 @@ add_library(dustlib
 target_include_directories(dustlib PUBLIC "${DustEngine_SOURCE_DIR}/include")
 
 find_package(OpenGL REQUIRED)
-target_link_libraries(dustlib PRIVATE
+target_link_libraries(dustlib 
+PUBLIC
     spdlog
-    glad
     yaml-cpp
     glm
-    imgui
-    OpenGL::GL
     stdc++fs
+
+PRIVATE
+    imgui
+    glad
+    OpenGL::GL
 )
 
 target_compile_features(dustlib PUBLIC cxx_std_20)
@@ -39,9 +42,9 @@ target_compile_features(dustlib PUBLIC cxx_std_20)
 set_property(TARGET dustlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if(NOT EMSCRIPTEN)
-    target_link_libraries(dustlib PRIVATE glfw)
+    target_link_libraries(dustlib PUBLIC glfw)
 else()
-    target_link_options(dustlib PRIVATE -sUSE_GLFW=3)
+    target_link_options(dustlib PUBLIC -sUSE_GLFW=3)
 endif()
 
 
