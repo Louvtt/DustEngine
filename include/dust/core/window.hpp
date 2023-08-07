@@ -21,6 +21,7 @@ public:
         Borderless = 0x1,
         FullScreen = 0x2,
         Decorated  = 0x4,
+        Maximize   = 0x8,
     };
 
     Window(const string& name, u16 width, u16 height, Flags flags = Flags::Default);

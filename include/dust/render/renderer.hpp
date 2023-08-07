@@ -13,6 +13,9 @@ private:
 public:
     Renderer();
     ~Renderer();
+
+    virtual void newFrame(); // clear buffer
+    virtual void endFrame(); // render
 };
 
 #endif //_DUST_RENDER_RENDERER_HPP_

@@ -7,6 +7,12 @@
 
 bool dust::Window::isWindowManagerInitialized = false;
 
+static void error_callback(int error, const char* description)
+{
+    DUST_ERROR("[GLFW] [{}] {}\n", error, description);
+}
+
+
 dust::Window::Window(const string& name, u16 width, u16 height, Flags flags)
 {
     // glfw initialisation
@@ -21,19 +27,25 @@ dust::Window::Window(const string& name, u16 width, u16 height, Flags flags)
         DUST_INFO("[GLFW] Initialisation successfull.");
     }
 
+    // error callback
+    glfwSetErrorCallback(error_callback);
+
     // create window
-    glfwWindowHint(GLFW_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_VERSION_MINOR, 6);
-    #ifndef __MACOSX__
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // render doc need it
-    #endif
-    m_window = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
-    if(m_window == nullptr) {
-        const char* errorDescription;
-        int code = glfwGetError(&errorDescription);
-        DUST_ERROR("[GLFW] [{}] Failed to create the window {}", code, errorDescription);
+    {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        #ifndef __MACOSX__
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // render doc need it
+        #endif
+        
+        m_window = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
+        if(m_window == nullptr) {
+            const char* errorDescription;
+            int code = glfwGetError(&errorDescription);
+            DUST_ERROR("[GLFW] [{}] Failed to create the window {}", code, errorDescription);
+        }
+        glfwMakeContextCurrent(m_window);
     }
-    glfwMakeContextCurrent(m_window);
 }
 
 dust::Window::~Window()

@@ -18,7 +18,7 @@ private:
     Scope<Window> m_window;
 
 public:
-    Application(const string& name, u16 width = 0, u16 height = 0);
+    Application(const string& name, u16 width = 800u, u16 height = 600u);
     ~Application();
 
 protected:
