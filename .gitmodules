@@ -13,3 +13,6 @@
 [submodule "extern/glfw"]
 	path = extern/glfw
 	url = git@github.com:glfw/glfw.git
+[submodule "extern/imgui/imgui"]
+	path = extern/imgui/imgui
+	url = git@github.com:ocornut/imgui.git

@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
-project(MxEngine
+project(DustEngine
     VERSION 0.0.1
     DESCRIPTION "A c++ opengl engine"
     LANGUAGES CXX C    
 )
 
-option(MxEngine_BUILD_EXAMPLES "Build the mx engine examples" OFF)
-option(MxEngine_BUILD_TESTS    "Build the mx engine test" OFF)
-option(MxEngine_BUILD_DOCS     "Build the mx engine documentation (Doxygen)" OFF)
+option(DustEngine_BUILD_EXAMPLES "Build the mx engine examples" ON)
+option(DustEngine_BUILD_TESTS    "Build the mx engine test" OFF)
+option(DustEngine_BUILD_DOCS     "Build the mx engine documentation (Doxygen)" OFF)
 
 # include(CMakeDependentOption)
 if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
@@ -20,7 +20,7 @@ if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
 
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-    if (MxEngine_BUILD_DOCS)
+    if (DustEngine_BUILD_DOCS)
         find_package(DOXYGEN)
         if(DOXYGEN_FOUND)
             add_subdirectory(docs)
@@ -40,10 +40,10 @@ add_subdirectory(extern)
 # source
 add_subdirectory(src)
 
-if (MxEngine_BUILD_EXAMPLES)
+if (DustEngine_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-if (MxEngine_BUILD_TESTS)
+if (DustEngine_BUILD_TESTS)
     add_subdirectory(tests)
 endif()

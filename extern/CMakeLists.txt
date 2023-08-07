@@ -2,7 +2,6 @@
 add_subdirectory(glad)
 
 # == GLFW ==
-
 if (NOT EMSCRIPTEN)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -13,11 +12,9 @@ else()
 endif()
 
 # == ImGui ==
-
 add_subdirectory(imgui)
 
 # == spdlog ==
-
 add_subdirectory(spdlog)
 
 # == yaml-cpp ==
@@ -25,3 +22,6 @@ add_subdirectory(yaml)
 
 # == glm ==
 add_subdirectory(glm)
+
+## == stb ==
+add_subdirectory(stb)
