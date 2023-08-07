@@ -1,5 +1,5 @@
-#ifndef _MX_CORE_APPLICATION_HPP_
-#define _MX_CORE_APPLICATION_HPP_
+#ifndef _DUST_CORE_APPLICATION_HPP_
+#define _DUST_CORE_APPLICATION_HPP_
 
 #include "types.hpp"
 #include "time.hpp"
@@ -8,7 +8,7 @@
 
 extern int main(int argc, char** argv);
 
-namespace mx {
+namespace dust {
 
 class Application
 {
@@ -32,6 +32,13 @@ private:
 
 extern Scope<Application> applicationEntry(int argc, char* argv[]);
 
+
+}
+/**
+ * Simple entry macro for when you don't need the command line arguments
+*/
+#define DUST_SIMPLE_ENTRY(AppClassName) dust::Scope<dust::Application> dust::applicationEntry(int argc, char* argv[]) { \
+    return dust::createScope<AppClassName>(); \
 }
 
-#endif //_MX_CORE_APPLICATION_HPP_
+#endif //_DUST_CORE_APPLICATION_HPP_

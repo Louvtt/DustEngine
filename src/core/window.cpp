@@ -1,24 +1,24 @@
-#include "mx/core/window.hpp"
+#include "dust/core/window.hpp"
 
-#include "mx/core/log.hpp"
+#include "dust/core/log.hpp"
 
 #include "GLFW/glfw3.h"
 #include <cstddef>
 
-bool mx::Window::isWindowManagerInitialized = false;
+bool dust::Window::isWindowManagerInitialized = false;
 
-mx::Window::Window(const string& name, u16 width, u16 height, Flags flags)
+dust::Window::Window(const string& name, u16 width, u16 height, Flags flags)
 {
     // glfw initialisation
     if(!isWindowManagerInitialized) {
         if(!glfwInit()) {
             const char* errorDescription;
             int code = glfwGetError(&errorDescription);
-            MX_ERROR("[GLFW] [{}] Failed to initialize GLFW {}", code, errorDescription);
+            DUST_ERROR("[GLFW] [{}] Failed to initialize GLFW {}", code, errorDescription);
             return;
         }
         isWindowManagerInitialized = true;
-        MX_INFO("[GLFW] Initialisation successfull.");
+        DUST_INFO("[GLFW] Initialisation successfull.");
     }
 
     // create window
@@ -31,12 +31,12 @@ mx::Window::Window(const string& name, u16 width, u16 height, Flags flags)
     if(m_window == nullptr) {
         const char* errorDescription;
         int code = glfwGetError(&errorDescription);
-        MX_ERROR("[GLFW] [{}] Failed to create the window {}", code, errorDescription);
+        DUST_ERROR("[GLFW] [{}] Failed to create the window {}", code, errorDescription);
     }
     glfwMakeContextCurrent(m_window);
 }
 
-mx::Window::~Window()
+dust::Window::~Window()
 {
     glfwDestroyWindow(m_window);
     // terminate
@@ -44,16 +44,16 @@ mx::Window::~Window()
     isWindowManagerInitialized = false;
 }
 
-void mx::Window::beginFrame()
+void dust::Window::beginFrame()
 {
     glfwPollEvents();
 }
-void mx::Window::endFrame()
+void dust::Window::endFrame()
 {
     glfwSwapBuffers(m_window);
 }
 
-bool mx::Window::shouldClose() const
+bool dust::Window::shouldClose() const
 {
     return glfwWindowShouldClose(m_window);
 }

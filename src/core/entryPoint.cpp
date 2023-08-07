@@ -1,8 +1,8 @@
-#include "mx/core/application.hpp"
+#include "dust/core/application.hpp"
 
 int main(int argc, char* argv[])
 {
-    mx::Scope<mx::Application> app = mx::applicationEntry(argc, argv);
+    dust::Scope<dust::Application> app = dust::applicationEntry(argc, argv);
     app->run();
     app.reset();
     return 0;

@@ -1,5 +1,5 @@
-#ifndef _MX_CORE_TYPES_HPP_
-#define _MX_CORE_TYPES_HPP_
+#ifndef _DUST_CORE_TYPES_HPP_
+#define _DUST_CORE_TYPES_HPP_
 
 #include <cstdint>
 #include <string>
@@ -25,7 +25,7 @@ using string = std::string;
 
 // Smart Pointers
 
-namespace mx {
+namespace dust {
 
 /** @brief Shared ptr */
 template <typename T>
@@ -71,4 +71,4 @@ using Weak = std::weak_ptr<T>;
 
 }
 
-#endif //_MX_CORE_TYPES_HPP_
+#endif //_DUST_CORE_TYPES_HPP_

@@ -1,27 +1,27 @@
-#include "mx/core/application.hpp"
-#include "mx/core/types.hpp"
+#include "dust/core/application.hpp"
+#include "dust/core/types.hpp"
 
 #include <memory>
 
-mx::Application::Application(const string& name, u16 width, u16 height)
+dust::Application::Application(const string& name, u16 width, u16 height)
 : m_name(name),
 m_time()
 { 
-    m_window = mx::createScope<mx::Window>(name, width, height);
+    m_window = dust::createScope<dust::Window>(name, width, height);
 }
 
-mx::Application::~Application()
+dust::Application::~Application()
 {
     m_window.reset();
 }
 
-void mx::Application::update()
+void dust::Application::update()
 { }
 
-void mx::Application::render()
+void dust::Application::render()
 { }
 
-void mx::Application::run()
+void dust::Application::run()
 {
     while(!m_window->shouldClose())
     {

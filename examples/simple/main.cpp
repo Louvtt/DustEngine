@@ -1,15 +1,12 @@
-#include "mx/mx.hpp"
+#include "dust/dust.hpp"
 
 class SimpleApp
-: public mx::Application
+: public dust::Application
 {
 public:
-    SimpleApp() : mx::Application("Simple")
+    SimpleApp() : dust::Application("Simple")
     { }
 };
 
-mx::Scope<mx::Application> mx::applicationEntry(int argc, char **argv)
-{
-    return mx::createScope<SimpleApp>();
-}
+DUST_SIMPLE_ENTRY(SimpleApp)
 

@@ -1,5 +1,5 @@
-#ifndef _MX_RENDER_RENDERER_HPP_
-#define _MX_RENDER_RENDERER_HPP_
+#ifndef _DUST_RENDER_RENDERER_HPP_
+#define _DUST_RENDER_RENDERER_HPP_
 
 #include "../core/types.hpp"
 
@@ -10,10 +10,9 @@ private:
     string m_renderApiName;
 
     bool m_initialized{false};
-
 public:
     Renderer();
     ~Renderer();
 };
 
-#endif //_MX_RENDER_RENDERER_HPP_
+#endif //_DUST_RENDER_RENDERER_HPP_

@@ -1,10 +1,10 @@
-#ifndef _MX_CORE_WINDOW_HPP_
-#define _MX_CORE_WINDOW_HPP_
+#ifndef _DUST_CORE_WINDOW_HPP_
+#define _DUST_CORE_WINDOW_HPP_
 
 #include "GLFW/glfw3.h"
 #include "types.hpp"
 
-namespace mx {
+namespace dust {
 
 class Window 
 {
@@ -34,4 +34,4 @@ public:
 
 }
 
-#endif //_MX_CORE_WINDOW_HPP_
+#endif //_DUST_CORE_WINDOW_HPP_
