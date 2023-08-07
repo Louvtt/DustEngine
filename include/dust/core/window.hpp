@@ -1,7 +1,7 @@
 #ifndef _DUST_CORE_WINDOW_HPP_
 #define _DUST_CORE_WINDOW_HPP_
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 #include "types.hpp"
 
 namespace dust {

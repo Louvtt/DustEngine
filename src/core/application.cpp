@@ -6,7 +6,7 @@
 dust::Application::Application(const string& name, u16 width, u16 height)
 : m_name(name),
 m_time()
-{ 
+{
     m_window = dust::createScope<dust::Window>(name, width, height);
 }
 
