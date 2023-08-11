@@ -30,6 +30,8 @@ dr::Shader::Shader(const std::string &vertexCode, const std::string &fragmentCod
 
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+
+    DUST_DEBUG("[OpenGL] Created Shader {}", m_renderID);
 }
 
 dr::Shader::~Shader()

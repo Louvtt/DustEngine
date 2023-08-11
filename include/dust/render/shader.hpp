@@ -14,7 +14,7 @@
 #define SHADER_PREFIX ""
 #endif
 
-#define SHADER_SOURCE(shader_version, ...) shader_version #__VA_ARGS__
+#define SHADER_SOURCE(shader_version, ...) shader_version "\n" #__VA_ARGS__
 
 namespace dust {
 
