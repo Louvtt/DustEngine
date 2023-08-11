@@ -13,7 +13,9 @@ static void error_callback(int error, const char* description)
 }
 
 
-dust::Window::Window(const string& name, u16 width, u16 height, Flags flags)
+dust::Window::Window(const std::string& name, u32 width, u32 height, Flags flags)
+: m_width(width),
+m_height(height)
 {
     // glfw initialisation
     if(!isWindowManagerInitialized) {
@@ -45,6 +47,7 @@ dust::Window::Window(const string& name, u16 width, u16 height, Flags flags)
             DUST_ERROR("[GLFW] [{}] Failed to create the window {}", code, errorDescription);
         }
         glfwMakeContextCurrent(m_window);
+        glfwSwapInterval(1); // TODO: Vsync option
     }
 }
 
@@ -56,16 +59,23 @@ dust::Window::~Window()
     isWindowManagerInitialized = false;
 }
 
-void dust::Window::beginFrame()
+void dust::Window::flush()
 {
     glfwPollEvents();
-}
-void dust::Window::endFrame()
-{
     glfwSwapBuffers(m_window);
 }
 
 bool dust::Window::shouldClose() const
 {
     return glfwWindowShouldClose(m_window);
+}
+
+u32 dust::Window::getHeight() const
+{
+    return m_height;
+}
+
+u32 dust::Window::getWidth() const
+{
+    return m_width;
 }

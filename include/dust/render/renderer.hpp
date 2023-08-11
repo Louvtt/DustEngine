@@ -6,8 +6,8 @@
 class Renderer
 {
 private:
-    string m_renderApiVersion;
-    string m_renderApiName;
+    std::string m_renderApiVersion;
+    std::string m_renderApiName;
 
     bool m_initialized{false};
 public:

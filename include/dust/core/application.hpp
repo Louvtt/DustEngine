@@ -16,10 +16,14 @@ private:
     std::string m_name;
     Time m_time;
     Scope<Window> m_window;
+    
+    inline static Ref<Application> s_instance = nullptr;
 
 public:
-    Application(const string& name, u16 width = 800u, u16 height = 600u);
+    Application(const std::string& name, u32 width = 800u, u32 height = 600u);
     ~Application();
+
+    static Weak<Application> Get();
 
 protected:
     virtual void update();

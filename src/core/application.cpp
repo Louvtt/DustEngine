@@ -1,13 +1,21 @@
 #include "dust/core/application.hpp"
 #include "dust/core/types.hpp"
+#include "dust/core/log.hpp"
 
 #include <memory>
 
-dust::Application::Application(const string& name, u16 width, u16 height)
+dust::Application::Application(const std::string& name, u32 width, u32 height)
 : m_name(name),
 m_time()
 {
+    if(s_instance) {
+        DUST_ERROR("Cannot create another application instance");
+        return;
+    }
+
     m_window = dust::createScope<dust::Window>(name, width, height);
+    
+    s_instance = dust::Ref<dust::Application>(this);
 }
 
 dust::Application::~Application()
@@ -25,11 +33,16 @@ void dust::Application::run()
 {
     while(!m_window->shouldClose())
     {
-        m_window->beginFrame();
+        m_window->flush();
 
         update();
         render();
 
-        m_window->endFrame();
     }
+}
+
+dust::Weak<dust::Application> 
+dust::Application::Get()
+{
+    return s_instance;
 }

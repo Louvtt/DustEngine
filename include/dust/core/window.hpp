@@ -11,6 +11,9 @@ class Window
 private:
     GLFWwindow* m_window;
 
+    u32 m_width;
+    u32 m_height;
+
     static bool isWindowManagerInitialized;
 public:
     /**
@@ -24,11 +27,13 @@ public:
         Maximize   = 0x8,
     };
 
-    Window(const string& name, u16 width, u16 height, Flags flags = Flags::Default);
+    Window(const std::string& name, u32 width, u32 height, Flags flags = Flags::Default);
     ~Window();
 
-    void beginFrame();
-    void endFrame();
+    void flush();
+
+    u32 getWidth() const;
+    u32 getHeight() const;
 
     bool shouldClose() const;
 };
