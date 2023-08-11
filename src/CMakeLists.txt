@@ -10,6 +10,10 @@ set(HEADER_LIST
     # Render
     "${DustEngine_SOURCE_DIR}/include/dust/render/renderAPI.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/render/renderer.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/render/shader.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/render/mesh.hpp"
+    # IO
+    "${DustEngine_SOURCE_DIR}/include/dust/io/fileReader.hpp"
 )
 
 add_library(dustlib
@@ -20,6 +24,9 @@ add_library(dustlib
     core/window.cpp
 
     render/renderer.cpp
+    render/shader.cpp
+
+    io/fileReader.cpp
 )
 
 target_include_directories(dustlib PUBLIC "${DustEngine_SOURCE_DIR}/include")
