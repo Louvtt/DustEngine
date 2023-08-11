@@ -1,4 +1,5 @@
 #include "dust/core/application.hpp"
+#include "GLFW/glfw3.h"
 #include "dust/core/types.hpp"
 #include "dust/core/log.hpp"
 #include "dust/render/renderer.hpp"
@@ -36,6 +37,9 @@ void dust::Application::run()
     while(!m_window->shouldClose())
     {
         m_window->flush();
+        m_time.delta = glfwGetTime() - m_time.time;
+        m_time.time  = glfwGetTime();
+        m_time.frame++;
 
         update();
 
@@ -62,4 +66,9 @@ dust::Weak<dust::Application>
 dust::Application::Get()
 {
     return s_instance;
+}
+
+dust::Time
+dust::Application::getTime() const {
+    return m_time;
 }

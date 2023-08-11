@@ -28,6 +28,8 @@ public:
     const Window &getWindow() const;
     const Renderer &getRenderer() const;
 
+    Time getTime() const;
+
     static Weak<Application> Get();
 
 protected:
