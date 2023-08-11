@@ -19,7 +19,7 @@ private:
     Scope<Window> m_window;
     Scope<Renderer> m_renderer;
     
-    inline static Ref<Application> s_instance = nullptr;
+    inline static Application* s_instance = nullptr;
 
 public:
     Application(const std::string& name, u32 width = 800u, u32 height = 600u);
@@ -30,7 +30,7 @@ public:
 
     Time getTime() const;
 
-    static Weak<Application> Get();
+    static Application* Get();
 
 protected:
     virtual void update();

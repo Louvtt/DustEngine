@@ -18,11 +18,12 @@ m_time()
     m_window = dust::createScope<dust::Window>(name, width, height);
     m_renderer = dust::createScope<dust::Renderer>(*m_window);
     
-    s_instance = dust::Ref<dust::Application>(this);
+    s_instance = this;
 }
 
 dust::Application::~Application()
 {
+    m_renderer.reset();
     m_window.reset();
 }
 
@@ -62,7 +63,7 @@ dust::Application::getRenderer() const
     return *m_renderer;
 }
 
-dust::Weak<dust::Application> 
+dust::Application*
 dust::Application::Get()
 {
     return s_instance;
