@@ -1,6 +1,7 @@
 #include "dust/core/application.hpp"
 #include "dust/core/types.hpp"
 #include "dust/core/log.hpp"
+#include "dust/render/renderer.hpp"
 
 #include <memory>
 
@@ -14,6 +15,7 @@ m_time()
     }
 
     m_window = dust::createScope<dust::Window>(name, width, height);
+    m_renderer = dust::createScope<dust::Renderer>(*m_window);
     
     s_instance = dust::Ref<dust::Application>(this);
 }
@@ -36,9 +38,24 @@ void dust::Application::run()
         m_window->flush();
 
         update();
-        render();
 
+        m_renderer->newFrame();
+        {
+            render();
+        }
+        m_renderer->endFrame();
     }
+}
+
+const dust::Window &
+dust::Application::getWindow() const
+{
+    return *m_window;
+}
+const dust::Renderer &
+dust::Application::getRenderer() const
+{
+    return *m_renderer;
 }
 
 dust::Weak<dust::Application> 

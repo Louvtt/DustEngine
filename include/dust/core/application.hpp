@@ -4,6 +4,7 @@
 #include "types.hpp"
 #include "time.hpp"
 #include "window.hpp"
+#include "../render/renderer.hpp"
 #include <memory>
 
 extern int main(int argc, char** argv);
@@ -16,12 +17,16 @@ private:
     std::string m_name;
     Time m_time;
     Scope<Window> m_window;
+    Scope<Renderer> m_renderer;
     
     inline static Ref<Application> s_instance = nullptr;
 
 public:
     Application(const std::string& name, u32 width = 800u, u32 height = 600u);
     ~Application();
+
+    const Window &getWindow() const;
+    const Renderer &getRenderer() const;
 
     static Weak<Application> Get();
 

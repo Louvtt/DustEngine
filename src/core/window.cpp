@@ -53,7 +53,9 @@ m_height(height)
 
 dust::Window::~Window()
 {
+    glfwMakeContextCurrent(nullptr);
     glfwDestroyWindow(m_window);
+    DUST_INFO("[GLFW] Terminating glfw.");
     // terminate
     glfwTerminate();
     isWindowManagerInitialized = false;

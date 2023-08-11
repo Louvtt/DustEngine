@@ -18,6 +18,8 @@ add_library(dustlib
     core/application.cpp
     core/entryPoint.cpp
     core/window.cpp
+
+    render/renderer.cpp
 )
 
 target_include_directories(dustlib PUBLIC "${DustEngine_SOURCE_DIR}/include")
