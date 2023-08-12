@@ -1,8 +1,12 @@
 #include "dust/core/application.hpp"
-#include "GLFW/glfw3.h"
 #include "dust/core/types.hpp"
 #include "dust/core/log.hpp"
 #include "dust/render/renderer.hpp"
+
+#include <GLFW/glfw3.h>
+
+#include <spdlog/common.h>
+#include <spdlog/spdlog.h>
 
 #include <memory>
 
@@ -14,6 +18,10 @@ m_time()
         DUST_ERROR("Cannot create another application instance");
         return;
     }
+
+    #ifdef _DEBUG
+    spdlog::set_level(spdlog::level::debug);
+    #endif
 
     m_window = dust::createScope<dust::Window>(name, width, height);
     m_renderer = dust::createScope<dust::Renderer>(*m_window);
