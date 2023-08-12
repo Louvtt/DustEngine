@@ -51,9 +51,10 @@ protected:
     Shader();
 
 private:
+    u32 internalCreate(const std::string &vertexCode, const std::string &fragmentCode);
     u32 getUniformLocation(const std::string &name);
     u32 compileShader(int type, const std::string& code);
-    bool linkShaders(u32 vertexShader, u32 fragmentShader);
+    bool linkShaders(u32 program, u32 vertexShader, u32 fragmentShader);
 };
 
 }
