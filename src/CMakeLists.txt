@@ -25,6 +25,7 @@ add_library(dustlib
 
     render/renderer.cpp
     render/shader.cpp
+    render/mesh.cpp
 
     io/fileReader.cpp
 )
@@ -54,6 +55,10 @@ if(NOT EMSCRIPTEN)
     target_link_libraries(dustlib PUBLIC glfw)
 else()
     target_link_options(dustlib PUBLIC -sUSE_GLFW=3)
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(dustlib PRIVATE "_DEBUG")
 endif()
 
 
