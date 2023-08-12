@@ -96,7 +96,7 @@ dust::Renderer::Renderer(const dust::Window& window)
     m_initialized      = true;
     m_renderApiName    = (const char*)glGetString(GL_RENDERER);
     m_renderApiVersion = (const char*)glGetString(GL_VERSION);
-    DUST_INFO("[OpenGL] Loaded OpenGL {}_{}", m_renderApiName, m_renderApiVersion);
+    DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion, m_renderApiName);
 
     glEnable(GL_STENCIL);
     glEnable(GL_DEPTH);
@@ -152,4 +152,13 @@ void dust::Renderer::setDepthTest(bool test)
 void dust::Renderer::resize(u32 width, u32 height)
 {
     glViewport(0, 0, width, height);
+}
+
+void dust::Renderer::setDrawWireframe(bool wireframe)
+{
+    if(wireframe) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 }

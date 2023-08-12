@@ -21,16 +21,18 @@ public:
     Renderer(const Window& window);
     ~Renderer();
 
-    virtual void newFrame(); // clear buffer
-    virtual void endFrame(); // render
+    void newFrame(); // clear buffer
+    void endFrame(); // render
 
-    virtual void setClearColor(float r, float g, float b, float a = 1.f);
+    void setClearColor(float r, float g, float b, float a = 1.f);
     void setClearColor(glm::vec4 color);
 
-    virtual void setDepthWrite(bool write);
-    virtual void setDepthTest(bool test);
+    void setDepthWrite(bool write);
+    void setDepthTest(bool test);
 
-    virtual void resize(u32 width, u32 height);
+    void resize(u32 width, u32 height);
+
+    void setDrawWireframe(bool wireframe);
 };
 
 }
