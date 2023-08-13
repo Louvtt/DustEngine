@@ -46,6 +46,7 @@ PRIVATE
     imgui
     glad
     OpenGL::GL
+    assimp
 )
 
 target_compile_features(dustlib PUBLIC cxx_std_20)
