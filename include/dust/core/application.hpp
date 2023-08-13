@@ -6,6 +6,7 @@
 #include "time.hpp"
 #include "window.hpp"
 #include "../render/renderer.hpp"
+#include <filesystem>
 #include <memory>
 
 extern int main(int argc, char** argv);
@@ -23,6 +24,8 @@ private:
 
     inline static Application* s_instance = nullptr;
 
+    std::filesystem::path m_programPath;
+
 public:
     Application(const std::string& name, u32 width = 800u, u32 height = 600u);
     ~Application();
@@ -30,6 +33,7 @@ public:
     Window* getWindow() const;
     Renderer* getRenderer() const;
     InputManager* getInputManager() const;
+    const std::filesystem::path &getProgramPath() const;
 
     Time getTime() const;
 
@@ -41,6 +45,7 @@ protected:
 
 private:
     void run();
+    void setProgramPath(const std::filesystem::path& path);
     friend int ::main(int argc, char* argv[]);
 };
 

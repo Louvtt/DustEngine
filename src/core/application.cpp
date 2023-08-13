@@ -64,6 +64,11 @@ void dust::Application::run()
     }
 }
 
+void dust::Application::setProgramPath(const std::filesystem::path& path)
+{
+    m_programPath = path;
+}
+
 dust::Window*
 dust::Application::getWindow() const
 {
@@ -89,4 +94,10 @@ dust::Application::Get()
 dust::Time
 dust::Application::getTime() const {
     return m_time;
+}
+
+const std::filesystem::path&
+dust::Application::getProgramPath() const
+{
+    return m_programPath;
 }
