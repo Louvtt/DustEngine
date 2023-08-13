@@ -24,6 +24,13 @@ std::string fCode = SHADER_SOURCE(
     }
 );
 
+std::vector<float> triangleVertices{
+    // pos               // color
+    -0.5f, -0.5f, 0.f,   1.f, 0.f, 0.f, 1.f,
+     0.5f, -0.5f, 0.f,   0.f, 1.f, 0.f, 1.f,
+     0.0f,  0.5f, 0.f,   0.f, 0.f, 1.f, 1.f,
+};
+
 class SimpleShaderApp
 : public dust::Application
 {
@@ -38,18 +45,9 @@ public:
     : dust::Application("Triangle"),
     m_polygonLineMode(false),
     m_shader(vCode, fCode),
-    m_triangle(dust::render::MeshDescriptor{
-        {   // pos               // color
-            -0.5f, -0.5f, 0.f,   1.f, 0.f, 0.f, 1.f,
-             0.5f, -0.5f, 0.f,   0.f, 1.f, 0.f, 1.f,
-             0.0f,  0.5f, 0.f,   0.f, 0.f, 1.f, 1.f,
-        }, 
-        3,
-        {},
-        {
-            dust::render::Attribute::Pos3D,
-            dust::render::Attribute::Color
-        }
+    m_triangle(triangleVertices, sizeof(float) * 8, 3, {
+        dust::render::Attribute::Pos3D,
+        dust::render::Attribute::Color
     })
     {  }
 

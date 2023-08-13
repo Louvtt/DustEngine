@@ -30,14 +30,6 @@ public:
     static Attribute Color;
 };
 
-struct MeshDescriptor
-{
-    std::vector<float> verticesData;
-    u32 vertexCount;
-    std::vector<u32> indices;
-    std::vector<Attribute> attributes;
-};
-
 class Mesh 
 {
 protected:
@@ -50,7 +42,9 @@ protected:
     u32 m_vertexCount;
 
 public:
-    Mesh(const MeshDescriptor& descriptor);
+    Mesh(std::vector<float> vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attributes);
+    Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attributes);
+    Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes);
     ~Mesh();
 
     void draw();

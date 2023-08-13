@@ -26,27 +26,32 @@ dr::Attribute dr::Attribute::Color     {Float4};
 
 /* ==================== */
 
-dr::Mesh::Mesh(const dr::MeshDescriptor& descriptor)
-: m_indexCount(descriptor.indices.size()),
-m_vertexCount(descriptor.vertexCount)
+dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
+: m_indexCount(indices.size()),
+m_vertexCount(vertexCount)
 {
     glCreateVertexArrays(1, &m_renderID);
     glBindVertexArray(m_renderID);
 
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, descriptor.verticesData.size() * sizeof(float), &descriptor.verticesData.front(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexDataSize * vertexCount, vertexData, GL_STATIC_DRAW);
 
     if(m_indexCount > 0) {
         glGenBuffers(1, &m_ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, descriptor.indices.size() * sizeof(float), &descriptor.indices.front(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(u32), &indices.front(), GL_STATIC_DRAW);
     }
 
-    bindAttributes(descriptor.attributes);
+    bindAttributes(attributes);
     DUST_DEBUG("[OpenGL] Created Mesh {}", m_renderID);
     glBindVertexArray(0);
 }
+dr::Mesh::Mesh(std::vector<float> vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
+: dr::Mesh::Mesh(&vertexData.front(), vertexDataSize, vertexCount, {}, attribute) {}
+dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
+: dr::Mesh::Mesh(vertexData, sizeof(float), vertexCount, {}, attribute) {}
+
 dr::Mesh::~Mesh()
 {
     glBindVertexArray(0);
