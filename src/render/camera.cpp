@@ -88,6 +88,7 @@ m_aspectRatio((f32)width / (f32)height)
 
 void dr::Camera3D::bind(Shader *shader) 
 {
+    shader->use();
     shader->setUniform("uView", m_view);
     shader->setUniform("uProj", m_proj);
 }
@@ -127,5 +128,10 @@ void dr::Camera3D::setRotation(glm::vec3 rotation)
 
 void dr::Camera3D::updateViewMatrix() 
 {
-    m_view = glm::lookAt(m_position, m_forward, m_up);
+    m_view = glm::lookAt(m_position, m_position + m_forward, m_up);
+}
+
+glm::vec3 dr::Camera3D::forward() const
+{
+    return m_forward;
 }

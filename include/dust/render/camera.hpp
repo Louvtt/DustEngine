@@ -81,6 +81,8 @@ public:
     void rotate(glm::vec3 angle);
     void setRotation(glm::vec3 rotation);
 
+    glm::vec3 forward() const;
+
 private:
     void updateViewMatrix() override;
 };
