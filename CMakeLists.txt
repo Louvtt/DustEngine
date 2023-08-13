@@ -9,6 +9,8 @@ option(DustEngine_BUILD_EXAMPLES "Build the mx engine examples" ON)
 option(DustEngine_BUILD_TESTS    "Build the mx engine test" OFF)
 option(DustEngine_BUILD_DOCS     "Build the mx engine documentation (Doxygen)" OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # include(CMakeDependentOption)
 if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
     set(CMAKE_CXX_STANDARD 20) # default c++ standard
