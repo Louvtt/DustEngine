@@ -17,11 +17,12 @@ namespace dr = dust::render;
 static char infoLog[INFO_LOG_SIZE];
 
 dr::Shader::Shader(const std::string &vertexCode, const std::string &fragmentCode)
-: m_renderID(0)
+: Shader()
 {
     m_renderID = internalCreate(vertexCode, fragmentCode);
 }
-
+dr::Shader::Shader()
+: m_renderID(0) {}
 dr::Shader::~Shader()
 {
     glDeleteProgram(m_renderID);
@@ -31,12 +32,7 @@ void dr::Shader::use() {
     glUseProgram(m_renderID);
 }
 
-template <typename UniformType>
-void dr::Shader::setUniform(const std::string& name, UniformType value) {
-    DUST_ERROR("[OpenGL] Cannot set an uniform of this type ({})", typeid(UniformType).name());
-}
 
-template <> 
 void dr::Shader::setUniform(const std::string &name, int value)
 {
     const u32 loc = getUniformLocation(name);
@@ -44,7 +40,7 @@ void dr::Shader::setUniform(const std::string &name, int value)
         glUniform1i(loc, value);
     }
 }
-template <> 
+
 void dr::Shader::setUniform(const std::string &name, float value)
 {
     const u32 loc = getUniformLocation(name);
@@ -52,7 +48,7 @@ void dr::Shader::setUniform(const std::string &name, float value)
         glUniform1f(loc, value);
     }
 }
-template <> 
+
 void dr::Shader::setUniform(const std::string &name, glm::vec2 value)
 {
     const u32 loc = getUniformLocation(name);
@@ -60,7 +56,7 @@ void dr::Shader::setUniform(const std::string &name, glm::vec2 value)
         glUniform2f(loc, value.x, value.y);
     }
 }
-template <> 
+
 void dr::Shader::setUniform(const std::string &name, glm::vec3 value)
 {
     const u32 loc = getUniformLocation(name);
@@ -68,7 +64,7 @@ void dr::Shader::setUniform(const std::string &name, glm::vec3 value)
         glUniform3f(loc, value.x, value.y, value.z);
     }
 }
-template <> 
+
 void dr::Shader::setUniform(const std::string &name, glm::vec4 value)
 {
     const u32 loc = getUniformLocation(name);
@@ -76,7 +72,7 @@ void dr::Shader::setUniform(const std::string &name, glm::vec4 value)
         glUniform4f(loc, value.x, value.y, value.z, value.w);
     }
 }
-void dr::Shader::setUniformMat4(const std::string &name, glm::mat4 value)
+void dr::Shader::setUniform(const std::string &name, glm::mat4 value)
 {
     const u32 loc = getUniformLocation(name);
     if(loc) {
@@ -95,21 +91,21 @@ void dr::Shader::reload() {
     }
 }
 
-dust::Ref<dr::Shader>
+dr::Shader*
 dr::Shader::loadFromFile(const std::string &vertexPath, const std::string &fragmentPath)
 {
     std::error_code error{};
     if(!fs::exists(vertexPath, error)) {
         DUST_ERROR("[File] {} doesn't exist (error {} : {})", vertexPath, error.value(), error.message());
-        return nullptr;
+        return new NullShader();
     }
     if(!fs::exists(fragmentPath, error)) {
         DUST_ERROR("[File] {} doesn't exist (error {} : {})", fragmentPath, error.value(), error.message());
-        return nullptr;
+        return new NullShader();
     }
 
     // read files
-    auto res = dust::createRef<Shader>(
+    auto res = new Shader(
         dust::io::getFileRawContent(vertexPath),
         dust::io::getFileRawContent(fragmentPath)
     );
@@ -181,4 +177,23 @@ bool dr::Shader::linkShaders(u32 program, u32 vertexShader, u32 fragmentShader)
         return false;
     }
     return true;
+}
+
+// NULLSHADER
+
+dr::NullShader::NullShader()
+: Shader() {}
+void dr::NullShader::use() {
+    DUST_WARN("[Shader] Using NullShader.");
+}
+void dr::NullShader::setUniform(const std::string &name, int value) {}
+void dr::NullShader::setUniform(const std::string &name, float value) {}
+void dr::NullShader::setUniform(const std::string &name, glm::vec2 value) {}
+void dr::NullShader::setUniform(const std::string &name, glm::vec3 value) {}
+void dr::NullShader::setUniform(const std::string &name, glm::vec4 value) {}
+void dr::NullShader::setUniform(const std::string &name, glm::mat4 value) {}
+void dr::NullShader::reload() {}
+
+dr::NullShader::operator bool() const {
+    return false;
 }

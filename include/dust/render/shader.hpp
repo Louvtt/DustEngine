@@ -33,19 +33,15 @@ public:
 
     virtual void use();
 
-    template <typename UniformType>
-    void setUniform(const std::string& name, UniformType value);
+    virtual void setUniform(const std::string &name, int value);
+    virtual void setUniform(const std::string &name, float value);
+    virtual void setUniform(const std::string &name, glm::vec2 value);
+    virtual void setUniform(const std::string &name, glm::vec3 value);
+    virtual void setUniform(const std::string &name, glm::vec4 value);
+    virtual void setUniform(const std::string &name, glm::mat4 value);
 
-    template <int>         void setUniform(const std::string &name, int value);
-    template <float>       void setUniform(const std::string &name, float value);
-    template <glm::vec2>   void setUniform(const std::string &name, glm::vec2 value);
-    template <glm::vec3>   void setUniform(const std::string &name, glm::vec3 value);
-    template <glm::vec4>   void setUniform(const std::string &name, glm::vec4 value);
-    
-    void setUniformMat4(const std::string &name, glm::mat4 value);
-
-    void reload();
-    static Ref<Shader> loadFromFile(const std::string &vertexPath, const std::string &fragmentPath);
+    virtual void reload();
+    static Shader* loadFromFile(const std::string &vertexPath, const std::string &fragmentPath);
 
 protected:
     Shader();
@@ -55,6 +51,27 @@ private:
     u32 getUniformLocation(const std::string &name);
     u32 compileShader(int type, const std::string& code);
     bool linkShaders(u32 program, u32 vertexShader, u32 fragmentShader);
+};
+
+class NullShader
+: public Shader
+{
+public:
+    NullShader();
+    ~NullShader() = default;
+
+    void use();
+
+    void setUniform(const std::string &name, int value);
+    void setUniform(const std::string &name, float value);
+    void setUniform(const std::string &name, glm::vec2 value);
+    void setUniform(const std::string &name, glm::vec3 value);
+    void setUniform(const std::string &name, glm::vec4 value);
+    void setUniform(const std::string &name, glm::mat4 value);
+
+    void reload();
+
+    explicit operator bool() const;
 };
 
 }
