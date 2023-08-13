@@ -36,48 +36,36 @@ void dr::Shader::use() {
 void dr::Shader::setUniform(const std::string &name, int value)
 {
     const u32 loc = getUniformLocation(name);
-    if(loc) {
-        glUniform1i(loc, value);
-    }
+    glProgramUniform1i(m_renderID, loc, value);
 }
 
 void dr::Shader::setUniform(const std::string &name, float value)
 {
     const u32 loc = getUniformLocation(name);
-    if(loc) {
-        glUniform1f(loc, value);
-    }
+    glProgramUniform1f(m_renderID, loc, value);
 }
 
 void dr::Shader::setUniform(const std::string &name, glm::vec2 value)
 {
     const u32 loc = getUniformLocation(name);
-    if(loc) {
-        glUniform2f(loc, value.x, value.y);
-    }
+    glProgramUniform2f(m_renderID, loc, value.x, value.y);
 }
 
 void dr::Shader::setUniform(const std::string &name, glm::vec3 value)
 {
     const u32 loc = getUniformLocation(name);
-    if(loc) {
-        glUniform3f(loc, value.x, value.y, value.z);
-    }
+    glProgramUniform3f(m_renderID, loc, value.x, value.y, value.z);
 }
 
 void dr::Shader::setUniform(const std::string &name, glm::vec4 value)
 {
     const u32 loc = getUniformLocation(name);
-    if(loc) {
-        glUniform4f(loc, value.x, value.y, value.z, value.w);
-    }
+    glProgramUniform4f(m_renderID, loc, value.x, value.y, value.z, value.w);
 }
 void dr::Shader::setUniform(const std::string &name, glm::mat4 value)
 {
     const u32 loc = getUniformLocation(name);
-    if(loc) {
-        glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
-    }
+    glProgramUniformMatrix4fv(m_renderID, loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void dr::Shader::reload() {
