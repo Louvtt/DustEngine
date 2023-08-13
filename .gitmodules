@@ -16,3 +16,6 @@
 [submodule "extern/imgui/imgui"]
 	path = extern/imgui/imgui
 	url = git@github.com:ocornut/imgui.git
+[submodule "extern/assimp"]
+	path = extern/assimp
+	url = git@github.com:assimp/assimp.git
