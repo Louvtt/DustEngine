@@ -1,9 +1,9 @@
 #include "dust/core/window.hpp"
 
+#include "dust/core/application.hpp"
 #include "dust/core/log.hpp"
 
 #include "GLFW/glfw3.h"
-#include <cstddef>
 
 bool dust::Window::isWindowManagerInitialized = false;
 
@@ -48,7 +48,17 @@ m_height(height)
         }
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1); // TODO: Vsync option
+        
+        // glfw event bindings to event system
+        glfwSetFramebufferSizeCallback(m_window, 
+        [](GLFWwindow* _window, int w, int h) -> void {
+            auto window = Application::Get()->getWindow();
+            window->resize(w, h);
+            auto renderer = Application::Get()->getRenderer();
+            renderer->resize(w, h);
+        });
     }
+
 }
 
 dust::Window::~Window()
@@ -77,7 +87,18 @@ u32 dust::Window::getHeight() const
     return m_height;
 }
 
+GLFWwindow* dust::Window::getNativeWindow() const
+{
+    return m_window;
+}
+
 u32 dust::Window::getWidth() const
 {
     return m_width;
+}
+
+void dust::Window::resize(u32 width, u32 height)
+{
+    m_width = width;
+    m_height = height;
 }

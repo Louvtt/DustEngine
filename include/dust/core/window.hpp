@@ -35,8 +35,12 @@ public:
 
     u32 getWidth() const;
     u32 getHeight() const;
+    GLFWwindow* getNativeWindow() const;
 
     bool shouldClose() const;
+
+private:
+    void resize(u32 width, u32 height);
 };
 
 }
