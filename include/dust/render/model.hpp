@@ -10,7 +10,7 @@ namespace render {
 class Model
 {
 private:
-    std::vector<Mesh> m_meshes;
+    std::vector<Mesh*> m_meshes;
 
 public:
         
@@ -22,7 +22,7 @@ public:
         // float texID;
     };
 
-    Model(std::vector<Mesh> mesh);
+    Model(std::vector<Mesh*> mesh);
     ~Model();
 
     static Model* loadFromFile(const std::string &path);

@@ -11,15 +11,15 @@
 
 namespace dr = dust::render;
 
-dr::Model::Model(std::vector<Mesh> mesh)
-: m_meshes()
+dr::Model::Model(std::vector<dr::Mesh*> mesh)
+: m_meshes(mesh)
 { }
 dr::Model::~Model()
 {
     m_meshes.clear();
 }
 
-static dr::Mesh processMesh(aiMesh *mesh)
+static dr::Mesh* processMesh(aiMesh *mesh)
 {
     std::vector<dr::Model::Vertex> vertices;
     vertices.reserve(mesh->mNumVertices);
@@ -66,7 +66,7 @@ static dr::Mesh processMesh(aiMesh *mesh)
         indices.push_back(face.mIndices[2]);
     }
 
-    return dr::Mesh(&vertices.front(), sizeof(dr::Model::Vertex), mesh->mNumVertices, indices, attributes);
+    return new dr::Mesh(&vertices.front(), sizeof(dr::Model::Vertex), mesh->mNumVertices, indices, attributes);
 }
 
 dr::Model* dr::Model::loadFromFile(const std::string& path)
@@ -78,13 +78,10 @@ dr::Model* dr::Model::loadFromFile(const std::string& path)
 
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path,
-        aiProcess_CalcTangentSpace       |
-        aiProcess_Triangulate            |
-        aiProcess_JoinIdenticalVertices  |
-        aiProcess_SortByPType
+        aiProcess_Triangulate
     );
 
-    std::vector<dr::Mesh> processedMeshes{};
+    std::vector<dr::Mesh*> processedMeshes{};
     for (int i = 0; i < scene->mNumMeshes; ++i) {
         processedMeshes.push_back(processMesh(scene->mMeshes[i]));
     }
@@ -96,6 +93,6 @@ void dr::Model::draw(Shader *shader)
 {
     shader->use();
     for (auto mesh : m_meshes) {
-        mesh.draw();
+        mesh->draw();
     }
 }
