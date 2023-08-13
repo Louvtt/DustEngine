@@ -88,7 +88,6 @@ m_aspectRatio((f32)width / (f32)height)
 
 void dr::Camera3D::bind(Shader *shader) 
 {
-    shader->use();
     shader->setUniform("uView", m_view);
     shader->setUniform("uProj", m_proj);
 }

@@ -78,13 +78,13 @@ void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
     std::for_each(attributes.begin(), attributes.end(), [&](const Attribute &attrib){
         stride += attrib.getSize();
     });
-    DUST_DEBUG("[OpenGL][VertexAttrib] Stride = {}", stride);
+    // DUST_DEBUG("[OpenGL][VertexAttrib] Stride = {}", stride);
 
     u64 offset = 0;
     u32 index  = 0;
     for(const auto& attrib : attributes)
     {
-        DUST_DEBUG("[OpenGL][VertexAttrib] Vertex attrib {} : offset {}", index, offset);
+        // DUST_DEBUG("[OpenGL][VertexAttrib] Vertex attrib {} : offset {}", index, offset);
         glVertexAttribPointer(index, attrib.getCount(), attrib.getGLType(), GL_FALSE, stride, (void*)offset);
         glEnableVertexAttribArray(index);
         offset += attrib.getSize();
