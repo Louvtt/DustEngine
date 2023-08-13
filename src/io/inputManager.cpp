@@ -103,3 +103,12 @@ glm::vec2 dust::InputManager::getMousePos() const
 {
     return m_mousePos;
 }
+
+bool dust::InputManager::IsKeyPressed(dust::Key key)  
+{ return s_instance->isKey(key, dust::KeyState::Press); }
+bool dust::InputManager::IsKeyDown(dust::Key key)     
+{ return s_instance->isKey(key, dust::KeyState::Down); }
+bool dust::InputManager::IsKeyReleased(dust::Key key) 
+{ return s_instance->isKey(key, dust::KeyState::Release); }
+bool dust::InputManager::IsKeyUp(dust::Key key)       
+{ return s_instance->isKey(key, dust::KeyState::Up); }

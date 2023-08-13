@@ -37,6 +37,11 @@ public:
     bool isKey(Key key, KeyState keyState) const;
     bool isButton(MButton key, ButtonState keyState) const;
 
+    static bool IsKeyPressed(Key key);
+    static bool IsKeyDown(Key key);
+    static bool IsKeyReleased(Key key);
+    static bool IsKeyUp(Key key);
+
     glm::vec2 getMousePos() const;
 };
 
