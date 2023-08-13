@@ -13,7 +13,7 @@ function(add_example name)
     message(STATUS "Adding example ${name}")
     # default source dir
     if(NOT DEFINED ADD_EXAMPLE_SOURCE_DIR)
-        set(SOURCE_DIR ${name})
+        set(SOURCE_DIR ".")
         message(STATUS "Defaulting SOURCE_DIR to ${SOURCE_DIR} for ${name}")
     else()
         set(SOURCE_DIR ${ADD_EXAMPLE_SOURCE_DIR})
@@ -26,7 +26,7 @@ function(add_example name)
         set(SOURCES ${ADD_EXAMPLE_FILES})
     endif()
 
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/examples/${name}")
+    # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/examples/${name}")
 
     # Example executabe
     set(EXAMPLE_NAME "dust_example_${name}")
@@ -35,8 +35,8 @@ function(add_example name)
     PRIVATE
         dustlib
     )
-    set(EXAMPLE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
-    set(EXAMPLE_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${name}")
+    set(EXAMPLE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(EXAMPLE_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
     # Options
     if(ADD_EXAMPLE_USE_IMGUI)

@@ -1,6 +1,6 @@
 include(DustAddExample)
 
 # Simple example
-add_example(simple)
-add_example(triangle)
-add_example(sponza ASSETS_DIR assets)
+add_subdirectory(simple)
+add_subdirectory(triangle)
+add_subdirectory(sponza)
