@@ -32,6 +32,7 @@ void dust::InputManager::keyCallback(int key, int scancode, int _mods, int actio
 {
     // Unknown key
     if(key < (int)dust::Key::Space || key > (int)dust::Key::Last) return;
+    // DUST_DEBUG("Key [{} - {}]", key, (action == GLFW_PRESS ? "Pressed" : "Released"));
     dust::Key dKey = (dust::Key)(key);
     m_keys.at((std::size_t)dKey) = (action == GLFW_PRESS) ? 
           dust::KeyState::Press 
@@ -41,6 +42,7 @@ void dust::InputManager::buttonCallback(int button, int _mods, int action)
 {
     // Unknown button
     if(button > (int)dust::MButton::Last) return;
+    // DUST_DEBUG("Button [{} - {}]", button, (action == GLFW_PRESS ? "Pressed" : "Released"));
     dust::MButton dButton = (dust::MButton)(button);
     m_mbuttons.at((std::size_t)dButton) = (action == GLFW_PRESS) ? 
           dust::KeyState::Press 

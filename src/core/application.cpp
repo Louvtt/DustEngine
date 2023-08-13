@@ -54,6 +54,7 @@ void dust::Application::run()
         m_time.frame++;
 
         update();
+        m_inputManager->updateState();
 
         m_renderer->newFrame();
         {

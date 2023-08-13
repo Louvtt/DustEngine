@@ -25,6 +25,7 @@ private:
     void buttonCallback(int button, int mods, int action);
     void mousePosCallback(double x, double y);
 
+    friend class dust::Application;
     void updateState();
 
 public:
