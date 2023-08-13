@@ -1,6 +1,7 @@
 #include "dust/core/application.hpp"
 #include "dust/core/types.hpp"
 #include "dust/core/log.hpp"
+#include "dust/io/inputManager.hpp"
 #include "dust/render/renderer.hpp"
 
 #include <GLFW/glfw3.h>
@@ -24,6 +25,7 @@ m_time()
     #endif
 
     m_window = dust::createScope<dust::Window>(name, width, height);
+    m_inputManager = dust::createScope<dust::InputManager>(*m_window);
     m_renderer = dust::createScope<dust::Renderer>(*m_window);
     
     s_instance = this;
@@ -31,6 +33,7 @@ m_time()
 
 dust::Application::~Application()
 {
+    m_inputManager.reset();
     m_renderer.reset();
     m_window.reset();
 }
@@ -60,15 +63,15 @@ void dust::Application::run()
     }
 }
 
-const dust::Window &
+dust::Window*
 dust::Application::getWindow() const
 {
-    return *m_window;
+    return m_window.get();
 }
-const dust::Renderer &
+dust::Renderer*
 dust::Application::getRenderer() const
 {
-    return *m_renderer;
+    return m_renderer.get();
 }
 
 dust::Application*

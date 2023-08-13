@@ -1,6 +1,7 @@
 #ifndef _DUST_CORE_APPLICATION_HPP_
 #define _DUST_CORE_APPLICATION_HPP_
 
+#include "dust/io/inputManager.hpp"
 #include "types.hpp"
 #include "time.hpp"
 #include "window.hpp"
@@ -18,15 +19,17 @@ private:
     Time m_time;
     Scope<Window> m_window;
     Scope<Renderer> m_renderer;
-    
+    Scope<InputManager> m_inputManager;
+
     inline static Application* s_instance = nullptr;
 
 public:
     Application(const std::string& name, u32 width = 800u, u32 height = 600u);
     ~Application();
 
-    const Window &getWindow() const;
-    const Renderer &getRenderer() const;
+    Window* getWindow() const;
+    Renderer* getRenderer() const;
+    InputManager* getInputManager() const;
 
     Time getTime() const;
 

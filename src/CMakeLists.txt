@@ -14,6 +14,7 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/render/mesh.hpp"
     # IO
     "${DustEngine_SOURCE_DIR}/include/dust/io/fileReader.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/io/inputManager.hpp"
 )
 
 add_library(dustlib
@@ -28,6 +29,7 @@ add_library(dustlib
     render/mesh.cpp
 
     io/fileReader.cpp
+    io/inputManager.cpp
 )
 
 target_include_directories(dustlib PUBLIC "${DustEngine_SOURCE_DIR}/include")
