@@ -99,7 +99,8 @@ dust::Renderer::Renderer(const dust::Window& window)
     DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion, m_renderApiName);
 
     glEnable(GL_STENCIL);
-    glEnable(GL_DEPTH);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
     #ifdef _DEBUG
@@ -143,9 +144,9 @@ void dust::Renderer::setDepthWrite(bool write)
 void dust::Renderer::setDepthTest(bool test)
 {
     if(test) {
-        glEnable(GL_DEPTH);
+        glEnable(GL_DEPTH_TEST);
     } else {
-        glDisable(GL_DEPTH);
+        glDisable(GL_DEPTH_TEST);
     }
 }
 
