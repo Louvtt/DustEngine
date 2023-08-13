@@ -11,6 +11,7 @@ class Model
 {
 private:
     std::vector<Mesh*> m_meshes;
+    glm::mat4 m_modelMat;
 
 public:
         

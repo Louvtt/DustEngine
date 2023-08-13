@@ -12,7 +12,8 @@
 namespace dr = dust::render;
 
 dr::Model::Model(std::vector<dr::Mesh*> mesh)
-: m_meshes(mesh)
+: m_meshes(mesh),
+m_modelMat(1.f)
 { }
 dr::Model::~Model()
 {
@@ -92,6 +93,7 @@ dr::Model* dr::Model::loadFromFile(const std::string& path)
 void dr::Model::draw(Shader *shader)
 {
     shader->use();
+    shader->setUniform("uModel", m_modelMat);
     for (auto mesh : m_meshes) {
         mesh->draw();
     }
