@@ -9,7 +9,7 @@
 std::string dust::io::getFileRawContent(const std::string& path)
 {
     std::error_code error{};
-    if(std::filesystem::exists(path, error)) {
+    if(!std::filesystem::exists(path, error)) {
         DUST_ERROR("[File] {} doesn't exists (error {} : {})", path, error.value(), error.message());
         return "";
     }
