@@ -1,5 +1,11 @@
+/**
+ * @brief KeyCodes List
+ * These the same as specified in GLFW but in C++ enum classes style
+ */ 
+
 #ifndef _DUST_IO_KEYCODES_H_
 #define _DUST_IO_KEYCODES_H_
+
 
 #include "dust/core/types.hpp"
 
