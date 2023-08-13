@@ -73,6 +73,11 @@ dust::Application::getRenderer() const
 {
     return m_renderer.get();
 }
+dust::InputManager*
+dust::Application::getInputManager() const
+{
+    return m_inputManager.get();
+}
 
 dust::Application*
 dust::Application::Get()
