@@ -157,7 +157,7 @@ void dust::Renderer::resize(u32 width, u32 height)
 void dust::Renderer::setDrawWireframe(bool wireframe)
 {
     if(wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
