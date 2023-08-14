@@ -17,7 +17,7 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/render/texture.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/render/material.hpp"
     # IO
-    "${DustEngine_SOURCE_DIR}/include/dust/io/fileReader.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/io/loaders.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/io/inputManager.hpp"
 )
 
@@ -37,7 +37,7 @@ add_library(dustlib
     render/texture.cpp
     render/material.cpp
 
-    io/fileReader.cpp
+    io/loaders.cpp
     io/inputManager.cpp
 )
 

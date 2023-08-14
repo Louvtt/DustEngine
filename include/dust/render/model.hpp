@@ -26,8 +26,6 @@ public:
     Model(const std::vector<Mesh*> &mesh);
     ~Model();
 
-    static Model* loadFromFile(const std::string &path);
-
     void draw(Shader *shader);    
 };
 

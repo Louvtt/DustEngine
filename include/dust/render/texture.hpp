@@ -38,7 +38,6 @@ public:
     };
 
     Texture(const Desc& descriptor);
-    Texture(const std::string& path, bool mipMaps = true);
     ~Texture();
 
     void bind(u16 index = 0);

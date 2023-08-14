@@ -42,7 +42,7 @@ public:
     virtual void setUniform(const std::string &name, glm::mat4 value);
 
     virtual void reload();
-    static Shader* loadFromFile(const std::string &vertexPath, const std::string &fragmentPath);
+    static Ref<Shader> loadFromFile(const std::string &vertexPath, const std::string &fragmentPath);
 
 protected:
     Shader();

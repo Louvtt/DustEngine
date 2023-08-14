@@ -3,6 +3,7 @@
 #include "dust/dust.hpp"
 #include "dust/io/inputManager.hpp"
 #include "dust/io/keycodes.hpp"
+#include "dust/io/loaders.hpp"
 #include "dust/render/camera.hpp"
 #include "dust/render/shader.hpp"
 
@@ -19,12 +20,12 @@ class SimpleApp
 : public Application
 {
 private:
-    render::Shader *m_shader;
-    render::Shader *m_depthShader;
+    Ref<render::Shader> m_shader;
+    Ref<render::Shader> m_depthShader;
     render::Shader *m_currentShader;
 
-    render::Model *m_sponza;
-    render::Camera3D *m_camera;
+    Ref<render::Model> m_sponza;
+    Ref<render::Camera3D> m_camera;
 
     glm::vec3 m_sunDirection;
     glm::vec4 m_sunColor;
@@ -35,7 +36,7 @@ public:
     : Application("Sponza"),
     m_shader(nullptr),
     m_sponza(nullptr),
-    m_camera(new render::Camera3D(getWindow()->getWidth(), getWindow()->getHeight(), 90, 2000)),
+    m_camera(createRef<render::Camera3D>(getWindow()->getWidth(), getWindow()->getHeight(), 90, 2000)),
     m_sunDirection(.5f, .5f, 0.f),
     m_sunColor(234/255.f, 198/255.f, 147/255.f, 1.f),
     m_ambientColor(4/255.f, 0/255.f, 14/255.f, 1.f)
@@ -50,9 +51,9 @@ public:
             DUST_ERROR("Exiting ... Shader missing");
             exit(-1);
         }
-        m_currentShader = m_depthShader;
+        m_currentShader = m_depthShader.get();
         
-        m_sponza = render::Model::loadFromFile("assets/sponza/sponza.obj");
+        m_sponza = io::ModelLoader::Read("assets/sponza/sponza.obj");
         if(!m_sponza) {
             DUST_ERROR("Exiting ... Sponza missing");
             exit(-1);
@@ -64,6 +65,16 @@ public:
 
         // sky color until skybox is created
         getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
+    }
+
+    ~SimpleApp() 
+    {
+        m_shader.reset();
+        m_depthShader.reset();
+
+        m_sponza.reset();
+
+        m_camera.reset();
     }
 
     void update() override
@@ -123,10 +134,10 @@ public:
             // ImGui::Separator();
             if(ImGui::BeginChild("Shaders", ImVec2{0, 100})) {
                 if(ImGui::Button("Show Depth")) { 
-                    m_currentShader = m_depthShader; 
+                    m_currentShader = m_depthShader.get(); 
                 }
                 if(ImGui::Button("Show Render")) { 
-                    m_currentShader = m_shader; 
+                    m_currentShader = m_shader.get(); 
                 }
 
                 // reload shaders ?

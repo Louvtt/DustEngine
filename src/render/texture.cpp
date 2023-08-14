@@ -29,30 +29,6 @@ m_renderID(0)
     internalCreate(descriptor);
 }
 
-dr::Texture::Texture(const std::string& path, bool mipMaps)
-: m_renderID(0)
-{
-    if(!std::filesystem::exists(path)) {
-        DUST_ERROR("[Texture] {} doesn't exists.", path);
-        return;
-    }
-
-    DUST_DEBUG("[Texture] Loading {}", path);
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
-    if(data == nullptr) {
-        DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
-        return;
-    }
-
-    internalCreate({
-        data, (u32)width, (u32)height, (u32)nrChannels, Filter::Linear, Wrap::NoWrap, mipMaps
-    });
-
-    stbi_image_free(data);
-}
-
 void dr::Texture::internalCreate(const Desc& descriptor)
 {
     glGenTextures(1, &m_renderID);

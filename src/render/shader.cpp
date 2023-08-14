@@ -1,7 +1,7 @@
 #include "dust/render/shader.hpp"
 
 #include "dust/core/log.hpp"
-#include "dust/io/fileReader.hpp"
+#include "dust/io/loaders.hpp"
 #include "dust/render/renderAPI.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -75,8 +75,8 @@ void dr::Shader::setUniform(const std::string &name, glm::mat4 value)
 
 void dr::Shader::reload() {
     u32 reloadedShaderID = internalCreate(
-        dust::io::getFileRawContent(m_vertexFilePath),
-        dust::io::getFileRawContent(m_fragmentFilePath)
+        dust::io::FileLoader::Read(m_vertexFilePath),
+        dust::io::FileLoader::Read(m_fragmentFilePath)
     );
     if(reloadedShaderID != 0) {
         glDeleteProgram(m_renderID);
@@ -84,23 +84,23 @@ void dr::Shader::reload() {
     }
 }
 
-dr::Shader*
+dust::Ref<dr::Shader>
 dr::Shader::loadFromFile(const std::string &vertexPath, const std::string &fragmentPath)
 {
     std::error_code error{};
     if(!fs::exists(vertexPath, error)) {
         DUST_ERROR("[File] {} doesn't exist (error {} : {})", vertexPath, error.value(), error.message());
-        return new NullShader();
+        return dust::createRef<NullShader>();
     }
     if(!fs::exists(fragmentPath, error)) {
         DUST_ERROR("[File] {} doesn't exist (error {} : {})", fragmentPath, error.value(), error.message());
-        return new NullShader();
+        return dust::createRef<NullShader>();
     }
 
     // read files
-    auto res = new Shader(
-        dust::io::getFileRawContent(vertexPath),
-        dust::io::getFileRawContent(fragmentPath)
+    auto res = dust::createRef<Shader>(
+        dust::io::FileLoader::Read(vertexPath),
+        dust::io::FileLoader::Read(fragmentPath)
     );
     res->m_vertexFilePath   = vertexPath;
     res->m_fragmentFilePath = fragmentPath;
