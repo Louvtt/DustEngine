@@ -84,6 +84,8 @@ m_aspectRatio((f32)width / (f32)height)
     m_view = glm::mat4(1.f);
     m_far = far;
     m_near = near;
+
+    updateViewMatrix();
 }
 
 void dr::Camera3D::bind(Shader *shader) 
