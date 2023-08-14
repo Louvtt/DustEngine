@@ -37,29 +37,32 @@ void dr::TextureMaterial::unbind(Shader *shader)
     shader->setUniform("uMaterial.hasTexture", false);
 }
 
-dr::PBRMaterial::PBRMaterial(Texture* diffuseTexture, glm::vec4 ambient, glm::vec4 diffuse)
-: m_diffuse(diffuseTexture),
-m_ambientColor(ambient),
-m_diffuseColor(diffuse)
+dr::PBRMaterial::PBRMaterial(const dr::PBRMaterial::Data& data)
+: m_data(data)
 { }
 
 dr::PBRMaterial::~PBRMaterial()
 {
-    if(m_diffuse) delete m_diffuse;
+    if(m_data.diffuse) delete m_data.diffuse;
 }
 
 void dr::PBRMaterial::bind(Shader *shader) 
 {
-    if(m_diffuse) m_diffuse->bind(0);
+    // textures
+    if(m_data.diffuse) m_data.diffuse->bind(0);
     shader->setUniform("uMaterial.diffuseTexture", 0);
-    shader->setUniform("uMaterial.hasDiffuse",(m_diffuse != nullptr));
+    shader->setUniform("uMaterial.hasDiffuse",(m_data.diffuse != nullptr));
+
     // colors
-    shader->setUniform("uMaterial.diffuse", m_diffuseColor);
-    shader->setUniform("uMaterial.ambient", m_ambientColor);
+    shader->setUniform("uMaterial.diffuse", m_data.diffuseColor);
+    shader->setUniform("uMaterial.ambient", m_data.ambientColor);
+    shader->setUniform("uMaterial.ambient", m_data.specularColor);
+    shader->setUniform("uMaterial.ambient", m_data.shininess);
 }
 void dr::PBRMaterial::unbind(Shader *shader) 
 {
-    if(m_diffuse) m_diffuse->unbind();
+    // unbind textures
+    if(m_data.diffuse) m_data.diffuse->unbind();
     shader->setUniform("uMaterial.hasDiffuse", false);
 
 }

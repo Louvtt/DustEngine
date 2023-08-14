@@ -36,8 +36,9 @@ public:
     m_shader(nullptr),
     m_sponza(nullptr),
     m_camera(new render::Camera3D(getWindow()->getWidth(), getWindow()->getHeight(), 90, 2000)),
-    m_sunDirection(0.f, 1.f, 0.f),
-    m_sunColor(1.f)
+    m_sunDirection(.5f, .5f, 0.f),
+    m_sunColor(234/255.f, 198/255.f, 147/255.f, 1.f),
+    m_ambientColor(4/255.f, 0/255.f, 14/255.f, 1.f)
     { 
         m_shader = render::Shader::loadFromFile("assets/shader.vert", "assets/shader.frag");
         if(!(bool)m_shader) {
@@ -59,6 +60,10 @@ public:
 
         m_camera->setPosition(glm::vec3(0.f, 10.f, 0.f));
         m_camera->bind(m_currentShader);
+        updateUniforms();
+
+        // sky color until skybox is created
+        getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
     }
 
     void update() override
@@ -129,9 +134,7 @@ public:
                     m_shader->reload();
                     m_depthShader->reload();
 
-                    m_shader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
-                    m_shader->setUniform("uSunColor", m_sunColor);
-                    m_shader->setUniform("uAmbient", m_ambientColor);
+                    updateUniforms();
                 }
 
             }
@@ -142,6 +145,13 @@ public:
         m_camera->resize(getWindow()->getWidth(), getWindow()->getHeight());
         m_camera->bind(m_currentShader); // update
         m_sponza->draw(m_currentShader);
+    }
+
+private:
+    void updateUniforms() {
+        m_shader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
+        m_shader->setUniform("uSunColor", m_sunColor);
+        m_shader->setUniform("uAmbient", m_ambientColor);
     }
 };
 

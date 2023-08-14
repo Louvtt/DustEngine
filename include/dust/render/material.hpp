@@ -39,13 +39,20 @@ public:
 class PBRMaterial
 : public Material
 {
+public:
+    struct Data {
+        Texture* diffuse;
+
+        glm::vec4 ambientColor;
+        glm::vec4 diffuseColor;
+        glm::vec4 specularColor;
+        float shininess;
+    };
 protected:
-    Texture* m_diffuse;
-    glm::vec4 m_ambientColor;
-    glm::vec4 m_diffuseColor;
+    Data m_data;
 
 public:
-    PBRMaterial(Texture* diffuseTexture = nullptr, glm::vec4 ambient = glm::vec4(1.f), glm::vec4 diffuse = glm::vec4(1.f));
+    PBRMaterial(const Data& data);
     ~PBRMaterial();
 
     void bind(Shader *shader) override;

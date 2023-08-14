@@ -3,6 +3,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/Vertex.h"
 #include "assimp/color4.h"
+#include "assimp/defs.h"
 #include "assimp/material.h"
 #include "assimp/mesh.h"
 #include "assimp/postprocess.h"
@@ -57,9 +58,22 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
             ambient = {ambientMat.r, ambientMat.g, ambientMat.b, ambientMat.a};
         }
 
-        materials.push_back(new dust::render::PBRMaterial(
-            diffuseTexture, ambient, diffuse
-        ));
+        glm::vec4 specular(1.f);
+        aiColor4D specularMat;
+        if(aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &specularMat) == AI_SUCCESS) {
+            specular = {specularMat.r, specularMat.g, specularMat.b, specularMat.a};
+        }
+
+        float shininess = 0.f;
+        ai_real shininessMat;
+        if(aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininessMat) == AI_SUCCESS) {
+            shininess = (float)shininessMat;
+        }
+
+        materials.push_back(new dr::PBRMaterial({
+            diffuseTexture, 
+            ambient, diffuse, specular, shininess
+        }));
     }
     return materials;
 }
