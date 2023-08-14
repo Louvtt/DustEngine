@@ -8,6 +8,9 @@
 
 namespace dr = dust::render;
 
+u32 dr::Texture::s_textureBoundCount = 0;
+u32 dr::Texture::s_textureMaxSlots   = 32;
+
 static u32 toGLFormat(u32 channels)
 {
     switch (channels) {
@@ -29,7 +32,7 @@ m_renderID(0)
     internalCreate(descriptor);
 }
 
-dr::Texture::Texture(const std::string& path)
+dr::Texture::Texture(const std::string& path, bool mipMaps)
 : m_renderID(0)
 {
     if(!std::filesystem::exists(path)) {
@@ -47,7 +50,7 @@ dr::Texture::Texture(const std::string& path)
     }
 
     internalCreate({
-        data, (u32)width, (u32)height, (u32)nrChannels, Filter::Linear, Wrap::NoWrap, false
+        data, (u32)width, (u32)height, (u32)nrChannels, Filter::Linear, Wrap::NoWrap, mipMaps
     });
 
     stbi_image_free(data);
@@ -62,8 +65,8 @@ void dr::Texture::internalCreate(const Desc& descriptor)
     }
     glBindTexture(GL_TEXTURE_2D, m_renderID);
     glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(descriptor.channels), descriptor.width, descriptor.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, descriptor.data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(descriptor.filter));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(descriptor.filter));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(descriptor.filter, descriptor.mipMaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(descriptor.filter, descriptor.mipMaps));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(descriptor.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(descriptor.wrap));
     if(descriptor.mipMaps) {
@@ -83,11 +86,11 @@ u32 dr::Texture::apiValue(Wrap wrap)
         default: return GL_CLAMP;
     }
 }
-u32 dr::Texture::apiValue(Filter filter)
+u32 dr::Texture::apiValue(Filter filter, bool mipMaps)
 {
     switch(filter) {
-        case Filter::Point: return GL_NEAREST;
-        case Filter::Linear: return GL_LINEAR;
+        case Filter::Point: return mipMaps ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
+        case Filter::Linear: return mipMaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
         default: return GL_LINEAR;
     }
 }

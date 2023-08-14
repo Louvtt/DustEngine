@@ -15,6 +15,9 @@ protected:
     u16 m_lastIndex;
     u32 m_width, m_height;
     u32 m_channels;
+
+    static u32 s_textureBoundCount;
+    static u32 s_textureMaxSlots;
 public:
     enum class Filter : int {
         Point,
@@ -37,7 +40,7 @@ public:
     };
 
     Texture(const Desc& descriptor);
-    Texture(const std::string& path);
+    Texture(const std::string& path, bool mipMaps = true);
     ~Texture();
 
     void bind(u16 index = 0);
@@ -50,7 +53,7 @@ public:
 private:
     void internalCreate(const Desc& descriptor);
     static u32 apiValue(Wrap wrap);
-    static u32 apiValue(Filter filter);
+    static u32 apiValue(Filter filter, bool mipMaps);
 };
 
 }
