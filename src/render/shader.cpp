@@ -32,6 +32,11 @@ void dr::Shader::use() {
     glUseProgram(m_renderID);
 }
 
+void dr::Shader::setUniform(const std::string &name, bool value)
+{
+    const u32 loc = getUniformLocation(name);
+    glProgramUniform1i(m_renderID, loc, (int)value);
+}
 
 void dr::Shader::setUniform(const std::string &name, int value)
 {

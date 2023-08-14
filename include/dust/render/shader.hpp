@@ -34,6 +34,7 @@ public:
     virtual void use();
 
     virtual void setUniform(const std::string &name, int value);
+    virtual void setUniform(const std::string &name, bool value);
     virtual void setUniform(const std::string &name, float value);
     virtual void setUniform(const std::string &name, glm::vec2 value);
     virtual void setUniform(const std::string &name, glm::vec3 value);
