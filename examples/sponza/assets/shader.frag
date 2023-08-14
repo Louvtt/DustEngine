@@ -11,12 +11,21 @@ uniform material_t uMaterial;
 
 in vec2 oTexCoord;
 in vec4 oColor;
+in vec3 oNormal;
+
+vec3 forward = vec3(-1, 0, 0);
 
 void main() {
+    
     if(uMaterial.hasDiffuse) {
-        fragColor = uMaterial.ambient * texture(uMaterial.diffuseTexture, oTexCoord);
+        fragColor = uMaterial.diffuse * texture(uMaterial.diffuseTexture, oTexCoord);
     } else {
-        fragColor = uMaterial.ambient;
+        fragColor = uMaterial.diffuse + uMaterial.ambient;
     }
 
+    if(fragColor.a < .5) discard;
+
+    // FlatShading
+    float dir = dot(oNormal, forward);
+    fragColor *= vec4(vec3(dir), 1);
 }

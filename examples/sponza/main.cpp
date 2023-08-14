@@ -7,8 +7,8 @@
 
 using namespace dust;
 
-constexpr f32 CAMERA_SPEED = 10.f;
-constexpr f32 CAMERA_ROTATE_SPEED = 10.f;
+constexpr f32 CAMERA_SPEED = 50.f;
+constexpr f32 CAMERA_ROTATE_SPEED = 50.f;
 
 class SimpleApp
 : public Application
@@ -89,6 +89,7 @@ public:
         if(InputManager::IsKeyPressed(Key::T)) { // switch shaders
             if(m_currentShader == m_shader) { m_currentShader = m_depthShader; }
             else { m_currentShader = m_shader; }
+            m_camera->bind(m_currentShader); // pass camera uniforms to shader
         }
     }
 
