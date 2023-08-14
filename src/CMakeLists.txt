@@ -14,6 +14,7 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/render/mesh.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/render/model.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/render/texture.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/render/material.hpp"
     # IO
     "${DustEngine_SOURCE_DIR}/include/dust/io/fileReader.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/io/inputManager.hpp"
@@ -32,6 +33,7 @@ add_library(dustlib
     render/model.cpp
     render/camera.cpp
     render/texture.cpp
+    render/material.cpp
 
     io/fileReader.cpp
     io/inputManager.cpp
