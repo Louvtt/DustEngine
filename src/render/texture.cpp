@@ -39,6 +39,7 @@ dr::Texture::Texture(const std::string& path)
 
     DUST_DEBUG("[Texture] Loading {}", path);
     int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
     u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
     if(data == nullptr) {
         DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
