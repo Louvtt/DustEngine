@@ -8,9 +8,6 @@
 
 namespace dr = dust::render;
 
-u32 dr::Texture::s_textureBoundCount = 0;
-u32 dr::Texture::s_textureMaxSlots   = 32;
-
 static u32 toGLFormat(u32 channels)
 {
     switch (channels) {

@@ -16,8 +16,6 @@ protected:
     u32 m_width, m_height;
     u32 m_channels;
 
-    static u32 s_textureBoundCount;
-    static u32 s_textureMaxSlots;
 public:
     enum class Filter : int {
         Point,
