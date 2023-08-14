@@ -1,8 +1,9 @@
 #include "dust/render/renderer.hpp"
-#include "GLFW/glfw3.h"
 #include "dust/core/log.hpp"
 #include "dust/render/renderAPI.hpp"
-#include <GL/gl.h>
+
+#include "GLFW/glfw3.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #pragma region "OpenGL Utils"
 
@@ -85,7 +86,6 @@ static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id, GLenum _se
 }
 #pragma endregion
 
-
 dust::Renderer::Renderer(const dust::Window& window)
 {
     // init glad
@@ -113,9 +113,18 @@ dust::Renderer::Renderer(const dust::Window& window)
 
     setClearColor(.1f, .1f, .1f);
     resize(window.getWidth(), window.getHeight());
+
+    // const char* shading_version = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+    // DUST_DEBUG("[OpenGL] Shading Language version : {}", shading_version);
+    if(!ImGui_ImplOpenGL3_Init("#version 460 core")) {
+        DUST_ERROR("[OpenGL][ImGui] Failed to load ImGui for OpenGL.");
+    } else {
+        DUST_INFO("[OpenGL][ImGui] Loaded ImGui for OpenGL.");
+    }
 }
 dust::Renderer::~Renderer()
 {
+    ImGui_ImplOpenGL3_Shutdown();
     DUST_INFO("[Glad] Unloading OpenGL");
     gladLoaderUnloadGL();
 }
@@ -127,9 +136,12 @@ void dust::Renderer::newFrame()
     } else {
         glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
+    ImGui_ImplOpenGL3_NewFrame();
 }
 void dust::Renderer::endFrame()
-{}
+{
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
 
 void dust::Renderer::setClearColor(float r, float g, float b, float a)
 {

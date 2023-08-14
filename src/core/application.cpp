@@ -1,8 +1,11 @@
 #include "dust/core/application.hpp"
+#include "dust/core/layer.hpp"
 #include "dust/core/types.hpp"
 #include "dust/core/log.hpp"
 #include "dust/io/inputManager.hpp"
 #include "dust/render/renderer.hpp"
+
+#include "imgui.h"
 
 #include <GLFW/glfw3.h>
 
@@ -13,7 +16,8 @@
 
 dust::Application::Application(const std::string& name, u32 width, u32 height)
 : m_name(name),
-m_time()
+m_time(),
+m_layers()
 {
     if(s_instance) {
         DUST_ERROR("Cannot create another application instance");
@@ -24,10 +28,17 @@ m_time()
     spdlog::set_level(spdlog::level::debug);
     #endif
 
+    // ImGui init
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    auto io = ImGui::GetIO();
+    io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::StyleColorsDark();
+
     m_window = dust::createScope<dust::Window>(name, width, height);
     m_inputManager = dust::createScope<dust::InputManager>(*m_window);
     m_renderer = dust::createScope<dust::Renderer>(*m_window);
-    
+
     s_instance = this;
 }
 
@@ -54,12 +65,18 @@ void dust::Application::run()
         m_time.frame++;
 
         update();
+        for(auto [_, layer] : m_layers) { layer->update(); }
         m_inputManager->updateState();
 
         m_renderer->newFrame();
+        ImGui::NewFrame();
+        for(auto [_, layer] : m_layers) { layer->preRender(); }
         {
             render();
+            for(auto [_, layer] : m_layers) { layer->render(); }
         }
+        for(auto [_, layer] : m_layers) { layer->postRender(); }
+        ImGui::Render();
         m_renderer->endFrame();
     }
 }
@@ -100,4 +117,19 @@ const std::filesystem::path&
 dust::Application::getProgramPath() const
 {
     return m_programPath;
+}
+
+void dust::Application::pushLayer(Layer* layer)
+{
+    m_layers.insert({
+        layer->getName(),
+        layer
+    });
+}
+void dust::Application::popLayer(std::string name)
+{
+    auto found = m_layers.find(name);
+    if(found == m_layers.end()) return; // not found
+    auto deletedLayer = m_layers.erase(found);
+    delete deletedLayer->second;
 }

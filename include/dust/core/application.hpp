@@ -5,9 +5,12 @@
 #include "types.hpp"
 #include "time.hpp"
 #include "window.hpp"
+#include "layer.hpp"
 #include "../render/renderer.hpp"
 #include <filesystem>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 extern int main(int argc, char** argv);
 
@@ -21,6 +24,8 @@ private:
     Scope<Window> m_window;
     Scope<Renderer> m_renderer;
     Scope<InputManager> m_inputManager;
+
+    std::unordered_map<std::string, Layer*> m_layers;
 
     inline static Application* s_instance = nullptr;
 
@@ -38,6 +43,9 @@ public:
     Time getTime() const;
 
     static Application* Get();
+
+    void pushLayer(Layer* layer);
+    void popLayer(std::string name);
 
 protected:
     virtual void update();

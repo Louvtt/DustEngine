@@ -7,6 +7,7 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/core/time.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/core/window.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/core/application.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/core/layer.hpp"
     # Render
     "${DustEngine_SOURCE_DIR}/include/dust/render/renderAPI.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/render/renderer.hpp"
@@ -26,6 +27,7 @@ add_library(dustlib
     core/application.cpp
     core/entryPoint.cpp
     core/window.cpp
+    core/layer.cpp
 
     render/renderer.cpp
     render/shader.cpp
@@ -48,10 +50,10 @@ PUBLIC
     yaml-cpp
     glm
     stdc++fs
+    imgui
 
 PRIVATE
     stb
-    imgui
     glad
     OpenGL::GL
     assimp

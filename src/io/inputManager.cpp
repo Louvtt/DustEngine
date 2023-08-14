@@ -3,6 +3,7 @@
 #include "dust/core/log.hpp"
 #include "dust/core/types.hpp"
 #include "dust/io/keycodes.hpp"
+#include "imgui_impl_glfw.h"
 
 dust::InputManager::InputManager(const dust::Window& window)
 : m_keys(),
@@ -13,12 +14,15 @@ m_mousePos()
     s_instance = dust::Scope<dust::InputManager>(this);
     glfwSetKeyCallback(nativeWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods){
         InputManager::Get()->keyCallback(key, scancode, mods, action);
+        ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
     });
     glfwSetMouseButtonCallback(nativeWindow, [](GLFWwindow* window, int button, int action, int mods){
         InputManager::Get()->buttonCallback(button, mods, action);
+        ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
     });
     glfwSetCursorPosCallback(nativeWindow, [](GLFWwindow* window, double x, double y){
         InputManager::Get()->mousePosCallback(x, y);
+        ImGui_ImplGlfw_CursorPosCallback(window, x, y);
     });
     // glfwSetScrollCallback(nativeWindow, [](GLFWwindow* window, double xoffset, double yoffset){ });
     DUST_INFO("[InputManager] Events bound.");

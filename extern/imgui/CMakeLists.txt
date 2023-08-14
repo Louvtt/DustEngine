@@ -6,8 +6,8 @@ project(DearImGui
 
 ########################
 
-option(DearImGui_WINDOW_BACKEND "DearImGui window backend api" "glfw")
-option(DearImGui_RENDER_BACKEND "DearImGui render backend api" "opengl3")
+set(DearImGui_WINDOW_BACKEND "glfw" CACHE STRING "DearImGui window backend api")
+set(DearImGui_RENDER_BACKEND "opengl3" CACHE STRING "DearImGui render backend api")
 option(DearImGui_MISC_STDLIB "DearImGui stdlib implementation" ON)
 
 ########################
