@@ -18,6 +18,8 @@ protected:
 
     f32 m_near;
     f32 m_far;
+
+    inline static Camera* s_activeCamera;
 protected:
     Camera();
     ~Camera() = default;
@@ -25,6 +27,9 @@ protected:
 public:
     virtual void bind(Shader *shader) = 0;
     virtual void resize(u32 width, u32 height) = 0;
+
+    void makeActive();
+    static Camera* GetActive();
 
 protected:
     virtual void updateViewMatrix() = 0;

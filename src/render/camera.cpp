@@ -9,7 +9,18 @@ namespace dr = dust::render;
 dr::Camera::Camera()
 : m_far(1000), m_near(0),
 m_proj(1.f), m_view(1.f)
-{ }
+{ 
+    if(s_activeCamera == nullptr) s_activeCamera = this;
+}
+
+void dr::Camera::makeActive()
+{
+    s_activeCamera = this;   
+}
+dr::Camera* dr::Camera::GetActive()
+{
+    return s_activeCamera;
+}
 
 // CAMERA 2D
 
