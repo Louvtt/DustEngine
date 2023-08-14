@@ -98,6 +98,9 @@ dust::Renderer::Renderer(const dust::Window& window)
     m_renderApiVersion = (const char*)glGetString(GL_VERSION);
     DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion, m_renderApiName);
 
+    // avoid skipping pixels
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
     glEnable(GL_STENCIL);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
