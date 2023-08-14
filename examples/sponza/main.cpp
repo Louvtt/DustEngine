@@ -86,6 +86,10 @@ public:
             m_camera->bind(m_shader);
             m_camera->bind(m_depthShader);
         }
+        if(InputManager::IsKeyPressed(Key::T)) { // switch shaders
+            if(m_currentShader == m_shader) { m_currentShader = m_depthShader; }
+            else { m_currentShader = m_shader; }
+        }
     }
 
     void render() override
