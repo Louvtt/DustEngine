@@ -82,9 +82,9 @@ static dr::Mesh* processMesh(aiMesh *mesh, const std::vector<dr::Material*> &mat
         auto color  = mesh->mColors[i];
 
         dr::Model::Vertex vertex = {{ pos.x, pos.y, pos.z }};
-        if(mesh->HasTextureCoords(i)) { 
-            auto tex   = mesh->mTextureCoords[i];
-            vertex.tex = { tex->x, tex->y }; 
+        if(mesh->HasTextureCoords(0)) { 
+            auto tex   = mesh->mTextureCoords[0][i];
+            vertex.tex = { tex.x, tex.y }; 
         }
         if(mesh->HasNormals()) { 
             auto normal = mesh->mNormals[i];
