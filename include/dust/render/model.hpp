@@ -23,7 +23,7 @@ public:
         // float texID;
     };
 
-    Model(std::vector<Mesh*> mesh);
+    Model(const std::vector<Mesh*> &mesh);
     ~Model();
 
     static Model* loadFromFile(const std::string &path);

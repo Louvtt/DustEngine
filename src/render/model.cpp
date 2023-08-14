@@ -13,11 +13,12 @@
 #include "dust/render/material.hpp"
 #include "dust/render/texture.hpp"
 #include <filesystem>
+#include <unordered_map>
 
 namespace dr = dust::render;
 
-dr::Model::Model(std::vector<dr::Mesh*> mesh)
-: m_meshes(mesh),
+dr::Model::Model(const std::vector<dr::Mesh*> &meshes)
+: m_meshes(meshes),
 m_modelMat(1.f)
 { }
 dr::Model::~Model()
@@ -63,11 +64,8 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
     return materials;
 }
 
-static dr::Mesh* processMesh(aiMesh *mesh, const std::vector<dr::Material*> &materials)
-{
-    std::vector<dr::Model::Vertex> vertices;
-    vertices.reserve(mesh->mNumVertices);
-
+static std::vector<dr::Mesh*> processMeshes(const aiScene *scene, const std::vector<dr::Material*> &materials)
+{   
     // Attributes
     std::vector<dr::Attribute> attributes {
         dr::Attribute::Pos3D,
@@ -76,42 +74,74 @@ static dr::Mesh* processMesh(aiMesh *mesh, const std::vector<dr::Material*> &mat
         dr::Attribute::Color
     };
 
-    // process vertices
-    for(int i = 0; i < mesh->mNumVertices; ++i) {
-        auto pos    = mesh->mVertices[i];
-        auto color  = mesh->mColors[i];
-
-        dr::Model::Vertex vertex = {{ pos.x, pos.y, pos.z }};
-        if(mesh->HasTextureCoords(0)) { 
-            auto tex   = mesh->mTextureCoords[0][i];
-            vertex.tex = { tex.x, tex.y }; 
-        }
-        if(mesh->HasNormals()) { 
-            auto normal = mesh->mNormals[i];
-            vertex.normal = { normal.x, normal.y, normal.z};
-        }
-        if(mesh->HasVertexColors(i)) {
-            auto color = mesh->mColors[i];
-            vertex.color = { color->r, color->g, color->b, color->a };
-        }
-        vertices.push_back(vertex);
+    // batch all of the model into one draw call
+    const u32 matCount = materials.size(); 
+    // pre calculate the number of vertices
+    std::vector<u32> numTotalVertices(matCount, 0);
+    std::vector<u32> numTotalIndices(matCount, 0);
+    for(int i = 0; i < scene->mNumMeshes; ++i) {
+        u32 matIndex = scene->mMeshes[i]->mMaterialIndex;
+        numTotalVertices[matIndex] += scene->mMeshes[i]->mNumVertices;
+        numTotalIndices[matIndex]  += scene->mMeshes[i]->mNumFaces * 3;
+    }
+    // allocate space for vertices
+    std::unordered_map<int, std::vector<dr::Model::Vertex>> vertices(matCount);
+    std::unordered_map<int,std::vector<u32>> indices(matCount);
+    for(int i = 0; i < matCount; ++i) {
+        vertices.insert({i, std::vector<dr::Model::Vertex>(numTotalVertices[i])});
+        indices.insert({i, std::vector<u32>(numTotalIndices[i])});
     }
 
-    // process indices
-    std::vector<u32> indices{};
-    indices.reserve(mesh->mNumFaces * 3);
-    for(int i = 0; i < mesh->mNumFaces; ++i) {
-        auto face = mesh->mFaces[i];
-        // only manage triangles
-        if(face.mNumIndices != 3) continue;
+    // parse all meshes
+    for (int i = 0; i < scene->mNumMeshes; ++i) {
+        auto mesh = scene->mMeshes[i];
+        const u32 matIndex = scene->mMeshes[i]->mMaterialIndex;
+        const u32 previousVertexCount = vertices[matIndex].size();
 
-        indices.push_back(face.mIndices[0]);
-        indices.push_back(face.mIndices[1]);
-        indices.push_back(face.mIndices[2]);
+        // process vertices
+        for(int i = 0; i < mesh->mNumVertices; ++i) {
+            auto pos    = mesh->mVertices[i];
+            auto color  = mesh->mColors[i];
+
+            dr::Model::Vertex vertex = {{ pos.x, pos.y, pos.z }};
+            if(mesh->HasTextureCoords(0)) { 
+                auto tex   = mesh->mTextureCoords[0][i];
+                vertex.tex = { tex.x, tex.y }; 
+            }
+            if(mesh->HasNormals()) { 
+                auto normal = mesh->mNormals[i];
+                vertex.normal = { normal.x, normal.y, normal.z};
+            }
+            if(mesh->HasVertexColors(i)) {
+                auto color = mesh->mColors[i];
+                vertex.color = { color->r, color->g, color->b, color->a };
+            }
+            vertices[matIndex].push_back(vertex);
+        }
+        // parses mesh indices and offset it by the previous number of vertices
+        for(int i = 0; i < mesh->mNumFaces; ++i) {
+            auto face = mesh->mFaces[i];
+            // only manage triangles
+            if(face.mNumIndices != 3) continue;
+            indices[matIndex].push_back(previousVertexCount + face.mIndices[0]);
+            indices[matIndex].push_back(previousVertexCount + face.mIndices[1]);
+            indices[matIndex].push_back(previousVertexCount + face.mIndices[2]);
+        }
     }
 
-    auto res = new dr::Mesh(&vertices.front(), sizeof(dr::Model::Vertex), mesh->mNumVertices, indices, attributes);
-    res->setMaterial(materials.at(mesh->mMaterialIndex));
+    // create meshes
+    std::vector<dr::Mesh*> res(matCount);
+    for(int i = 0; i < matCount; ++i) {
+        auto mesh = new dr::Mesh(
+            &vertices[i].front(),
+            sizeof(dr::Model::Vertex),
+            vertices[i].size(),
+            indices[i],
+            attributes
+        );
+        mesh->setMaterial(materials.at(i));
+        res.push_back(mesh);
+    }
     return res;
 }
 
@@ -124,18 +154,15 @@ dr::Model* dr::Model::loadFromFile(const std::string& path)
 
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path,
-        aiProcess_Triangulate
+        aiProcess_Triangulate               | 
+        aiProcess_RemoveRedundantMaterials
     );
 
     std::filesystem::path modelPathDir = std::filesystem::path(path).parent_path();
     auto materials = processMaterials(scene, modelPathDir);
+    auto processedMeshes = processMeshes(scene, materials);
 
-    std::vector<dr::Mesh*> processedMeshes{};
-    for (int i = 0; i < scene->mNumMeshes; ++i) {
-        processedMeshes.push_back(processMesh(scene->mMeshes[i], materials));
-    }
-
-    importer.FreeScene();
+    // importer.FreeScene();
 
     return new Model(processedMeshes);
 }
@@ -145,6 +172,7 @@ void dr::Model::draw(Shader *shader)
 {
     shader->setUniform("uModel", m_modelMat);
     for (auto mesh : m_meshes) {
+        if(!mesh) { continue; }
         mesh->draw(shader);
     }
 }
