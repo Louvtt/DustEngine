@@ -25,7 +25,9 @@ m_rotation(0.f)
 
     m_far = far;
     m_near = near;
+    updateViewMatrix();
 }
+
 void dr::Camera2D::bind(Shader *shader) 
 {
     shader->setUniform("uView", m_view);
@@ -75,7 +77,8 @@ void dr::Camera2D::updateViewMatrix()
 dr::Camera3D::Camera3D(u32 width, u32 height, f32 fov, f32 far, f32 near)
 : Camera(),
 m_position(0.f, 0.f, 0.f),
-m_forward(0.f, 0.f, -1.f),
+m_rotation(0.f, 0.f, 0.f),
+m_forward(1.f, 0.f, 0.f),
 m_up(0.f, 1.f, 0.f),
 m_fov(fov),
 m_aspectRatio((f32)width / (f32)height)
