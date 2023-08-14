@@ -2,6 +2,7 @@
 
 #include "dust/render/renderAPI.hpp"
 #include "dust/core/log.hpp"
+#include "dust/render/shader.hpp"
 #include <algorithm>
 
 namespace dr = dust::render;
@@ -29,7 +30,8 @@ dr::Attribute dr::Attribute::Color     {Float4};
 
 dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
 : m_indexCount(indices.size()),
-m_vertexCount(vertexCount)
+m_vertexCount(vertexCount),
+m_material(nullptr)
 {
     glCreateVertexArrays(1, &m_renderID);
     glBindVertexArray(m_renderID);
@@ -55,14 +57,19 @@ dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vecto
 
 dr::Mesh::~Mesh()
 {
+    if(m_material) delete m_material;
+    
     glBindVertexArray(0);
     if(m_vbo) glDeleteBuffers(1, &m_vbo);
     if(m_ebo) glDeleteBuffers(1, &m_ebo);
     glDeleteVertexArrays(1, &m_renderID);
 }
 
-void dr::Mesh::draw()
+void dr::Mesh::draw(Shader *shader)
 {
+    shader->use();
+    if(m_material) m_material->bind(shader);
+    
     glBindVertexArray(m_renderID);
     if(m_ebo == 0) {
         glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
@@ -70,6 +77,8 @@ void dr::Mesh::draw()
         glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
     }
     glBindVertexArray(0);
+
+    if(m_material) m_material->unbind(shader);
 }
 
 void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
@@ -90,4 +99,9 @@ void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
         offset += attrib.getSize();
         ++index;
     }
+}
+
+void dr::Mesh::setMaterial(Material *material)
+{
+    m_material = material;
 }

@@ -62,8 +62,7 @@ public:
 
     void render() override 
     {
-        m_shader.use();
-        m_triangle.draw();
+        m_triangle.draw(&m_shader);
     }
 };
 

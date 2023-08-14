@@ -2,6 +2,7 @@
 #define _DUST_RENDER_MESH_HPP_
 
 #include "dust/core/types.hpp"
+#include "dust/render/material.hpp"
 #include <vector>
 
 namespace dust {
@@ -41,13 +42,16 @@ protected:
     u32 m_indexCount;
     u32 m_vertexCount;
 
+    Material *m_material;
+
 public:
     Mesh(std::vector<float> vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attributes);
     Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attributes);
     Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes);
     ~Mesh();
 
-    void draw();
+    void setMaterial(Material *material);
+    void draw(Shader *shader);
 
 protected:
     void bindAttributes(const std::vector<Attribute> &attributes);
