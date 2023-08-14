@@ -35,12 +35,12 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
     materials.reserve(scene->mNumMaterials);
     for(int i = 0; i < scene->mNumMaterials; ++i) {
         auto material = scene->mMaterials[i];
-        DUST_DEBUG("[Model] Material {}", i);
+        // DUST_DEBUG("[Model] Material {}", i);
         aiString filePath;
         dr::Texture* diffuseTexture = nullptr;
         if(material->GetTexture(aiTextureType_DIFFUSE, 0, &filePath) == AI_SUCCESS) {
             const std::string texPath = basePath.string() + '/' + filePath.C_Str();
-            DUST_DEBUG("Texture found for mat at {}", texPath);
+            // DUST_DEBUG("Texture found for mat at {}", texPath);
             diffuseTexture = new dust::render::Texture(texPath);
         }
 
