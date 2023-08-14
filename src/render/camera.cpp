@@ -110,7 +110,7 @@ void dr::Camera3D::setPosition(glm::vec3 position)
 
 void dr::Camera3D::rotate(glm::vec3 angle)
 {
-    m_rotation = angle;
+    m_rotation += angle;
     m_forward.x = cos(glm::radians(m_rotation.x)) * cos(glm::radians(m_rotation.y));
     m_forward.y = sin(glm::radians(m_rotation.y));
     m_forward.z = sin(glm::radians(m_rotation.x)) * cos(glm::radians(m_rotation.y));
