@@ -25,36 +25,45 @@ dr::Texture::Texture(const std::string& path)
         return;
     }
 
+    DUST_DEBUG("[Texture] Loading {}", path);
     int width, height, nrChannels;
-    u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-    if(!data) {
+    u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+    if(data == nullptr) {
         DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
         return;
     }
 
     internalCreate({
-        data, (u32)width, (u32)height, (u32)nrChannels
+        data, (u32)width, (u32)height, (u32)nrChannels, Filter::Linear, Wrap::NoWrap, false
     });
+
+    stbi_image_free(data);
 }
 
 void dr::Texture::internalCreate(const Desc& descriptor)
 {
+    DUST_DEBUG("[Texture] Creating texture...");
     glGenTextures(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Texture] Failed to create a texture.");
         return;
     }
-
+    DUST_DEBUG("[Texture] Creating texture setup...");
     glBindTexture(GL_TEXTURE_2D, m_renderID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, descriptor.width, descriptor.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, descriptor.data);
+    DUST_DEBUG("[Texture] Setting texture data... [{}x{} with {} channels]", descriptor.width, descriptor.height, descriptor.channels);
+    glTexImage2D(GL_TEXTURE_2D, 0, descriptor.channels, descriptor.width, descriptor.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, descriptor.data);
+    DUST_DEBUG("[Texture] Setting texture parameters...");
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(descriptor.filter));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(descriptor.filter));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(descriptor.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(descriptor.wrap));
     if(descriptor.mipMaps) {
+        DUST_DEBUG("[Texture] Creating mipmaps...");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    DUST_DEBUG("[OpenGL] Created Texture {}", m_renderID);
 }
 u32 dr::Texture::apiValue(Wrap wrap)
 {
