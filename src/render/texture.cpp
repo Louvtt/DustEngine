@@ -8,6 +8,18 @@
 
 namespace dr = dust::render;
 
+static u32 toGLFormat(u32 channels)
+{
+    switch (channels) {
+        case 4: return GL_RGBA;
+        case 3: return GL_RGB;
+        case 2: return GL_RG;
+        case 1:
+        case 0:
+        default: return GL_RED;
+    }
+}
+
 dr::Texture::Texture(const Desc& descriptor) 
 : m_channels(descriptor.channels),
 m_height(descriptor.height), m_width(descriptor.width),
@@ -42,23 +54,19 @@ dr::Texture::Texture(const std::string& path)
 
 void dr::Texture::internalCreate(const Desc& descriptor)
 {
-    DUST_DEBUG("[Texture] Creating texture...");
     glGenTextures(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Texture] Failed to create a texture.");
         return;
     }
-    DUST_DEBUG("[Texture] Creating texture setup...");
     glBindTexture(GL_TEXTURE_2D, m_renderID);
-    DUST_DEBUG("[Texture] Setting texture data... [{}x{} with {} channels]", descriptor.width, descriptor.height, descriptor.channels);
-    glTexImage2D(GL_TEXTURE_2D, 0, descriptor.channels, descriptor.width, descriptor.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, descriptor.data);
-    DUST_DEBUG("[Texture] Setting texture parameters...");
+    glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(descriptor.channels), descriptor.width, descriptor.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, descriptor.data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(descriptor.filter));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(descriptor.filter));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(descriptor.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(descriptor.wrap));
     if(descriptor.mipMaps) {
-        DUST_DEBUG("[Texture] Creating mipmaps...");
+        DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
