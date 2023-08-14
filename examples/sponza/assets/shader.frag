@@ -13,19 +13,18 @@ in vec2 oTexCoord;
 in vec4 oColor;
 in vec3 oNormal;
 
-vec3 forward = vec3(-1, 0, 0);
+uniform vec3 uSunDirection;
+uniform vec4 uSunColor;
+uniform vec4 uAmbient;
 
 void main() {
-    
+    float shadow = max(dot(oNormal, uSunDirection), 0.0);
+    vec4 diffuse = uMaterial.diffuse;
     if(uMaterial.hasDiffuse) {
-        fragColor = uMaterial.diffuse * texture(uMaterial.diffuseTexture, oTexCoord);
-    } else {
-        fragColor = uMaterial.diffuse + uMaterial.ambient;
+        diffuse *= texture(uMaterial.diffuseTexture, oTexCoord);
     }
+    if(diffuse.a < .5) discard;
 
-    if(fragColor.a < .5) discard;
-
-    // FlatShading
-    float dir = dot(oNormal, forward);
-    fragColor *= vec4(vec3(dir), 1);
+    vec4 ambient = (shadow * uSunColor) + uAmbient;
+    fragColor = (diffuse + ambient);
 }
