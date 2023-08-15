@@ -101,7 +101,7 @@ dust::Renderer::Renderer(const dust::Window& window)
     // avoid skipping pixels
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    glEnable(GL_STENCIL);
+    // glEnable(GL_STENCIL_TEST);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glEnable(GL_BLEND);
