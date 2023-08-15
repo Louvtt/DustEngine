@@ -33,6 +33,8 @@ public:
 
     void flush();
 
+    void setVSync(bool vsync);
+
     u32 getWidth() const;
     u32 getHeight() const;
     GLFWwindow* getNativeWindow() const;

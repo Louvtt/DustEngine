@@ -45,6 +45,8 @@ public:
     m_ambientColor(4/255.f, 0/255.f, 14/255.f, 1.f),
     m_drawSponza(true)
     { 
+        getWindow()->setVSync(false);
+
         m_shader = render::Shader::loadFromFile("assets/shader.vert", "assets/shader.frag");
         if(!(bool)m_shader) {
             DUST_ERROR("Exiting ... Shader missing");

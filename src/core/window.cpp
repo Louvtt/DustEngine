@@ -89,6 +89,12 @@ void dust::Window::flush()
     ImGui_ImplGlfw_NewFrame();
 }
 
+void dust::Window::setVSync(bool vsync)
+{
+    // glfwMakeContextCurrent(m_window);
+    glfwSwapInterval(vsync?1:0);
+}
+
 bool dust::Window::shouldClose() const
 {
     return glfwWindowShouldClose(m_window);
