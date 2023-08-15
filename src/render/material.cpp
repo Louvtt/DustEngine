@@ -56,13 +56,11 @@ void dr::PBRMaterial::bind(Shader *shader)
     // colors
     shader->setUniform("uMaterial.diffuse", m_data.diffuseColor);
     shader->setUniform("uMaterial.ambient", m_data.ambientColor);
-    shader->setUniform("uMaterial.ambient", m_data.specularColor);
-    shader->setUniform("uMaterial.ambient", m_data.shininess);
+    shader->setUniform("uMaterial.specular", m_data.specularColor);
+    shader->setUniform("uMaterial.shininess", m_data.shininess);
 }
 void dr::PBRMaterial::unbind(Shader *shader) 
 {
     // unbind textures
     if(m_data.diffuse) m_data.diffuse->unbind();
-    shader->setUniform("uMaterial.hasDiffuse", false);
-
 }
