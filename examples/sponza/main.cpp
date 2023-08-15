@@ -33,6 +33,7 @@ private:
     glm::vec4 m_sunColor;
     glm::vec4 m_ambientColor;
 
+    bool m_wireframe;
     bool m_drawSponza;
 public:
     SimpleApp()
@@ -43,7 +44,7 @@ public:
     m_sunDirection(-.5f, .5f, 0.f),
     m_sunColor(234/255.f, 198/255.f, 147/255.f, 1.f),
     m_ambientColor(4/255.f, 0/255.f, 14/255.f, 1.f),
-    m_drawSponza(true)
+    m_drawSponza(true), m_wireframe(false)
     { 
         getWindow()->setVSync(false);
 
@@ -149,9 +150,8 @@ public:
             ImGui::EndChild();
             ImGui::SeparatorText("Shaders");
             if(ImGui::BeginChild("Shaders", ImVec2{0, 100})) {
-                bool wireframeEnabled;
-                if(ImGui::Checkbox("Wireframe", &wireframeEnabled)) {
-                    getRenderer()->setDrawWireframe(wireframeEnabled);
+                if(ImGui::Checkbox("Wireframe", &m_wireframe)) {
+                    getRenderer()->setDrawWireframe(m_wireframe);
                 }
                 ImGui::Checkbox("Draw Sponza", &m_drawSponza);
 
