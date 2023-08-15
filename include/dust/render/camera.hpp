@@ -31,6 +31,9 @@ public:
     void makeActive();
     static Camera* GetActive();
 
+    glm::mat4 getView() const;
+    glm::mat4 getProj() const;
+
 protected:
     virtual void updateViewMatrix() = 0;
 };

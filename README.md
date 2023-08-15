@@ -96,3 +96,8 @@ To Build
     - [ ] Custom Text/Number Inputs
     - [ ] Tooltip
     - [ ] Simple Images
+
+
+## Links
+
+- [Panorama to Cubemap](https://jaxry.github.io/panorama-to-cubemap/)
