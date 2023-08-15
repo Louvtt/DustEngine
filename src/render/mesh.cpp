@@ -34,14 +34,30 @@ m_vertexCount(vertexCount),
 m_material(nullptr)
 {
     glCreateVertexArrays(1, &m_renderID);
+    if(m_renderID == 0) {
+        DUST_ERROR("[OpenGL][Mesh] Failed to create VAO");
+        return;
+    }
     glBindVertexArray(m_renderID);
 
     glGenBuffers(1, &m_vbo);
+    if(m_vbo == 0) {
+        DUST_ERROR("[OpenGL][Mesh] Failed to create VBO");
+        return;
+    } else {
+        DUST_DEBUG("[OpenGL][Mesh] Created VBO {}", m_vbo);
+    }
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, vertexDataSize * vertexCount, vertexData, GL_STATIC_DRAW);
 
     if(m_indexCount > 0) {
         glGenBuffers(1, &m_ebo);
+        if(m_ebo == 0) {
+            DUST_ERROR("[OpenGL][Mesh] Failed to create EBO");
+            return;
+        } else {
+            DUST_DEBUG("[OpenGL][Mesh] Created EBO {}", m_ebo);
+        }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(u32), &indices.front(), GL_STATIC_DRAW);
     }
@@ -71,7 +87,7 @@ void dr::Mesh::draw(Shader *shader)
     if(m_material) m_material->bind(shader);
     
     glBindVertexArray(m_renderID);
-    if(m_ebo == 0) {
+    if(m_ebo != 0) {
         glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
     } else {
         glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
