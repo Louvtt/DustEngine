@@ -69,7 +69,7 @@ m_material(nullptr)
 dr::Mesh::Mesh(std::vector<float> vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
 : dr::Mesh::Mesh(&vertexData.front(), vertexDataSize, vertexCount, {}, attribute) {}
 dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
-: dr::Mesh::Mesh(vertexData, sizeof(float), vertexCount, {}, attribute) {}
+: dr::Mesh::Mesh(vertexData, vertexDataSize, vertexCount, {}, attribute) {}
 
 dr::Mesh::~Mesh()
 {
