@@ -22,6 +22,15 @@ dr::Camera* dr::Camera::GetActive()
     return s_activeCamera;
 }
 
+glm::mat4 dr::Camera::getView() const
+{
+    return m_view;
+}
+glm::mat4 dr::Camera::getProj() const
+{
+    return m_proj;
+}
+
 // CAMERA 2D
 
 dr::Camera2D::Camera2D(u32 width, u32 height, f32 far, f32 near)
