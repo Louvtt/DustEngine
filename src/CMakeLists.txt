@@ -17,6 +17,7 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/render/texture.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/render/material.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/render/skybox.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/render/framebuffer.hpp"
     # IO
     "${DustEngine_SOURCE_DIR}/include/dust/io/loaders.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/io/inputManager.hpp"
@@ -38,6 +39,7 @@ add_library(dustlib
     render/texture.cpp
     render/material.cpp
     render/skybox.cpp
+    render/framebuffer.cpp
 
     io/loaders.cpp
     io/inputManager.cpp
