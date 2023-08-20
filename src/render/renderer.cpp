@@ -111,6 +111,9 @@ dust::Renderer::Renderer(const dust::Window& window)
     glDebugMessageCallback(glDebugCallback, nullptr);
     #endif
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     setClearColor(.1f, .1f, .1f);
     resize(window.getWidth(), window.getHeight());
 
@@ -131,13 +134,19 @@ dust::Renderer::~Renderer()
 
 void dust::Renderer::newFrame()
 {
+    clear();
+    ImGui_ImplOpenGL3_NewFrame();
+}
+
+void dust::Renderer::clear()
+{
     if(m_depthEnabled) {
         glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     } else {
         glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
-    ImGui_ImplOpenGL3_NewFrame();
 }
+
 void dust::Renderer::endFrame()
 {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
