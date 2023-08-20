@@ -1,3 +1,6 @@
+#pragma once
+
+#include <optional>
 #ifndef _DUST_CORE_TYPES_HPP_
 #define _DUST_CORE_TYPES_HPP_
 
@@ -46,7 +49,7 @@ using Ref = std::shared_ptr<T>;
  */
 template <typename RefType, typename ...Args>
 [[nodiscard]]
-inline constexpr Ref<RefType> createRef(Args&& ...args)
+inline static constexpr Ref<RefType> createRef(Args&& ...args)
 {
     return std::make_shared<RefType>(std::forward<Args>(args)...);
 }
@@ -65,7 +68,7 @@ using Scope = std::unique_ptr<T>;
  */
 template <typename ScopeType, typename ...Args>
 [[nodiscard]]
-inline constexpr Scope<ScopeType> createScope(Args&& ...args)
+inline static constexpr Scope<ScopeType> createScope(Args&& ...args)
 {
     return std::make_unique<ScopeType>(std::forward<Args>(args)...);
 }
@@ -73,6 +76,30 @@ inline constexpr Scope<ScopeType> createScope(Args&& ...args)
 /** @brief Weak ptr */
 template <typename T>
 using Weak = std::weak_ptr<T>;
+
+
+/**
+ * @brief Result (std::optionnal)
+ * @tparam ResultType Containing result type
+ */
+template <typename ResultType>
+using Result = std::optional<ResultType>;
+
+
+// /**
+//  * @brief Create a Result
+//  *
+//  * @tparam ResultType Result template type
+//  * @tparam Args Arguments types
+//  * @param args arguments for the creation of the object
+//  * @return constexpr Result<ResultType> 
+//  */
+// template <typename ResultType, typename ...Args>
+// [[nodiscard]]
+// inline static constexpr Result<ResultType> createResult(Args&& ...args)
+// {
+//     return std::make_optional<ResultType>(std::forward<Args>(args)...);
+// }
 
 }
 
