@@ -31,8 +31,10 @@ m_layers()
     // ImGui init
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    auto io = ImGui::GetIO();
-    io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
 
     m_window = dust::createScope<dust::Window>(name, width, height);
@@ -113,7 +115,7 @@ dust::Application::getTime() const {
     return m_time;
 }
 
-const std::filesystem::path&
+std::filesystem::path
 dust::Application::getProgramPath() const
 {
     return m_programPath;

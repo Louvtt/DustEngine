@@ -38,7 +38,7 @@ public:
     Window* getWindow() const;
     Renderer* getRenderer() const;
     InputManager* getInputManager() const;
-    const std::filesystem::path &getProgramPath() const;
+    std::filesystem::path getProgramPath() const;
 
     Time getTime() const;
 
