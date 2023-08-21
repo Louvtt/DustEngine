@@ -133,6 +133,7 @@ dr::Skybox::~Skybox()
 void dr::Skybox::draw(Camera* camera)
 {
     // disable depth
+    glDisable(GL_CULL_FACE);
     glDepthFunc(GL_LEQUAL);
 
     glm::mat4 viewNoTranslation = glm::mat4(glm::mat3(camera->getView()));
@@ -147,4 +148,5 @@ void dr::Skybox::draw(Camera* camera)
     m_mesh->draw(m_shader.get());
  
     glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
 }
