@@ -152,6 +152,27 @@ void dust::Renderer::endFrame()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+void dust::Renderer::setCulling(bool culling)
+{
+    if(culling) {
+        glEnable(GL_CULL_FACE);   
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+void dust::Renderer::setCullFaces(bool back, bool front)
+{
+    glCullFace(
+        back ?
+            (front ?
+                GL_FRONT_AND_BACK
+                : GL_BACK)
+            : (front ? 
+                GL_FRONT 
+                : GL_BACK)
+    );
+}
+
 void dust::Renderer::setClearColor(float r, float g, float b, float a)
 {
     glClearColor(r, g, b, a);

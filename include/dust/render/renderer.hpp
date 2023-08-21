@@ -25,6 +25,9 @@ public:
     void clear();
     void endFrame(); // render
 
+    void setCulling(bool culling);
+    void setCullFaces(bool back, bool front);
+
     void setClearColor(float r, float g, float b, float a = 1.f);
     void setClearColor(glm::vec4 color);
 
