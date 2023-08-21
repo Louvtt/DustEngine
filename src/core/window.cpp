@@ -89,6 +89,11 @@ void dust::Window::flush()
     ImGui_ImplGlfw_NewFrame();
 }
 
+void dust::Window::swapBuffers() 
+{
+    glfwSwapBuffers(m_window);
+}
+
 void dust::Window::setVSync(bool vsync)
 {
     // glfwMakeContextCurrent(m_window);

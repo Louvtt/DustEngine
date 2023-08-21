@@ -32,6 +32,11 @@ public:
     ~Window();
 
     void flush();
+    /**
+     * @brief swap buffers
+     * @see This is called in flush so use it independantly than Window::flush().
+     */
+    void swapBuffers();
 
     void setVSync(bool vsync);
 
