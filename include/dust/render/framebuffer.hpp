@@ -53,6 +53,9 @@ public:
     void bind();
     void unbind();
 
+    u32 getWidth() const;
+    u32 getHeight() const;
+
     Result<Attachment> getAttachment(AttachmentType attachment, u32 index = 0);
 };
 

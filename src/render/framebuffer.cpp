@@ -162,6 +162,15 @@ void drf::unbind()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+u32 drf::getWidth() const
+{
+    return m_width;
+}
+u32 drf::getHeight() const
+{
+    return m_height;
+}  
+
 dust::Result<drf::Attachment> 
 drf::getAttachment(AttachmentType type, u32 index)
 {
