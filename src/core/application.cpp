@@ -42,6 +42,19 @@ m_layers()
     m_renderer = dust::createScope<dust::Renderer>(*m_window);
 
     s_instance = this;
+
+    // first to draw context
+    {
+        m_window->flush();
+        m_renderer->setClearColor(0.1f, 0.1f, 0.1f, 1.f);
+        m_renderer->newFrame();
+        ImGui::NewFrame();
+        ImGui::Text("Loading...");
+        ImGui::GetForegroundDrawList()->AddText(ImVec2(0, 0), IM_COL32(255, 255, 255, 255), "Loading...");
+        ImGui::Render();
+        m_renderer->endFrame();
+        m_window->swapBuffers();
+    }
 }
 
 dust::Application::~Application()
