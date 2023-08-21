@@ -5,12 +5,30 @@
 #include "dust/io/keycodes.hpp"
 #include "dust/io/loaders.hpp"
 #include "dust/render/camera.hpp"
+#include "dust/render/framebuffer.hpp"
 #include "dust/render/shader.hpp"
+
 
 #include "dust/render/skybox.hpp"
 #include "glm/ext/quaternion_geometric.hpp"
 #include "glm/gtc/type_ptr.hpp"
+
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
+
+namespace ImGui {
+
+IMGUI_API bool InputMat4(const char* label, glm::mat4 value, const char* format = "%.3f", ImGuiInputTextFlags flags = ImGuiInputTextFlags_None)
+{
+    ImGui::SeparatorText(label);
+    bool row1 = ImGui::InputFloat4("", glm::value_ptr(value[0]), format, flags);
+    bool row2 = ImGui::InputFloat4("", glm::value_ptr(value[1]), format, flags);
+    bool row3 = ImGui::InputFloat4("", glm::value_ptr(value[2]), format, flags);
+    bool row4 = ImGui::InputFloat4("", glm::value_ptr(value[3]), format, flags);
+    return row1 || row2 || row3 || row4;
+}
+
+};
 
 using namespace dust;
 
@@ -25,6 +43,8 @@ private:
     Ref<render::Shader> m_depthShader;
     render::Shader *m_currentShader;
 
+    render::Framebuffer *m_renderTarget;
+
     Ref<render::Model> m_sponza;
     Ref<render::Camera3D> m_camera;
     render::Skybox *m_skybox;
@@ -37,14 +57,14 @@ private:
     bool m_drawSponza;
 public:
     SimpleApp()
-    : Application("Sponza"),
+    : Application("Sponza", 1920u, 1080u),
     m_shader(nullptr),
     m_sponza(nullptr),
     m_camera(createRef<render::Camera3D>(getWindow()->getWidth(), getWindow()->getHeight(), 90, 2000)),
     m_sunDirection(-.5f, .5f, 0.f),
     m_sunColor(234/255.f, 198/255.f, 147/255.f, 1.f),
     m_ambientColor(4/255.f, 0/255.f, 14/255.f, 1.f),
-    m_drawSponza(true), m_wireframe(false)
+    m_drawSponza(true), m_wireframe(false), m_renderTarget(nullptr)
     { 
         getWindow()->setVSync(false);
 
@@ -74,17 +94,35 @@ public:
             "assets/cubemap/front.png", "assets/cubemap/back.png",
         });
 
+        m_renderTarget = new render::Framebuffer({
+            {
+                {
+                    render::Framebuffer::AttachmentType::COLOR_RGBA,
+                    true
+                },
+                {
+                    render::Framebuffer::AttachmentType::DEPTH_STENCIL,
+                    false
+                }
+            },
+            getWindow()->getWidth(),
+            getWindow()->getHeight()
+        });
+
         m_camera->bind(m_currentShader);
         updateUniforms();
 
         // sky color until skybox is created
-        getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
+        // getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
     }
 
     ~SimpleApp() 
     {
         m_shader.reset();
         m_depthShader.reset();
+
+        delete m_renderTarget;
+        delete m_skybox;
 
         m_sponza.reset();
 
@@ -123,64 +161,92 @@ public:
 
     void render() override
     {
-        if(ImGui::Begin("Debug")){
-            ImGui::Text("FPS: %d", (u32)(1./getTime().delta));
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
-            ImGui::SeparatorText("Camera");
-            if(ImGui::BeginChild("Camera", ImVec2{0, 50})) {
-                // some values ?
-                ImGui::Text("I will add the camera transform later.");
-            }
-            ImGui::EndChild();
-            ImGui::SeparatorText("Lighting");
-            if(ImGui::BeginChild("Ligthing", ImVec2{0, 100})) {
-                if(ImGui::InputFloat3("Sun Direction", glm::value_ptr(m_sunDirection), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    if(m_sunDirection.length() == 0) {
-                        m_sunDirection = glm::vec3(0, 1, 0); // reset
+        // Main Rendering
+        {
+            if(ImGui::Begin("Scene")){
+                const auto size = ImGui::GetContentRegionAvail();
+
+                m_renderTarget->resize(size.x, size.y);
+                m_camera->resize(size.x, size.y);
+                m_camera->bind(m_currentShader); // update
+                
+                m_renderTarget->bind();
+                {
+                    getRenderer()->clear();
+                    // sponza
+                    if(m_drawSponza) {
+                        m_sponza->draw(m_currentShader);
                     }
-                    m_currentShader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
+
+                    // skybox
+                    m_skybox->draw(m_camera.get());
                 }
-                if(ImGui::ColorEdit4("Sun color", glm::value_ptr(m_sunColor), ImGuiColorEditFlags_DisplayRGB)) {
-                    m_currentShader->setUniform("uSunColor", m_sunColor);
-                }
-                if(ImGui::ColorEdit4("Ambient color", glm::value_ptr(m_ambientColor), ImGuiColorEditFlags_DisplayRGB)) {
-                    m_currentShader->setUniform("uAmbient", m_ambientColor);
+                m_renderTarget->unbind();
+
+                // render to screen
+                const auto renderTexture = m_renderTarget->getAttachment(render::Framebuffer::AttachmentType::COLOR_RGBA);
+                if(renderTexture.has_value()) {
+                    ImGui::Image((void*)(u64)(renderTexture->id), ImVec2{(float)m_renderTarget->getWidth(), (float)m_renderTarget->getHeight()}, ImVec2(0, 1), ImVec2(1, 0));
+                } else {
+                    ImGui::Text("Missing render target texture.");
                 }
             }
-            ImGui::EndChild();
-            ImGui::SeparatorText("Shaders");
-            if(ImGui::BeginChild("Shaders", ImVec2{0, 100})) {
-                if(ImGui::Checkbox("Wireframe", &m_wireframe)) {
-                    getRenderer()->setDrawWireframe(m_wireframe);
-                }
-                ImGui::Checkbox("Draw Sponza", &m_drawSponza);
+            ImGui::End();
 
-                if(ImGui::Button("Show Depth")) { 
-                    m_currentShader = m_depthShader.get(); 
-                }
-                if(ImGui::Button("Show Render")) { 
-                    m_currentShader = m_shader.get(); 
+            if(ImGui::Begin("Inspector")){
+                ImGui::Text("FPS: %d", (u32)(1./getTime().delta));
+
+                ImGui::SeparatorText("Camera"); 
+                {
+                    ImGui::InputMat4("Projection", m_camera->getProj());
+                    ImGui::InputMat4("View", m_camera->getView());
                 }
 
-                // reload shaders ?
-                if(ImGui::Button("Reload Shaders")) {
-                    m_shader->reload();
-                    m_depthShader->reload();
+                ImGui::SeparatorText("Lighting"); 
+                {
+                    if(ImGui::InputFloat3("Sun Direction", glm::value_ptr(m_sunDirection), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        if(m_sunDirection.length() == 0) {
+                            m_sunDirection = glm::vec3(0, 1, 0); // reset
+                        }
+                        m_currentShader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
+                    }
+                    if(ImGui::ColorEdit4("Sun color", glm::value_ptr(m_sunColor))) {
+                        m_currentShader->setUniform("uSunColor", m_sunColor);
+                    }
+                    if(ImGui::ColorEdit4("Ambient color", glm::value_ptr(m_ambientColor))) {
+                        m_currentShader->setUniform("uAmbient", m_ambientColor);
+                    }
+                }
 
-                    updateUniforms();
+                ImGui::SeparatorText("Shaders");
+                {
+                    if(ImGui::Checkbox("Wireframe", &m_wireframe)) {
+                        getRenderer()->setDrawWireframe(m_wireframe);
+                    }
+                    ImGui::Checkbox("Draw Sponza", &m_drawSponza);
+
+                    if(ImGui::Button("Show Depth")) { 
+                        m_currentShader = m_depthShader.get(); 
+                    }
+                    if(ImGui::Button("Show Render")) { 
+                        m_currentShader = m_shader.get(); 
+                    }
+
+                    // reload shaders ?
+                    if(ImGui::Button("Reload Shaders")) {
+                        m_shader->reload();
+                        m_depthShader->reload();
+
+                        updateUniforms();
+                    }
                 }
             }
-            ImGui::EndChild();
-        }
-        ImGui::End();
-
-        m_camera->resize(getWindow()->getWidth(), getWindow()->getHeight());
-        m_camera->bind(m_currentShader); // update
-        if(m_drawSponza) {
-            m_sponza->draw(m_currentShader);
+            ImGui::End();
         }
 
-        m_skybox->draw(m_camera.get());
+        // ImGui::ShowDemoWindow();
     }
 
 private:
