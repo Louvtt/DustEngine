@@ -148,7 +148,7 @@ void drf::resize(u32 width, u32 height)
         } else {
             glBindRenderbuffer(GL_RENDERBUFFER, attachment.id);
             glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
-            glBindRenderbuffer(GL_TEXTURE_2D, 0);
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
         }
     }
 }
