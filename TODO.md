@@ -6,6 +6,7 @@
 - [x] Window Creation
     - [x] Os Window Creation (glfw)
     - [x] Gpu api loading (OpenGL via glad2)
+    - [x] ImGui loading and config \w docking
 
 ### IO
 
@@ -14,14 +15,20 @@
     - [x] Key states
     - [x] Mouse Pos
     - Mouse Scroll ?
-- [x] Loaders
-    - [x] Raw File Loader
-    - [x] Model/Mesh loader
-    - [x] Texture loader 
+- [x] Assets Manager
+    - [x] Sync Loaders 
+        - [x] Raw File Loader
+        - [x] Model/Mesh loader
+        - [x] Texture loader 
+    - [ ] Async loaders (Load desc and construct Render data on main thread (because OpenGL))
+    - [x] Listing
+    - [x] Auto loading
+        - [ ] UUID
+        - [ ] .meta to load faster and store settings for files (filters, preload, lazyloading...)
 
 ### Render
 
-- [~] Basic Renderer
+- [x] Basic Renderer
     - [x] Clear color
     - [x] Depth Mask/Write
     - [x] Wireframe toggle
@@ -43,8 +50,10 @@
     - [x] Texture loading (stb_image)
     - Name + ID
 - [x] Skybox
-- [~] **FrameBuffers**
-- [ ] Shadow mapping (ScreenSpace ?)
+- [x] FrameBuffers
+- [ ] **Shadow mapping**
+    - [ ] **Simple shadow mapping**
+    - [ ] CSM
 - [ ] Text rendering :(
     - [ ] Loading Font (stb_truetype)
     - [ ] Rendering Simple text
@@ -68,10 +77,16 @@
 ### UI
 
 - [x] Engine DebugLayer
-- [ ] Engine Panel/Editor via ImGui (please)
+- [~] Engine Panel/Editor via ImGui (see sponza -> *convert into full editor*)
+- [ ] ImGuizmo
+- [ ] Node Editor for dialogue tool
 - [ ] Interface
     - [ ] Menu / Panel
     - [ ] Buttons
     - [ ] Custom Text/Number Inputs
     - [ ] Tooltip
     - [ ] Simple Images
+
+### Addons
+
+- [ ] Addons/Mods support (using dll)
