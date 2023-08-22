@@ -20,6 +20,7 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/render/framebuffer.hpp"
     # IO
     "${DustEngine_SOURCE_DIR}/include/dust/io/loaders.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/io/assetsManager.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/io/inputManager.hpp"
 )
 
@@ -42,6 +43,7 @@ add_library(dustlib
     render/framebuffer.cpp
 
     io/loaders.cpp
+    io/assetsManager.cpp
     io/inputManager.cpp
 )
 

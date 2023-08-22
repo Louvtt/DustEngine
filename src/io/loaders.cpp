@@ -1,6 +1,8 @@
 #include "dust/io/loaders.hpp"
 #include "dust/core/log.hpp"
+#include "dust/io/assetsManager.hpp"
 #include "dust/render/texture.hpp"
+#include <thread>
 namespace dr = dust::render;
 namespace dio = dust::io;
 
@@ -10,21 +12,23 @@ namespace fs = std::filesystem;
 
 #include <stb_image.h>
 
-dr::Texture::Desc 
-dio::ImageLoader::Read(const std::string &path, bool mipMaps) 
+template <>
+dust::Result<dr::Texture::Desc> 
+dio::AssetsManager::LoadSync<dr::Texture::Desc, bool>(const dio::Path &_path, bool mipMaps) 
 {
+    auto path = fromAssetsDir(_path);
     if(!fs::exists(path)) {
-        DUST_ERROR("[Texture] {} doesn't exists.", path);
-        return {NULL, 0, 0};
+        DUST_ERROR("[Texture] {} doesn't exists.", path.string());
+        return {};
     }
 
-    DUST_DEBUG("[Texture] Loading {}", path);
+    DUST_DEBUG("[Texture] Loading {}", path.string());
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
     u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
     if(data == nullptr) {
         DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
-        return {NULL, 0, 0};
+        return {};
     }
 
     auto texDesc = dr::Texture::Desc{
@@ -60,7 +64,10 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         if(material->GetTexture(aiTextureType_DIFFUSE, 0, &filePath) == AI_SUCCESS) {
             const std::string texPath = basePath.string() + '/' + filePath.C_Str();
             // DUST_DEBUG("Texture found for mat at {}", texPath);
-            diffuseTexture = new dr::Texture(dio::ImageLoader::Read(texPath));
+            auto texDesc = dio::AssetsManager::LoadSync<dr::Texture::Desc>(texPath, true);
+            if(texDesc.has_value()) {
+                diffuseTexture = new dr::Texture(texDesc.value());
+            }
         }
 
         glm::vec4 diffuse(1.f);
@@ -176,12 +183,13 @@ static std::vector<dr::Mesh*> processMeshes(const aiScene *scene, const std::vec
     return res;
 }
 
-
-dust::Ref<dr::Model> 
-dio::ModelLoader::Read(const std::string &path)
+template <>
+dust::Result<Ref<dr::Model>> 
+dio::AssetsManager::LoadSync<Ref<dr::Model>>(const dio::Path &_path)
 {
+    auto path = fromAssetsDir(_path);
     if(!fs::exists(path)) {
-        DUST_ERROR("[Model] {} doesn't exists.", path);
+        DUST_ERROR("[Model] {} doesn't exists.", path.string());
         return nullptr;
     }
 
@@ -199,16 +207,36 @@ dio::ModelLoader::Read(const std::string &path)
 
     return dust::createRef<dr::Model>(processedMeshes);
 }
+//////////////////////////////
+
+template<> void                                      \
+dio::AssetsManager::LoadAsync<Ref<render::Model>>(const Path &path, ResultPtr<render::ModelPtr> result)
+{   
+    DUST_WARN("[AssetsManager] Async Model Loader isn't working yet.");
+    return;
+    // std::thread& loadThread = m_threadPool.at(m_usedThreads);
+    // loadThread = std::thread([result, path]() {
+    //     DUST_DEBUG("Loading {}...", path.string());
+    //     const auto &res = dio::AssetsManager::LoadSync<Ref<render::Model>>(path);
+    //     if(res.has_value()) {
+    //         DUST_DEBUG("Loaded {}", path.string());
+    //         *result = res.value();
+    //     }
+    //     AssetsManager::m_usedThreads--;
+    // });
+}
 
 //////////////////////////
 
-std::string 
-dio::FileLoader::Read(const std::string &path) 
+template <>
+dust::Result<std::string> 
+dio::AssetsManager::LoadSync<std::string>(const dio::Path &_path) 
 {
+    auto path = fromAssetsDir(_path);
     std::error_code error{};
     if(!fs::exists(path, error)) {
-        DUST_ERROR("[File] {} doesn't exists (error {} : {})", path, error.value(), error.message());
-        return "";
+        DUST_ERROR("[File] {} doesn't exists (error {} : {})", path.string(), error.value(), error.message());
+        return {};
     }
 
     std::ifstream in(path, std::ios::in);
@@ -221,7 +249,7 @@ dio::FileLoader::Read(const std::string &path)
         in.seekg(0, std::ios::beg);
         in.read(&contents[0], contents.size());
         in.close();
-        return(contents);
+        return contents;
     }
-    throw(errno);
+    return {};
 }

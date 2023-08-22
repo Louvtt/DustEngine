@@ -1,38 +1,22 @@
 #ifndef _DUST_IO_IMAGELOADER_HPP_
 #define _DUST_IO_IMAGELOADER_HPP_
 
+#include "dust/io/assetsManager.hpp"
+
 #include "dust/render/material.hpp"
 #include "dust/render/model.hpp"
 #include "dust/render/texture.hpp"
 
-namespace dust {
 
-namespace io {
-//////////////////////////
+using namespace dust;
+namespace dr = dust::render;
 
-class ImageLoader
-{  
-public:
-    static dust::render::Texture::Desc Read(const std::string &path, bool mipMaps = true);
-};
+DUST_ADD_LOADER_SYNC_DEF_EX(dr::Texture, bool mipMaps);
 
-//////////////////////////
+DUST_ADD_LOADER_SYNC_DEF(Ref<dr::Model>);
+DUST_ADD_LOADER_ASYNC_DEF(Ref<dr::Model>);
 
-class ModelLoader
-{ 
-public:
-    static Ref<render::Model> Read(const std::string &path);
-};
+DUST_ADD_LOADER_SYNC_DEF(std::string);
 
-//////////////////////////
-
-class FileLoader
-{
-public:
-    static std::string Read(const std::string &path);
-};
-
-}
-}
 
 #endif //_DUST_IO_IMAGELOADER_HPP_

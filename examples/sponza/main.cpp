@@ -1,6 +1,7 @@
 #include "dust/core/layer.hpp"
 #include "dust/core/log.hpp"
 #include "dust/dust.hpp"
+#include "dust/io/assetsManager.hpp"
 #include "dust/io/inputManager.hpp"
 #include "dust/io/keycodes.hpp"
 #include "dust/io/loaders.hpp"
@@ -39,15 +40,15 @@ class SimpleApp
 : public Application
 {
 private:
-    Ref<render::Shader> m_shader;
-    Ref<render::Shader> m_depthShader;
+    render::ShaderPtr m_shader;
+    render::ShaderPtr m_depthShader;
     render::Shader *m_currentShader;
 
     render::Framebuffer *m_renderTarget;
 
-    Ref<render::Model> m_sponza;
-    Ref<render::Camera3D> m_camera;
-    render::Skybox *m_skybox;
+    Result<render::ModelPtr> m_sponza;
+    render::Camera3DPtr m_camera;
+    render::SkyboxPtr m_skybox;
 
     glm::vec3 m_sunDirection;
     glm::vec4 m_sunColor;
@@ -59,7 +60,7 @@ public:
     SimpleApp()
     : Application("Sponza", 1920u, 1080u),
     m_shader(nullptr),
-    m_sponza(nullptr),
+    m_sponza(),
     m_camera(createRef<render::Camera3D>(getWindow()->getWidth(), getWindow()->getHeight(), 90, 2000)),
     m_sunDirection(-.5f, .5f, 0.f),
     m_sunColor(234/255.f, 198/255.f, 147/255.f, 1.f),
@@ -78,21 +79,17 @@ public:
             DUST_ERROR("Exiting ... Shader missing");
             exit(-1);
         }
-        m_currentShader = m_shader.get();
+        m_currentShader = m_shader.get(); 
         
-        m_sponza = io::ModelLoader::Read("assets/sponza/sponza.obj");
-        if(!m_sponza) {
-            DUST_ERROR("Exiting ... Sponza missing");
-            exit(-1);
-        }
+        m_sponza = io::AssetsManager::LoadSync<render::ModelPtr>("assets/sponza/sponza.obj");
 
         m_camera->setPosition(glm::vec3(0.f, 20.f, 0.f));
 
-        m_skybox = new render::Skybox({
+        m_skybox = render::SkyboxPtr(new render::Skybox({
             "assets/cubemap/right.png", "assets/cubemap/left.png",
             "assets/cubemap/bottom.png", "assets/cubemap/top.png",
             "assets/cubemap/front.png", "assets/cubemap/back.png",
-        });
+        }));
 
         m_renderTarget = new render::Framebuffer({
             {
@@ -122,7 +119,7 @@ public:
         m_depthShader.reset();
 
         delete m_renderTarget;
-        delete m_skybox;
+        m_skybox.reset();
 
         m_sponza.reset();
 
@@ -176,8 +173,8 @@ public:
                 {
                     getRenderer()->clear();
                     // sponza
-                    if(m_drawSponza) {
-                        m_sponza->draw(m_currentShader);
+                    if(m_drawSponza && m_sponza.has_value()) {
+                        m_sponza.value()->draw(m_currentShader);
                     }
 
                     // skybox
