@@ -75,6 +75,9 @@ public:
     explicit operator bool() const;
 };
 
+using ShaderPtr = Ref<Shader>;
+using ShaderUPtr = Scope<Shader>;
+
 }
 
 }

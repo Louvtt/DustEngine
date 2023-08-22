@@ -29,6 +29,9 @@ public:
     void draw(Shader *shader);    
 };
 
+using ModelPtr  = Ref<Model>;
+using ModelUPtr = Scope<Model>; 
+
 }
 }
 

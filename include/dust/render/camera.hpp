@@ -37,6 +37,8 @@ public:
 protected:
     virtual void updateViewMatrix() = 0;
 };
+using CameraPtr  = Ref<Camera>;
+using CameraUPtr = Scope<Camera>;
 
 class Camera2D
 : public Camera
@@ -62,6 +64,8 @@ public:
 private:
     void updateViewMatrix() override;
 };
+using Camera2DPtr  = Ref<Camera2D>;
+using Camera2DUPtr = Scope<Camera2D>;
 
 
 class Camera3D
@@ -94,6 +98,8 @@ public:
 private:
     void updateViewMatrix() override;
 };
+using Camera3DPtr  = Ref<Camera3D>;
+using Camera3DUPtr = Scope<Camera3D>;
 
 }
 }

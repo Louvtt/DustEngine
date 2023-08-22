@@ -84,7 +84,8 @@ using Weak = std::weak_ptr<T>;
  */
 template <typename ResultType>
 using Result = std::optional<ResultType>;
-
+template <typename ResultType>
+using ResultPtr = Ref<Result<ResultType>>;
 
 // /**
 //  * @brief Create a Result

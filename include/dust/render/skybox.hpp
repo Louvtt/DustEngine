@@ -31,6 +31,9 @@ public:
     void draw(Camera* camera);
 };
 
+using SkyboxPtr = Ref<Skybox>;
+using SkyboxUPtr = Scope<Skybox>;
+
 }
 }
 
