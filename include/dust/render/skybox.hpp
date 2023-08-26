@@ -17,7 +17,7 @@ class Skybox
 {
 private:
     u32 m_renderID;
-    Mesh m_mesh;
+    Mesh *m_mesh;
     Scope<Shader> m_shader;
 
 public:

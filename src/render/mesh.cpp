@@ -31,7 +31,7 @@ dr::Attribute dr::Attribute::Color     {Float4};
 dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
 : m_indexCount(indices.size()),
 m_vertexCount(vertexCount),
-m_material(nullptr)
+m_material(new dr::ColorMaterial({1.f, 0.f, 1.f}))
 {
     glCreateVertexArrays(1, &m_renderID);
     if(m_renderID == 0) {
@@ -50,6 +50,7 @@ m_material(nullptr)
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, vertexDataSize * vertexCount, vertexData, GL_STATIC_DRAW);
 
+    m_ebo = 0;
     if(m_indexCount > 0) {
         glGenBuffers(1, &m_ebo);
         if(m_ebo == 0) {
@@ -122,12 +123,12 @@ void dr::Mesh::setMaterial(Material *material)
     m_material = material;
 }
 
-dr::Mesh 
+dr::Mesh*
 dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
 {
     const glm::vec2 half = size*.5f;
     if(!textureCoordinates) {
-        return Mesh({
+        return new Mesh({
             // pos
             // first triangle
             -half.x, 0.f, -half.y,
@@ -140,7 +141,7 @@ dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
             -half.x, 0.f, -half.y,
         }, sizeof(f32) * 5, 6, { Attribute::Pos3D });
     } else {
-        return Mesh({
+        return new Mesh({
             // pos                 // tex
             // first triangle
             -half.x, 0.f, -half.y, 0.f, 1.f,
@@ -155,12 +156,12 @@ dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
     }
 }
 
-dr::Mesh 
+dr::Mesh*
 dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
 {
     const glm::vec3 half = size*.5f;
     if(!textureCoordinates) {
-        return Mesh({
+        return new Mesh({
             // position           // normals
             // back face
             -half.x, -half.y, -half.z,  0.0f,  0.0f, -1.0f, // bottom-left
@@ -206,7 +207,7 @@ dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
             -half.x,  half.y,  half.z,  0.0f,  1.0f,  0.0f, // bottom-left        
         }, sizeof(f32) * 3, 36, { Attribute::Pos3D, Attribute::Pos3D });
     } else {
-        return Mesh({
+        return new Mesh({
             // position           // normals          // tex coords
             // back face
             -half.x, -half.y, -half.z,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left

@@ -56,8 +56,8 @@ public:
     void draw(Shader *shader);
 
     // Meshes
-    static Mesh createPlane(glm::vec2 size = glm::vec2(1.f), bool requestTextureCoordinates = false);
-    static Mesh createCube(glm::vec3 size = glm::vec3(1.f), bool requestTextureCoordinates = false);
+    static Mesh* createPlane(glm::vec2 size = glm::vec2(1.f), bool requestTextureCoordinates = false);
+    static Mesh* createCube(glm::vec3 size = glm::vec3(1.f), bool requestTextureCoordinates = false);
 
 protected:
     void bindAttributes(const std::vector<Attribute> &attributes);
