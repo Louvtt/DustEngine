@@ -39,17 +39,34 @@ inline static u32 getGLAttachment(const drf::AttachmentType& type)
 inline static u32 getGLFormat(const drf::AttachmentType& type)
 {
     switch (type) {
-        case drf::AttachmentType::DEPTH:   return GL_DEPTH_COMPONENT24;
-        case drf::AttachmentType::DEPTH32: return GL_DEPTH_COMPONENT32F;
+        case drf::AttachmentType::DEPTH:   return GL_DEPTH_COMPONENT;
+        case drf::AttachmentType::DEPTH32: return GL_DEPTH_COMPONENT;
         
-        case drf::AttachmentType::STENCIL: return GL_STENCIL_INDEX8;
+        case drf::AttachmentType::STENCIL: return GL_DEPTH_STENCIL;
         
-        case drf::AttachmentType::DEPTH_STENCIL:   return GL_DEPTH24_STENCIL8;
-        case drf::AttachmentType::DEPTH32_STENCIL: return GL_DEPTH32F_STENCIL8;
+        case drf::AttachmentType::DEPTH_STENCIL:   return GL_DEPTH_STENCIL;
+        case drf::AttachmentType::DEPTH32_STENCIL: return GL_DEPTH_STENCIL;
 
         case drf::AttachmentType::COLOR:        return GL_RGB;
         case drf::AttachmentType::COLOR_RGBA:   return GL_RGBA;
         case drf::AttachmentType::COLOR_SRGB:   return GL_SRGB;
+    }
+} 
+
+inline static u32 getGLType(const drf::AttachmentType& type)
+{
+    switch (type) {
+        case drf::AttachmentType::DEPTH:   return GL_FLOAT;
+        case drf::AttachmentType::DEPTH32: return GL_DOUBLE;
+        
+        case drf::AttachmentType::STENCIL: return GL_UNSIGNED_BYTE;
+        
+        case drf::AttachmentType::DEPTH_STENCIL:   return GL_FLOAT;
+        case drf::AttachmentType::DEPTH32_STENCIL: return GL_DOUBLE;
+
+        case drf::AttachmentType::COLOR:        return GL_UNSIGNED_BYTE;
+        case drf::AttachmentType::COLOR_RGBA:   return GL_UNSIGNED_BYTE;
+        case drf::AttachmentType::COLOR_SRGB:   return GL_UNSIGNED_BYTE;
     }
 } 
 
@@ -73,7 +90,9 @@ m_colorAttachmentCount(0)
     for(const auto& attachment : desc.attachments)
     {
         Attachment newAttachment{0, attachment.type, 0, attachment.readable};
-        if(attachment.type == drf::AttachmentType::COLOR) {
+        if(attachment.type == drf::AttachmentType::COLOR
+        || attachment.type == drf::AttachmentType::COLOR_RGBA
+        || attachment.type == drf::AttachmentType::COLOR_SRGB) {
             newAttachment.index = m_colorAttachmentCount++;
         }
 
@@ -88,7 +107,7 @@ m_colorAttachmentCount(0)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, getGLType(attachment.type), nullptr);
             glBindTexture(GL_TEXTURE_2D, 0);
             glFramebufferTexture2D(
                 GL_FRAMEBUFFER, 
@@ -97,7 +116,7 @@ m_colorAttachmentCount(0)
                 newAttachment.id,
                 0
             );
-            DUST_DEBUG("[OpenGL][Frambuffer] Create texture {} [index {}]", newAttachment.id, newAttachment.index);
+            DUST_DEBUG("[OpenGL][Framebuffer] Create texture {} [index {}]", newAttachment.id, newAttachment.index);
         }
         // renderbuffer 
         else { 
@@ -107,7 +126,7 @@ m_colorAttachmentCount(0)
             glRenderbufferStorage(GL_RENDERBUFFER, format, m_width, m_height);
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, binding, GL_RENDERBUFFER, newAttachment.id);
-            DUST_DEBUG("[OpenGL][Frambuffer] Create renderbuffer {}", newAttachment.id);
+            DUST_DEBUG("[OpenGL][Framebuffer] Create renderbuffer {}", newAttachment.id);
         }
         m_attachments.push_back(newAttachment);
     }
