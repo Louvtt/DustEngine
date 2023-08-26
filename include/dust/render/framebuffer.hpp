@@ -56,8 +56,12 @@ public:
     u32 getWidth() const;
     u32 getHeight() const;
 
+    void bindAttachment(u32 bindIndex, AttachmentType type, u32 index = 0);
     Result<Attachment> getAttachment(AttachmentType attachment, u32 index = 0);
 };
+
+using FramebufferPtr = Ref<Framebuffer>;
+using FramebufferUPtr = Scope<Framebuffer>;
 
 }
 }

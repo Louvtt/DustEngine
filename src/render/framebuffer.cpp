@@ -111,6 +111,13 @@ m_colorAttachmentCount(0)
         }
         m_attachments.push_back(newAttachment);
     }
+
+    // No color buffer
+    if(m_colorAttachmentCount == 0) 
+    {
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+    }
     
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
         DUST_DEBUG("[OpenGL] Created framebuffer {}", m_renderID);
@@ -183,3 +190,13 @@ drf::getAttachment(AttachmentType type, u32 index)
     }
     return *found;
 }
+
+void drf::bindAttachment(u32 bindIndex, AttachmentType type, u32 index)
+{
+    decltype(auto) found = this->getAttachment(type, index);
+    if(found.has_value()) {
+        glActiveTexture(GL_TEXTURE0+bindIndex);
+        glBindTexture(GL_TEXTURE_2D, found.value().id);
+    }
+}
+
