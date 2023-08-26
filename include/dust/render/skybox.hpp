@@ -2,6 +2,7 @@
 #define _DUST_RENDER_SKYBOX_HPP_
 
 #include "../core/types.hpp"
+#include "mesh.hpp"
 
 #include <array>
 
@@ -9,7 +10,6 @@ namespace dust {
 namespace render {
 
 class Shader;
-class Mesh;
 class Texture;
 class Camera;
 
@@ -17,7 +17,7 @@ class Skybox
 {
 private:
     u32 m_renderID;
-    Scope<Mesh> m_mesh;
+    Mesh m_mesh;
     Scope<Shader> m_shader;
 
 public:

@@ -2,6 +2,7 @@
 #include "dust/core/application.hpp"
 #include "dust/core/log.hpp"
 #include "dust/core/types.hpp"
+#include "dust/io/assetsManager.hpp"
 #include "dust/render/renderAPI.hpp"
 #include "dust/render/texture.hpp"
 
@@ -13,45 +14,6 @@
 #include <stb_image.h>
 
 namespace dr = dust::render;
-
-inline static constexpr float CUBE_VERTICES[] {
-    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-    -1.0f,-1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, // triangle 1 : end
-     1.0f, 1.0f,-1.0f, // triangle 2 : begin
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f, // triangle 2 : end
-     1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-     1.0f,-1.0f,-1.0f,
-     1.0f, 1.0f,-1.0f,
-     1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-     1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-     1.0f,-1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f,
-     1.0f,-1.0f,-1.0f,
-     1.0f, 1.0f,-1.0f,
-     1.0f,-1.0f,-1.0f,
-     1.0f, 1.0f, 1.0f,
-     1.0f,-1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f,
-     1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-     1.0f,-1.0f, 1.0f
-};
 
 std::string vCode = SHADER_SOURCE(
     "#version 460 core",
@@ -85,9 +47,10 @@ std::string fCode = SHADER_SOURCE(
 
 dr::Skybox::Skybox(std::array<std::string, 6> skyboxTexturePaths)
 : m_renderID(0),
-m_mesh(nullptr),
+m_mesh(dr::Mesh::createCube({2.f, 2.f, 2.f})),
 m_shader(dust::createScope<Shader>(vCode, fCode))
 {
+    io::Path assetsDirPath = io::AssetsManager::getAssetsDir();
     glGenTextures(1, &m_renderID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
     // load each side
@@ -95,7 +58,8 @@ m_shader(dust::createScope<Shader>(vCode, fCode))
     int width, height, nrChannels;
     for(auto path : skyboxTexturePaths)
     {
-        u8 *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+        io::Path imagePath = assetsDirPath / path;
+        u8 *data = stbi_load(imagePath.c_str(), &width, &height, &nrChannels, 0);
         if (data != nullptr) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 
                          0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data
@@ -115,11 +79,6 @@ m_shader(dust::createScope<Shader>(vCode, fCode))
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
     // Generate cube
-    auto m = new dr::Mesh(
-        (void*)&CUBE_VERTICES[0], sizeof(float) * 3, (6 * 2 * 3), { dr::Attribute::Float3 }
-    );
-    m_mesh = dust::Scope<dr::Mesh>(m);
-
     DUST_DEBUG("[Skybox] Created Skybox {}", m_renderID);
 }
 dr::Skybox::~Skybox()
@@ -127,7 +86,6 @@ dr::Skybox::~Skybox()
     glDeleteTextures(1, &m_renderID);
 
     m_shader.reset();
-    m_mesh.reset();
 }
 
 void dr::Skybox::draw(Camera* camera)
@@ -145,7 +103,7 @@ void dr::Skybox::draw(Camera* camera)
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
     m_shader->setUniform("uSkybox", 0);
 
-    m_mesh->draw(m_shader.get());
+    m_mesh.draw(m_shader.get());
  
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
