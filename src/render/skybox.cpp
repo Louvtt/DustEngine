@@ -26,7 +26,7 @@ std::string vCode = SHADER_SOURCE(
     void main()
     {
         TexCoords = aPos;
-        TexCoords.y = -TexCoords.y; // flip y
+        // TexCoords.y = -TexCoords.y; // flip y
         vec4 pos = uProj * uView * vec4(aPos, 1.0);
         gl_Position = pos.xyww;
     }     
@@ -56,6 +56,7 @@ m_shader(dust::createScope<Shader>(vCode, fCode))
     // load each side
     u32 index = 0;
     int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(false);
     for(auto path : skyboxTexturePaths)
     {
         io::Path imagePath = assetsDirPath / path;

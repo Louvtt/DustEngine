@@ -23,7 +23,7 @@ private:
 public:
     /**
      * @brief Create Skybox
-     * @param skyboxTexturePaths path in order: Right/Left/Bottom/Top/Front/Back 
+     * @param skyboxTexturePaths path in order: Right/Left/Top/Bottom/Front/Back 
      */
     Skybox(std::array<std::string, 6> skyboxTexturePaths);
     ~Skybox();
