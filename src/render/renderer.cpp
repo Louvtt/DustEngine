@@ -113,6 +113,7 @@ dust::Renderer::Renderer(const dust::Window& window)
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
 
     setClearColor(.1f, .1f, .1f);
     resize(window.getWidth(), window.getHeight());
