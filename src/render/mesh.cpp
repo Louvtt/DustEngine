@@ -165,47 +165,47 @@ dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
         return new Mesh({
             // position           // normals
             // back face
-            -half.x, +half.y, -half.z,  0.0f,  0.0f, -1.0f, // bottom-left
-             half.x, -half.y, -half.z,  0.0f,  0.0f, -1.0f, // top-right
              half.x, +half.y, -half.z,  0.0f,  0.0f, -1.0f, // bottom-right         
              half.x, -half.y, -half.z,  0.0f,  0.0f, -1.0f, // top-right
             -half.x, +half.y, -half.z,  0.0f,  0.0f, -1.0f, // bottom-left
             -half.x, -half.y, -half.z,  0.0f,  0.0f, -1.0f, // top-left
+            -half.x, +half.y, -half.z,  0.0f,  0.0f, -1.0f, // bottom-left
+             half.x, -half.y, -half.z,  0.0f,  0.0f, -1.0f, // top-right
             // front face
-            -half.x, +half.y,  half.z,  0.0f,  0.0f,  1.0f, // bottom-left
+             half.x, -half.y,  half.z,  0.0f,  0.0f,  1.0f, // top-right
              half.x, +half.y,  half.z,  0.0f,  0.0f,  1.0f, // bottom-right
-             half.x, -half.y,  half.z,  0.0f,  0.0f,  1.0f, // top-right
-             half.x, -half.y,  half.z,  0.0f,  0.0f,  1.0f, // top-right
-            -half.x, -half.y,  half.z,  0.0f,  0.0f,  1.0f, // top-left
             -half.x, +half.y,  half.z,  0.0f,  0.0f,  1.0f, // bottom-left
+            -half.x, +half.y,  half.z,  0.0f,  0.0f,  1.0f, // bottom-left
+            -half.x, -half.y,  half.z,  0.0f,  0.0f,  1.0f, // top-left
+             half.x, -half.y,  half.z,  0.0f,  0.0f,  1.0f, // top-right
             // left face
-            -half.x, -half.y,  half.z, -1.0f,  0.0f,  0.0f, // top-right
+            -half.x, +half.y, -half.z, -1.0f,  0.0f,  0.0f, // bottom-left
             -half.x, -half.y, -half.z, -1.0f,  0.0f,  0.0f, // top-left
-            -half.x, +half.y, -half.z, -1.0f,  0.0f,  0.0f, // bottom-left
-            -half.x, +half.y, -half.z, -1.0f,  0.0f,  0.0f, // bottom-left
-            -half.x, +half.y,  half.z, -1.0f,  0.0f,  0.0f, // bottom-right
             -half.x, -half.y,  half.z, -1.0f,  0.0f,  0.0f, // top-right
+            -half.x, -half.y,  half.z, -1.0f,  0.0f,  0.0f, // top-right
+            -half.x, +half.y,  half.z, -1.0f,  0.0f,  0.0f, // bottom-right
+            -half.x, +half.y, -half.z, -1.0f,  0.0f,  0.0f, // bottom-left
             // right face
-             half.x, -half.y,  half.z,  1.0f,  0.0f,  0.0f, // top-left
-             half.x, +half.y, -half.z,  1.0f,  0.0f,  0.0f, // bottom-right
              half.x, -half.y, -half.z,  1.0f,  0.0f,  0.0f, // top-right         
              half.x, +half.y, -half.z,  1.0f,  0.0f,  0.0f, // bottom-right
              half.x, -half.y,  half.z,  1.0f,  0.0f,  0.0f, // top-left
              half.x, +half.y,  half.z,  1.0f,  0.0f,  0.0f, // bottom-left     
+             half.x, -half.y,  half.z,  1.0f,  0.0f,  0.0f, // top-left
+             half.x, +half.y, -half.z,  1.0f,  0.0f,  0.0f, // bottom-right
             // bottom face
-            -half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-right
+             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left
              half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-left
-             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left
-             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left
-            -half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-right
             -half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-right
+            -half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-right
+            -half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-right
+             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left
             // top face
-            -half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, // top-left
-             half.x, -half.y , half.z,  0.0f,  1.0f,  0.0f, // bottom-right
              half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, // top-right     
-             half.x, -half.y,  half.z,  0.0f,  1.0f,  0.0f, // bottom-right
+             half.x, -half.y , half.z,  0.0f,  1.0f,  0.0f, // bottom-right
             -half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, // top-left
             -half.x, -half.y,  half.z,  0.0f,  1.0f,  0.0f, // bottom-left        
+            -half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, // top-left
+             half.x, -half.y,  half.z,  0.0f,  1.0f,  0.0f, // bottom-right
         }, sizeof(f32) * 6, 36, { Attribute::Pos3D, Attribute::Pos3D });
     } else {
         return new Mesh({
