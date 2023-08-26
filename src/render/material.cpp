@@ -13,6 +13,7 @@ dr::ColorMaterial::ColorMaterial(glm::vec3 color)
 
 void dr::ColorMaterial::bind(Shader *shader)   
 {
+    shader->setUniform("uHasMaterial", true);
     shader->setUniform("uMaterial.hasDiffuse",false);
     shader->setUniform("uMaterial.diffuse", m_color);
     shader->setUniform("uMaterial.ambient", m_color);
@@ -30,6 +31,7 @@ dr::TextureMaterial::~TextureMaterial()
 
 void dr::TextureMaterial::bind(Shader *shader)
 {
+    shader->setUniform("uHasMaterial", true);
     if(m_texture) {
         m_texture->bind(0);
         shader->setUniform("uMaterial.texture", 0);
@@ -61,6 +63,7 @@ dr::PBRMaterial::~PBRMaterial()
 void dr::PBRMaterial::bind(Shader *shader) 
 {
     // textures
+    shader->setUniform("uHasMaterial", true);
     if(m_data.diffuse) m_data.diffuse->bind(0);
     shader->setUniform("uMaterial.diffuseTexture", 0);
     shader->setUniform("uMaterial.hasDiffuse",(m_data.diffuse != nullptr));

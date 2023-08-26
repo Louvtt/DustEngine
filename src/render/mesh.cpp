@@ -31,7 +31,7 @@ dr::Attribute dr::Attribute::Color     {Float4};
 dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
 : m_indexCount(indices.size()),
 m_vertexCount(vertexCount),
-m_material(new dr::ColorMaterial({1.f, 0.f, 1.f}))
+m_material(nullptr)
 {
     glCreateVertexArrays(1, &m_renderID);
     if(m_renderID == 0) {
@@ -86,6 +86,7 @@ void dr::Mesh::draw(Shader *shader)
 {
     shader->use();
     if(m_material) m_material->bind(shader);
+    else shader->setUniform("uHasMaterial", false);
     
     glBindVertexArray(m_renderID);
     if(m_ebo != 0) {
