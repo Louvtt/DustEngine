@@ -138,13 +138,19 @@ void dust::Renderer::newFrame()
     ImGui_ImplOpenGL3_NewFrame();
 }
 
-void dust::Renderer::clear()
+void dust::Renderer::clear(bool clearColor)
 {
+    int clearBits = GL_STENCIL_BUFFER_BIT;
+
     if(m_depthEnabled) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    } else {
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        clearBits |= GL_DEPTH_BUFFER_BIT;
     }
+
+    if(clearColor) {
+        clearBits |= GL_COLOR_BUFFER_BIT;
+    }
+
+    glClear(clearBits);
 }
 
 void dust::Renderer::endFrame()

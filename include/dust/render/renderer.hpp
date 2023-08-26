@@ -22,7 +22,7 @@ public:
     ~Renderer();
 
     void newFrame(); // clear buffer
-    void clear();
+    void clear(bool clearColor = true);
     void endFrame(); // render
 
     void setCulling(bool culling);
