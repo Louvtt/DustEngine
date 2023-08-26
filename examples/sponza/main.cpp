@@ -44,6 +44,7 @@ private:
     render::ShaderPtr m_depthShader;
     render::Shader *m_currentShader;
 
+    ImVec2 m_previousSize;
     render::Framebuffer *m_renderTarget;
 
     Result<render::ModelPtr> m_sponza;
@@ -106,10 +107,10 @@ public:
             getWindow()->getHeight()
         });
 
-        m_camera->bind(m_currentShader);
         updateUniforms();
 
         // sky color until skybox is created
+        m_previousSize = ImVec2{(f32)getWindow()->getWidth(), (f32)getWindow()->getHeight()};
         // getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
     }
 
@@ -165,9 +166,13 @@ public:
             if(ImGui::Begin("Scene")){
                 const auto size = ImGui::GetContentRegionAvail();
 
-                m_renderTarget->resize(size.x, size.y);
-                m_camera->resize(size.x, size.y);
-                m_camera->bind(m_currentShader); // update
+                if(m_previousSize.x != size.x
+                || m_previousSize.y != size.y) {
+                    getRenderer()->resize(size.x, size.y);
+                    m_renderTarget->resize(size.x, size.y);
+                    m_camera->resize(size.x, size.y);
+                    m_camera->bind(m_currentShader); // update
+                }
                 
                 m_renderTarget->bind();
                 {
@@ -185,9 +190,9 @@ public:
                 // render to screen
                 const auto renderTexture = m_renderTarget->getAttachment(render::Framebuffer::AttachmentType::COLOR_RGBA);
                 if(renderTexture.has_value()) {
-                    ImGui::Image((void*)(u64)(renderTexture->id), ImVec2{(float)m_renderTarget->getWidth(), (float)m_renderTarget->getHeight()}, ImVec2(0, 1), ImVec2(1, 0));
+                    ImGui::Image((void*)(u64)(renderTexture->id), size, ImVec2(0, 1), ImVec2(1, 0));
                 } else {
-                    ImGui::Text("Missing render target texture.");
+                    ImGui::TextColored(ImVec4{1.f, 0.f, 0.f, 1.f}, "Missing render target texture.");
                 }
             }
             ImGui::End();
@@ -248,6 +253,7 @@ public:
 
 private:
     void updateUniforms() {
+        m_camera->bind(m_currentShader);
         m_shader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
         m_shader->setUniform("uSunColor", m_sunColor);
         m_shader->setUniform("uAmbient", m_ambientColor);
