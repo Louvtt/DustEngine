@@ -8,6 +8,18 @@ namespace dr = dust::render;
 dr::Material::Material() {}
 
 
+dr::ColorMaterial::ColorMaterial(glm::vec3 color)
+: m_color(color) { }
+
+void dr::ColorMaterial::bind(Shader *shader)   
+{
+    shader->setUniform("uMaterial.hasDiffuse",false);
+    shader->setUniform("uMaterial.diffuse", m_color);
+    shader->setUniform("uMaterial.ambient", m_color);
+}
+void dr::ColorMaterial::unbind(Shader *shader) 
+{ }
+
 dr::TextureMaterial::TextureMaterial(dr::Texture *texture)
 : m_texture(texture) {}
 

@@ -2,6 +2,7 @@
 #define _DUST_RENDER_MATERIAL_HPP_
 
 #include "../core/types.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 
 namespace dust {
@@ -21,6 +22,19 @@ public:
     virtual void unbind(Shader *shader) = 0;
 };
 
+class ColorMaterial
+: public Material
+{
+protected:
+    glm::vec3 m_color;
+
+public:
+    ColorMaterial(glm::vec3 color);
+    ~ColorMaterial() = default;
+
+    void bind(Shader *shader) override;
+    void unbind(Shader *shader) override;
+};
 
 class TextureMaterial
 : public Material
