@@ -27,12 +27,18 @@ protected:
 public:
     virtual void bind(Shader *shader) = 0;
     virtual void resize(u32 width, u32 height) = 0;
+    virtual void move(glm::vec2 translation) = 0;
+    virtual void move(glm::vec3 translation) = 0;
 
     void makeActive();
     static Camera* GetActive();
 
+    void setView(glm::mat4 view);
     glm::mat4 getView() const;
+
+    void setProj(glm::mat4 proj);
     glm::mat4 getProj() const;
+
 
 protected:
     virtual void updateViewMatrix() = 0;
@@ -55,7 +61,8 @@ public:
     void bind(Shader *shader) override;
     void resize(u32 width, u32 height) override;
 
-    void move(glm::vec2 translation);
+    void move(glm::vec2 translation) override;
+    void move(glm::vec3 translation) override;
     void setPosition(glm::vec2 position);
 
     void rotate(f32 angle);
@@ -87,7 +94,8 @@ public:
     void resize(u32 width, u32 height) override;
     void setFOV(f32 fov);
 
-    void move(glm::vec3 translation);
+    void move(glm::vec2 translation) override;
+    void move(glm::vec3 translation) override;
     void setPosition(glm::vec3 position);
 
     void rotate(glm::vec3 angle);

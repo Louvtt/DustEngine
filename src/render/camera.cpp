@@ -31,6 +31,16 @@ glm::mat4 dr::Camera::getProj() const
     return m_proj;
 }
 
+void dr::Camera::setProj(glm::mat4 proj)
+{
+    m_proj = proj;
+}
+
+void dr::Camera::setView(glm::mat4 view)
+{
+    m_view = view;
+}
+
 // CAMERA 2D
 
 dr::Camera2D::Camera2D(u32 width, u32 height, f32 far, f32 near)
@@ -39,7 +49,7 @@ m_position(0.f, 0.f),
 m_rotation(0.f)
 {
     const f32 halfWidth = width * .5f;
-    const f32 halfHeight = width * .5f;
+    const f32 halfHeight = height * .5f;
     m_proj = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, near, far);
     m_view = glm::mat4(1.f);
 
@@ -56,13 +66,19 @@ void dr::Camera2D::bind(Shader *shader)
 void dr::Camera2D::resize(u32 width, u32 height) 
 {
     const f32 halfWidth = width * .5f;
-    const f32 halfHeight = width * .5f;
+    const f32 halfHeight = height * .5f;
     m_proj = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, m_near, m_far);
 }
 
 void dr::Camera2D::move(glm::vec2 translation)
 {
     m_position += translation;
+    updateViewMatrix();
+}
+void dr::Camera2D::move(glm::vec3 translation)
+{
+    m_position.x += translation.x;
+    m_position.y += translation.y;
     updateViewMatrix();
 }
 void dr::Camera2D::setPosition(glm::vec2 position)
@@ -122,6 +138,12 @@ void dr::Camera3D::resize(u32 width, u32 height)
     m_proj = glm::perspective(glm::radians(m_fov), m_aspectRatio, m_near, m_far);
 }
 
+void dr::Camera3D::move(glm::vec2 translation)
+{
+    m_position.x += translation.x;
+    m_position.y += translation.y;
+    updateViewMatrix();
+}
 void dr::Camera3D::move(glm::vec3 translation)
 {
     m_position += translation;
