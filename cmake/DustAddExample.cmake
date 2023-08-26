@@ -51,7 +51,7 @@ function(add_example name)
     # ASSETS
     if(DEFINED "ADD_EXAMPLE_ASSETS_DIR")
         message(STATUS "Copying ${EXAMPLE_SOURCE_DIR}/${ADD_EXAMPLE_ASSETS_DIR} into ${EXAMPLE_BINARY_DIR}/${ADD_EXAMPLE_ASSETS_DIR}")
-        add_custom_target(copy-assets-files ALL
+        add_custom_target("copy-assets-files-${name}" ALL
             COMMAND ${CMAKE_COMMAND} -E copy_directory 
             "${EXAMPLE_SOURCE_DIR}/${ADD_EXAMPLE_ASSETS_DIR}"
             "${EXAMPLE_BINARY_DIR}/${ADD_EXAMPLE_ASSETS_DIR}"
