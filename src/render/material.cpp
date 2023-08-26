@@ -2,6 +2,7 @@
 
 #include "dust/render/texture.hpp"
 #include "dust/render/shader.hpp"
+#include "glm/ext/vector_float4.hpp"
 
 namespace dr = dust::render;
 
@@ -15,8 +16,8 @@ void dr::ColorMaterial::bind(Shader *shader)
 {
     shader->setUniform("uHasMaterial", true);
     shader->setUniform("uMaterial.hasDiffuse",false);
-    shader->setUniform("uMaterial.diffuse", m_color);
-    shader->setUniform("uMaterial.ambient", m_color);
+    shader->setUniform("uMaterial.diffuse", glm::vec4{m_color, 1.f});
+    shader->setUniform("uMaterial.ambient", glm::vec4{m_color, 1.f});
 }
 void dr::ColorMaterial::unbind(Shader *shader) 
 { }
