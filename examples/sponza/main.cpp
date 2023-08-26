@@ -87,7 +87,7 @@ public:
 
         m_skybox = render::SkyboxPtr(new render::Skybox({
             "assets/cubemap/right.png", "assets/cubemap/left.png",
-            "assets/cubemap/bottom.png", "assets/cubemap/top.png",
+            "assets/cubemap/top.png", "assets/cubemap/bottom.png",
             "assets/cubemap/front.png", "assets/cubemap/back.png",
         }));
 
