@@ -79,27 +79,41 @@ m_height(desc.height),
 m_renderID(0),
 m_colorAttachmentCount(0)
 {
-    glGenFramebuffers(1, &m_renderID);
-    if(m_renderID == 0) {
+    // fill up default attachments vector
+    for(const auto& a : desc.attachments) {
+        m_attachments.push_back({
+            0, a.type, 0, a.readable
+        });
+    }
+    createInternal();
+}
+
+void drf::createInternal()
+{
+    u32 renderID = 0;
+    glGenFramebuffers(1, &renderID);
+    if(renderID == 0) {
         DUST_ERROR("[OpenGL][Framebuffer] Failed to generate a framebuffer");
         return;
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, m_renderID);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderID);
 
     // attachments
-    for(const auto& attachment : desc.attachments)
+    u32 colorAttachmentCount = 0;
+    std::vector<Attachment> attachments{};
+    for(const auto& attachment : m_attachments)
     {
-        Attachment newAttachment{0, attachment.type, 0, attachment.readable};
+        Attachment newAttachment{0, attachment.type, 0, attachment.isReadable};
         if(attachment.type == drf::AttachmentType::COLOR
         || attachment.type == drf::AttachmentType::COLOR_RGBA
         || attachment.type == drf::AttachmentType::COLOR_SRGB) {
-            newAttachment.index = m_colorAttachmentCount++;
+            newAttachment.index = colorAttachmentCount++;
         }
 
         // texture
         u32 format  = getGLFormat(attachment.type);
         u32 binding = getGLAttachment(attachment.type) + (u32)newAttachment.index;
-        if(attachment.readable) {
+        if(attachment.isReadable) {
             glGenTextures(1, &newAttachment.id);
             if(newAttachment.id == 0) { DUST_ERROR("[OpenGL][Framebuffer] Failed to create texture."); continue; }
             glBindTexture(GL_TEXTURE_2D, newAttachment.id);
@@ -128,28 +142,45 @@ m_colorAttachmentCount(0)
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, binding, GL_RENDERBUFFER, newAttachment.id);
             DUST_DEBUG("[OpenGL][Framebuffer] Create renderbuffer {}", newAttachment.id);
         }
-        m_attachments.push_back(newAttachment);
+        attachments.push_back(newAttachment);
     }
 
     // No color buffer
-    if(m_colorAttachmentCount == 0) 
+    if(colorAttachmentCount == 0) 
     {
         glDrawBuffer(GL_NONE);
         glReadBuffer(GL_NONE);
     }
     
+    // Check state
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
-        DUST_DEBUG("[OpenGL] Created framebuffer {}", m_renderID);
+        DUST_DEBUG("[OpenGL] Created framebuffer {}.", renderID);
+        // check if they was a previous framebuffer generated
+        if(m_renderID != 0) {
+            // delete previous framebuffer
+            DUST_DEBUG("[OpenGL] Deleting previous framebuffer {} and its attachments.", m_renderID);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            for(auto attachment : m_attachments) {
+                if(attachment.isReadable) { glDeleteTextures(1, &attachment.id); }
+                else                      { glDeleteRenderbuffers(1, &attachment.id); }
+            }
+            m_attachments.clear();
+            glDeleteFramebuffers(1, &m_renderID);
+        }
+        // Assign new framebuffer
+        m_colorAttachmentCount = colorAttachmentCount;
+        m_attachments          = attachments;
+        m_renderID             = renderID;
     } else {
-        DUST_ERROR("[OpenGL] Error while creating framebuffer {}", m_renderID);
+        DUST_ERROR("[OpenGL] Error while creating framebuffer {}", renderID);
         // delete everything
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        for(auto attachment : m_attachments) {
+        for(auto attachment : attachments) {
             if(attachment.isReadable) { glDeleteTextures(1, &attachment.id); }
             else                      { glDeleteRenderbuffers(1, &attachment.id); }
         }
-        m_attachments.clear();
-        glDeleteFramebuffers(1, &m_renderID);
+        attachments.clear();
+        glDeleteFramebuffers(1, &renderID);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -161,10 +192,16 @@ drf::~Framebuffer()
     glDeleteFramebuffers(1, &m_renderID);
 }
 
-void drf::resize(u32 width, u32 height)
+void drf::resize(u32 width, u32 height, bool recreate)
 {
     m_width  = width;
     m_height = height;
+    if(recreate) {
+        createInternal();
+        return;
+    }
+
+    // else resize all attachments
     for(auto attachment : m_attachments) {
         u32 format  = getGLFormat(attachment.type);
         if(attachment.isReadable) {

@@ -49,7 +49,12 @@ public:
     Framebuffer(const Desc& desc);
     ~Framebuffer();
 
-    void resize(u32 width, u32 height);
+    /**
+     * @brief Resize framebuffer (recreates it by default)
+     */
+    void resize(u32 width, u32 height, bool recreate = true);
+
+
     void bind();
     void unbind();
 
@@ -58,6 +63,9 @@ public:
 
     void bindAttachment(u32 bindIndex, AttachmentType type, u32 index = 0);
     Result<Attachment> getAttachment(AttachmentType attachment, u32 index = 0);
+
+private:
+    void createInternal();
 };
 
 using FramebufferPtr = Ref<Framebuffer>;
