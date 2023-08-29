@@ -20,7 +20,9 @@ void dr::ColorMaterial::bind(Shader *shader)
     shader->setUniform("uMaterial.ambient", glm::vec4{m_color, 1.f});
 }
 void dr::ColorMaterial::unbind(Shader *shader) 
-{ }
+{
+    shader->setUniform("uHasMaterial", false);
+}
 
 dr::TextureMaterial::TextureMaterial(dr::Texture *texture)
 : m_texture(texture) {}
@@ -47,7 +49,7 @@ void dr::TextureMaterial::unbind(Shader *shader)
     if(m_texture) {
         m_texture->unbind();
     }
-
+    shader->setUniform("uHasMaterial", false);
     shader->setUniform("uMaterial.texture", 0);
     shader->setUniform("uMaterial.hasTexture", false);
 }
@@ -79,4 +81,5 @@ void dr::PBRMaterial::unbind(Shader *shader)
 {
     // unbind textures
     if(m_data.diffuse) m_data.diffuse->unbind();
+    shader->setUniform("uHasMaterial", false);
 }
