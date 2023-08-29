@@ -108,6 +108,7 @@ dust::Renderer::Renderer(const dust::Window& window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
     #ifdef _DEBUG
     DUST_INFO("[OpengL] Set up debug message callback.");
+    glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(glDebugCallback, nullptr);
     #endif
 
