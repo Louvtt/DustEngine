@@ -6,9 +6,26 @@
 #include "dust/render/shader.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/quaternion_float.hpp"
+#include "glm/ext/vector_float3.hpp"
 
 namespace dust {
 namespace render {
+
+
+struct CameraFrustrum
+{
+    // near plane
+    glm::vec4 nearTopRight;
+    glm::vec4 nearTopLeft;
+    glm::vec4 nearBottomRight;
+    glm::vec4 nearBottomLeft;
+
+    // far plane
+    glm::vec4 farTopRight;
+    glm::vec4 farTopLeft;
+    glm::vec4 farBottomRight;
+    glm::vec4 farBottomLeft;
+};
 
 class Camera
 {
@@ -29,6 +46,9 @@ public:
     virtual void resize(u32 width, u32 height) = 0;
     virtual void move(glm::vec2 translation) = 0;
     virtual void move(glm::vec3 translation) = 0;
+
+    [[nodiscard]]
+    virtual CameraFrustrum getFrustrum() const;
 
     void makeActive();
     static Camera* GetActive();
@@ -51,6 +71,7 @@ class Camera2D
 {
 protected:
     glm::vec2 m_position;
+    glm::vec2 m_size;
     // degrees
     f32 m_rotation;
 
@@ -81,6 +102,8 @@ class Camera3D
 protected:
     glm::vec3 m_position;
     glm::vec3 m_rotation;
+
+
     glm::vec3 m_forward;
     glm::vec3 m_up;
 
@@ -100,6 +123,8 @@ public:
 
     void rotate(glm::vec3 angle);
     void setRotation(glm::vec3 rotation);
+
+    void lookAt(glm::vec3 position, glm::vec3 target, glm::vec3 up = glm::vec3{0.f, 1.f, 0.f});
 
     glm::vec3 forward() const;
 
