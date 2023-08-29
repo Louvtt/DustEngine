@@ -3,10 +3,19 @@
 ### Core
 
 - [x] Application Entry
+- [~] Application
+    - [x] Attached renderer and window
+    - [ ] Layers
 - [x] Window Creation
     - [x] Os Window Creation (glfw)
     - [x] Gpu api loading (OpenGL via glad2)
     - [x] ImGui loading and config \w docking
+- [ ] Reflection
+    - [ ] Type reflection
+    - [ ] Members
+    - [ ] Functions
+    - [ ] Constructors
+    - [ ] Methods
 
 ### IO
 
@@ -90,3 +99,11 @@
 ### Addons
 
 - [ ] Addons/Mods support (using dll)
+
+------
+
+## FIXES
+
+- Flatten classes and structures and avoid nested
+- Model materials slots instead of one mat per mesh to be able to batch a lot.
+- Finish PBR Model
