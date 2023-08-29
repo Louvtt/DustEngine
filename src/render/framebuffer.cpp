@@ -40,7 +40,7 @@ inline static u32 getGLFormat(const drf::AttachmentType& type)
 {
     switch (type) {
         case drf::AttachmentType::DEPTH:   return GL_DEPTH_COMPONENT;
-        case drf::AttachmentType::DEPTH32: return GL_DEPTH_COMPONENT;
+        case drf::AttachmentType::DEPTH32: return GL_DEPTH_COMPONENT32F;
         
         case drf::AttachmentType::STENCIL: return GL_DEPTH_STENCIL;
         
@@ -117,11 +117,16 @@ void drf::createInternal()
             glGenTextures(1, &newAttachment.id);
             if(newAttachment.id == 0) { DUST_ERROR("[OpenGL][Framebuffer] Failed to create texture."); continue; }
             glBindTexture(GL_TEXTURE_2D, newAttachment.id);
+            glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, getGLType(attachment.type), nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, getGLType(attachment.type), nullptr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            // avoid shadows outside
+            if(attachment.type == AttachmentType::DEPTH || attachment.type == AttachmentType::DEPTH32) {
+                float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+                glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+            }
             glBindTexture(GL_TEXTURE_2D, 0);
             glFramebufferTexture2D(
                 GL_FRAMEBUFFER, 
@@ -130,6 +135,7 @@ void drf::createInternal()
                 newAttachment.id,
                 0
             );
+            
             DUST_DEBUG("[OpenGL][Framebuffer] Create texture {} [index {}]", newAttachment.id, newAttachment.index);
         }
         // renderbuffer 
@@ -172,7 +178,7 @@ void drf::createInternal()
         m_attachments          = attachments;
         m_renderID             = renderID;
     } else {
-        DUST_ERROR("[OpenGL] Error while creating framebuffer {}", renderID);
+        DUST_ERROR("[OpenGL] Error while creating framebuffer {}: {}", renderID, glGetError());
         // delete everything
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         for(auto attachment : attachments) {
@@ -250,7 +256,8 @@ drf::getAttachment(AttachmentType type, u32 index)
 void drf::bindAttachment(u32 bindIndex, AttachmentType type, u32 index)
 {
     decltype(auto) found = this->getAttachment(type, index);
-    if(found.has_value()) {
+    if(found.has_value() && found.value().isReadable) {
+        // DUST_DEBUG("[Framebuffer] Binding texture to {}", bindIndex);
         glActiveTexture(GL_TEXTURE0+bindIndex);
         glBindTexture(GL_TEXTURE_2D, found.value().id);
     }
