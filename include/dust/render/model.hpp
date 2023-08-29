@@ -13,6 +13,7 @@ private:
     std::vector<Mesh*> m_meshes;
     glm::mat4 m_modelMat;
 
+    glm::vec3 m_position;
 public:
         
     struct Vertex {
@@ -24,7 +25,11 @@ public:
     };
 
     Model(const std::vector<Mesh*> &mesh);
+    Model(Mesh* mesh);
     ~Model();
+
+    void setPosition(glm::vec3 position);
+    glm::vec3 getPosition() const;
 
     void draw(Shader *shader);    
 };
