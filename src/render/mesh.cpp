@@ -85,7 +85,7 @@ dr::Mesh::~Mesh()
 void dr::Mesh::draw(Shader *shader)
 {
     shader->use();
-    if(m_material) m_material->bind(shader);
+    if(m_material != nullptr) m_material->bind(shader);
     else shader->setUniform("uHasMaterial", false);
     
     glBindVertexArray(m_renderID);
@@ -130,30 +130,30 @@ dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
     const glm::vec2 half = size*.5f;
     if(!textureCoordinates) {
         return new Mesh({
-            // pos
+            // pos                  // normal
             // first triangle
-            -half.x, 0.f, +half.y,
-             half.x, 0.f, +half.y,
-             half.x, 0.f, -half.y,
+            -half.x, 0.f, +half.y,  0.f, 1.f, 0.f,
+             half.x, 0.f, +half.y,  0.f, 1.f, 0.f,
+             half.x, 0.f, -half.y,  0.f, 1.f, 0.f,
 
             // second triangle
-             half.x, 0.f, -half.y,
-            -half.x, 0.f, -half.y,
-            -half.x, 0.f, +half.y,
-        }, sizeof(f32) * 5, 6, { Attribute::Pos3D });
+             half.x, 0.f, -half.y,  0.f, 1.f, 0.f,
+            -half.x, 0.f, -half.y,  0.f, 1.f, 0.f,
+            -half.x, 0.f, +half.y,  0.f, 1.f, 0.f,
+        }, sizeof(f32) * 6, 6, { Attribute::Pos3D, Attribute::Pos3D });
     } else {
         return new Mesh({
-            // pos                 // tex
+            // pos                 //normal       // tex
             // first triangle
-            -half.x, 0.f, +half.y, 0.f, 1.f,
-             half.x, 0.f, +half.y, 1.f, 1.f,
-             half.x, 0.f, -half.y, 1.f, 0.f,
+            -half.x, 0.f, +half.y, 0.f, 1.f, 0.f,  0.f, 1.f,
+             half.x, 0.f, +half.y, 0.f, 1.f, 0.f,  1.f, 1.f,
+             half.x, 0.f, -half.y, 0.f, 1.f, 0.f,  1.f, 0.f,
 
             // second triangle
-             half.x, 0.f, -half.y, 1.f, 0.f,
-            -half.x, 0.f, -half.y, 0.f, 0.f,
-            -half.x, 0.f, +half.y, 0.f, 1.f,
-        }, sizeof(f32) * 5, 6, { Attribute::Pos3D, Attribute::TexCoords});
+             half.x, 0.f, -half.y, 0.f, 1.f, 0.f,  1.f, 0.f,
+            -half.x, 0.f, -half.y, 0.f, 1.f, 0.f,  0.f, 0.f,
+            -half.x, 0.f, +half.y, 0.f, 1.f, 0.f,  0.f, 1.f,
+        }, sizeof(f32) * 8, 6, { Attribute::Pos3D, Attribute::Pos3D, Attribute::TexCoords});
     }
 }
 
@@ -192,20 +192,20 @@ dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
              half.x, +half.y,  half.z,  1.0f,  0.0f,  0.0f, // bottom-left     
              half.x, -half.y,  half.z,  1.0f,  0.0f,  0.0f, // top-left
              half.x, +half.y, -half.z,  1.0f,  0.0f,  0.0f, // bottom-right
-            // bottom face
-             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left
-             half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-left
-            -half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-right
-            -half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-right
-            -half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-right
-             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left
             // top face
-             half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, // top-right     
-             half.x, -half.y , half.z,  0.0f,  1.0f,  0.0f, // bottom-right
-            -half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, // top-left
-            -half.x, -half.y,  half.z,  0.0f,  1.0f,  0.0f, // bottom-left        
-            -half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, // top-left
-             half.x, -half.y,  half.z,  0.0f,  1.0f,  0.0f, // bottom-right
+             half.x, +half.y,  half.z,  0.0f, +1.0f,  0.0f, // bottom-left
+             half.x, +half.y, -half.z,  0.0f, +1.0f,  0.0f, // top-left
+            -half.x, +half.y, -half.z,  0.0f, +1.0f,  0.0f, // top-right
+            -half.x, +half.y, -half.z,  0.0f, +1.0f,  0.0f, // top-right
+            -half.x, +half.y,  half.z,  0.0f, +1.0f,  0.0f, // bottom-right
+             half.x, +half.y,  half.z,  0.0f, +1.0f,  0.0f, // bottom-left
+            // bottom face
+             half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-right     
+             half.x, -half.y , half.z,  0.0f, -1.0f,  0.0f, // bottom-right
+            -half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-left
+            -half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left        
+            -half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-left
+             half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-right
         }, sizeof(f32) * 6, 36, { Attribute::Pos3D, Attribute::Pos3D });
     } else {
         return new Mesh({
@@ -238,20 +238,20 @@ dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
              half.x, +half.y, -half.z,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
              half.x, -half.y,  half.z,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
              half.x, +half.y,  half.z,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-            // bottom face
-            -half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-             half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-             half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-            -half.x, +half.y,  half.z,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-            -half.x, +half.y, -half.z,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
             // top face
-            -half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-             half.x, -half.y , half.z,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-             half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-             half.x, -half.y,  half.z,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-            -half.x, -half.y, -half.z,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-            -half.x, -half.y,  half.z,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+            -half.x, +half.y, -half.z,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             half.x, +half.y, -half.z,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-left
+             half.x, +half.y,  half.z,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             half.x, +half.y,  half.z,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+            -half.x, +half.y,  half.z,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -half.x, +half.y, -half.z,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-right
+            // bottom face
+            -half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             half.x, -half.y , half.z,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+             half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-left
+            -half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
         }, sizeof(f32) * 8, 36, { Attribute::Pos3D, Attribute::Pos3D, Attribute::TexCoords });
     }
 }
