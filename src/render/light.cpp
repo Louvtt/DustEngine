@@ -121,7 +121,7 @@ void dr::DirectionnalLight::updateRenderPos()
         // if (maxZ < 0) maxZ /= zMult;
         // else          maxZ *= zMult;
         // m_proj = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
-        m_proj = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 10.f);
+        m_proj = glm::ortho(-20.f, 20.f, -20.f, 20.f, 1.f, 10.f);
     }
 
     m_viewProj = m_proj * m_view;
