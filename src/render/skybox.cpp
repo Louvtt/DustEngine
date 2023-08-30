@@ -48,7 +48,7 @@ std::string fCode = SHADER_SOURCE(
 dr::Skybox::Skybox(std::array<std::string, 6> skyboxTexturePaths)
 : m_renderID(0),
 m_mesh(dr::Mesh::createCube({2.f, 2.f, 2.f})),
-m_shader(dust::createScope<Shader>(vCode, fCode))
+m_shader(dust::createRef<Shader>(vCode, fCode))
 {
     io::Path assetsDirPath = io::AssetsManager::getAssetsDir();
     glGenTextures(1, &m_renderID);
@@ -85,7 +85,7 @@ m_shader(dust::createScope<Shader>(vCode, fCode))
 dr::Skybox::~Skybox()
 {
     glDeleteTextures(1, &m_renderID);
-
+    m_mesh.reset();
     m_shader.reset();
 }
 
@@ -104,7 +104,7 @@ void dr::Skybox::draw(Camera* camera)
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
     m_shader->setUniform("uSkybox", 0);
 
-    m_mesh->draw(m_shader.get());
+    m_mesh->draw(m_shader);
  
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
