@@ -11,10 +11,10 @@
 using namespace dust;
 namespace dr = dust::render;
 
-DUST_ADD_LOADER_SYNC_DEF_EX(dr::Texture, bool mipMaps);
+DUST_ADD_LOADER_SYNC_DEF_EX(dr::TextureDesc, bool mipMaps);
 
-DUST_ADD_LOADER_SYNC_DEF(Ref<dr::Model>);
-DUST_ADD_LOADER_ASYNC_DEF(Ref<dr::Model>);
+DUST_ADD_LOADER_SYNC_DEF(dr::ModelPtr);
+DUST_ADD_LOADER_ASYNC_DEF(dr::ModelPtr);
 
 DUST_ADD_LOADER_SYNC_DEF(std::string);
 

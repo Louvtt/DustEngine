@@ -1,6 +1,8 @@
 #include "dust/io/loaders.hpp"
 #include "dust/core/log.hpp"
 #include "dust/io/assetsManager.hpp"
+#include "dust/render/material.hpp"
+#include "dust/render/mesh.hpp"
 #include "dust/render/texture.hpp"
 #include <thread>
 namespace dr = dust::render;
@@ -13,8 +15,8 @@ namespace fs = std::filesystem;
 #include <stb_image.h>
 
 template <>
-dust::Result<dr::Texture::Desc> 
-dio::AssetsManager::LoadSync<dr::Texture::Desc, bool>(const dio::Path &_path, bool mipMaps) 
+dust::Result<dr::TextureDesc> 
+dio::AssetsManager::LoadSync<dr::TextureDesc, bool>(const dio::Path &_path, bool mipMaps) 
 {
     auto path = fromAssetsDir(_path);
     if(!fs::exists(path)) {
@@ -31,8 +33,8 @@ dio::AssetsManager::LoadSync<dr::Texture::Desc, bool>(const dio::Path &_path, bo
         return {};
     }
 
-    auto texDesc = dr::Texture::Desc{
-        data, (u32)width, (u32)height, (u32)nrChannels, dr::Texture::Filter::Linear, dr::Texture::Wrap::NoWrap, mipMaps
+    auto texDesc = dr::TextureDesc{
+        data, (u32)width, (u32)height, (u32)nrChannels, dr::TextureFilter::Linear, dr::TextureWrap::NoWrap, mipMaps
     };
 
     stbi_image_free(data);
@@ -51,97 +53,111 @@ dio::AssetsManager::LoadSync<dr::Texture::Desc, bool>(const dio::Path &_path, bo
 #include "assimp/scene.h"
 #include "assimp/types.h"
 
-static std::vector<dr::Material*> 
+static std::vector<dr::MaterialPtr> 
 processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
 {
-    std::vector<dr::Material*> materials{};
+    std::vector<dr::MaterialPtr> materials{};
     materials.reserve(scene->mNumMaterials);
     for(int i = 0; i < scene->mNumMaterials; ++i) {
-        auto material = scene->mMaterials[i];
-        // DUST_DEBUG("[Model] Material {}", i);
+        const auto material = scene->mMaterials[i];
+        Ref<render::PBRMaterial> mat = createRef<render::PBRMaterial>();
+
+
         aiString filePath;
-        dr::Texture* diffuseTexture = nullptr;
-        if(material->GetTexture(aiTextureType_DIFFUSE, 0, &filePath) == AI_SUCCESS) {
-            const std::string texPath = basePath.string() + '/' + filePath.C_Str();
-            // DUST_DEBUG("Texture found for mat at {}", texPath);
-            auto texDesc = dio::AssetsManager::LoadSync<dr::Texture::Desc>(texPath, true);
+        ai_real factor;
+        aiColor4D color;
+
+        // ALBEDO
+        if(aiGetMaterialTexture(material, AI_MATKEY_BASE_COLOR_TEXTURE, &filePath) == AI_SUCCESS) {
+            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
             if(texDesc.has_value()) {
-                diffuseTexture = new dr::Texture(texDesc.value());
+                mat->albedoTexture = createRef<render::Texture>(texDesc.value());
             }
         }
-
-        glm::vec4 diffuse(1.f);
-        aiColor4D diffuseMat;
-        if(aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuseMat) == AI_SUCCESS) {
-            diffuse = {diffuseMat.r, diffuseMat.g, diffuseMat.b, diffuseMat.a};
+        if(aiGetMaterialColor(material, AI_MATKEY_BASE_COLOR, &color) == AI_SUCCESS) {
+            mat->albedo = {color.r, color.g, color.b};
         }
 
-        glm::vec4 ambient(1.f);
-        aiColor4D ambientMat;
-        if(aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambientMat) == AI_SUCCESS) {
-            ambient = {ambientMat.r, ambientMat.g, ambientMat.b, ambientMat.a};
+        // Metallic
+        if(aiGetMaterialTexture(material, AI_MATKEY_METALLIC_TEXTURE, &filePath) == AI_SUCCESS) {
+            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
+            if(texDesc.has_value()) {
+                mat->metallicTexture = createRef<render::Texture>(texDesc.value());
+            }
+        }
+        if(aiGetMaterialFloat(material, AI_MATKEY_METALLIC_FACTOR, &factor) == aiReturn_SUCCESS) {
+            mat->metallic = factor;
         }
 
-        glm::vec4 specular(1.f);
-        aiColor4D specularMat;
-        if(aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &specularMat) == AI_SUCCESS) {
-            specular = {specularMat.r, specularMat.g, specularMat.b, specularMat.a};
+        // Roughness
+        if(aiGetMaterialTexture(material, AI_MATKEY_ROUGHNESS_TEXTURE, &filePath) == AI_SUCCESS) {
+            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
+            if(texDesc.has_value()) {
+                mat->metallicTexture = createRef<render::Texture>(texDesc.value());
+            }
+        }
+        if(aiGetMaterialFloat(material, AI_MATKEY_ROUGHNESS_FACTOR, &factor) == aiReturn_SUCCESS) {
+            mat->metallic = factor;
         }
 
-        float shininess = 0.f;
-        ai_real shininessMat;
-        if(aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininessMat) == AI_SUCCESS) {
-            shininess = (float)shininessMat;
-        }
+        // Clearcoat
+        // Emissive
+        // Normals
+        // Transmission
+        // ...
 
-        materials.push_back(new dr::PBRMaterial({
-            diffuseTexture, 
-            ambient, diffuse, specular, shininess
-        }));
+        materials.push_back(mat);
     }
     return materials;
 }
 
-static std::vector<dr::Mesh*> processMeshes(const aiScene *scene, const std::vector<dr::Material*> &materials)
+static std::vector<dr::MeshPtr> 
+processMeshes(const aiScene *scene, const std::vector<dr::MaterialPtr> &materials)
 {   
     // Attributes
     std::vector<dr::Attribute> attributes {
         dr::Attribute::Pos3D,
+        dr::Attribute::Pos3D,     // normals
         dr::Attribute::TexCoords,
-        dr::Attribute::Pos3D,
-        dr::Attribute::Color
+        dr::Attribute::Color,
+        dr::Attribute::Float      // matID
     };
 
-    // batch all of the model into one draw call
-    const u32 matCount = materials.size(); 
+    // batch all of the model into as less draw calls as possible
+    const u32 batchCount = std::ceil((float)materials.size() / (float)DUST_MATERIAL_SLOTS); 
     // pre calculate the number of vertices
-    std::vector<u32> numTotalVertices(matCount, 0);
-    std::vector<u32> numTotalIndices(matCount, 0);
+    std::vector<u32> numTotalVertices(batchCount, 0);
+    std::vector<u32> numTotalIndices(batchCount, 0);
     for(int i = 0; i < scene->mNumMeshes; ++i) {
-        u32 matIndex = scene->mMeshes[i]->mMaterialIndex;
-        numTotalVertices[matIndex] += scene->mMeshes[i]->mNumVertices;
-        numTotalIndices[matIndex]  += scene->mMeshes[i]->mNumFaces * 3;
+        const u32 matId = scene->mMeshes[i]->mMaterialIndex;
+        const u32 batchIdx = std::floor(matId / (float)DUST_MATERIAL_SLOTS);
+        numTotalVertices[batchIdx] += scene->mMeshes[i]->mNumVertices;
+        numTotalIndices[batchIdx]  += scene->mMeshes[i]->mNumFaces * 3;
     }
     // allocate space for vertices
-    std::unordered_map<int, std::vector<dr::Model::Vertex>> vertices(matCount);
-    std::unordered_map<int,std::vector<u32>> indices(matCount);
-    for(int i = 0; i < matCount; ++i) {
-        vertices.insert({i, std::vector<dr::Model::Vertex>(numTotalVertices[i])});
+    std::unordered_map<int, std::vector<dr::ModelVertex>> vertices(batchCount);
+    std::unordered_map<int,std::vector<u32>> indices(batchCount);
+    for(int i = 0; i < batchCount; ++i) {
+        vertices.insert({i, std::vector<dr::ModelVertex>(numTotalVertices[i])});
         indices.insert({i, std::vector<u32>(numTotalIndices[i])});
     }
 
     // parse all meshes
     for (int i = 0; i < scene->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[i];
-        const u32 matIndex = scene->mMeshes[i]->mMaterialIndex;
-        const u32 previousVertexCount = vertices[matIndex].size();
+        const u32 matId = scene->mMeshes[i]->mMaterialIndex;
+        const u32 batchIdx = std::floor(matId / (float)DUST_MATERIAL_SLOTS);
+        const u32 previousVertexCount = vertices[batchIdx].size();
 
         // process vertices
         for(int i = 0; i < mesh->mNumVertices; ++i) {
             auto pos    = mesh->mVertices[i];
             auto color  = mesh->mColors[i];
 
-            dr::Model::Vertex vertex = {{ pos.x, pos.y, pos.z }};
+            dr::ModelVertex vertex = {{ pos.x, pos.y, pos.z }};
             if(mesh->HasTextureCoords(0)) { 
                 auto tex   = mesh->mTextureCoords[0][i];
                 vertex.tex = { tex.x, tex.y }; 
@@ -154,37 +170,41 @@ static std::vector<dr::Mesh*> processMeshes(const aiScene *scene, const std::vec
                 auto color = mesh->mColors[i];
                 vertex.color = { color->r, color->g, color->b, color->a };
             }
-            vertices[matIndex].push_back(vertex);
+            vertex.materialID = matId;
+
+            vertices[batchIdx].push_back(vertex);
         }
         // parses mesh indices and offset it by the previous number of vertices
         for(int i = 0; i < mesh->mNumFaces; ++i) {
             auto face = mesh->mFaces[i];
             // only manage triangles
             if(face.mNumIndices != 3) continue;
-            indices[matIndex].push_back(previousVertexCount + face.mIndices[0]);
-            indices[matIndex].push_back(previousVertexCount + face.mIndices[1]);
-            indices[matIndex].push_back(previousVertexCount + face.mIndices[2]);
+            indices[batchIdx].push_back(previousVertexCount + face.mIndices[0]);
+            indices[batchIdx].push_back(previousVertexCount + face.mIndices[1]);
+            indices[batchIdx].push_back(previousVertexCount + face.mIndices[2]);
         }
     }
 
     // create meshes
-    std::vector<dr::Mesh*> res(matCount);
-    for(int i = 0; i < matCount; ++i) {
-        auto mesh = new dr::Mesh(
+    std::vector<dr::MeshPtr> res(batchCount);
+    for(int i = 0; i < batchCount; ++i) {
+        auto mesh = createRef<render::Mesh>(
             &vertices[i].front(),
-            sizeof(dr::Model::Vertex),
+            sizeof(dr::ModelVertex),
             vertices[i].size(),
             indices[i],
             attributes
         );
-        mesh->setMaterial(materials.at(i));
+        for(int m = 0; m < DUST_MATERIAL_SLOTS; ++m) {
+            mesh->setMaterial(m, materials.at(i * DUST_MATERIAL_SLOTS + m));
+        }
         res.push_back(mesh);
     }
     return res;
 }
 
 template <>
-dust::Result<Ref<dr::Model>> 
+dust::Result<dr::ModelPtr> 
 dio::AssetsManager::LoadSync<Ref<dr::Model>>(const dio::Path &_path)
 {
     auto path = fromAssetsDir(_path);
