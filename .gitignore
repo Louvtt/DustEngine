@@ -81,3 +81,7 @@ docs/
 
 # ImGui
 imgui.ini
+
+# Valgrind
+
+vgcore*
