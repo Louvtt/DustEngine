@@ -54,7 +54,7 @@ public:
 
     u32 getRenderID() const;
 
-    static Ref<Texture> getNullTexture();
+    static Ref<Texture> GetNullTexture();
 
 private:
     void internalCreate(const TextureDesc& descriptor);
