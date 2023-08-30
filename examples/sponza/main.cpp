@@ -52,8 +52,8 @@ private:
     render::SkyboxPtr m_skybox;
 
     glm::vec3 m_sunDirection;
-    glm::vec4 m_sunColor;
-    glm::vec4 m_ambientColor;
+    glm::vec3 m_sunColor;
+    glm::vec3 m_ambientColor;
 
     bool m_wireframe;
     bool m_drawSponza;
@@ -64,8 +64,8 @@ public:
     m_sponza(),
     m_camera(createRef<render::Camera3D>(getWindow()->getWidth(), getWindow()->getHeight(), 90, 2000)),
     m_sunDirection(-.5f, .5f, 0.f),
-    m_sunColor(234/255.f, 198/255.f, 147/255.f, 1.f),
-    m_ambientColor(4/255.f, 0/255.f, 14/255.f, 1.f),
+    m_sunColor(234/255.f, 198/255.f, 147/255.f),
+    m_ambientColor(4/255.f, 0/255.f, 14/255.f),
     m_drawSponza(true), m_wireframe(false), m_renderTarget(nullptr)
     { 
         getWindow()->setVSync(false);
@@ -82,7 +82,7 @@ public:
         }
         m_currentShader = m_shader; 
         
-        m_sponza = io::AssetsManager::LoadSync<render::ModelPtr>("assets/sponza/sponza.obj");
+        m_sponza = io::AssetsManager::LoadSync<render::ModelPtr>("assets/sponza_pbr/sponza.obj");
 
         m_camera->setPosition(glm::vec3(0.f, 20.f, 0.f));
 
@@ -140,11 +140,11 @@ public:
         }
 
         if(InputManager::IsKeyDown(Key::W)) {
-            m_camera->move(m_camera->forward() * CAMERA_SPEED * delta);
+            m_camera->move(m_camera->forward() * -CAMERA_SPEED * delta);
             m_camera->bind(m_currentShader.get());
         }
         if(InputManager::IsKeyDown(Key::S)) {
-            m_camera->move(m_camera->forward() * -CAMERA_SPEED * delta);
+            m_camera->move(m_camera->forward() * CAMERA_SPEED * delta);
             m_camera->bind(m_currentShader.get());
         }
         if(InputManager::IsKeyDown(Key::Space)) {
@@ -168,6 +168,7 @@ public:
 
                 if(m_previousSize.x != size.x
                 || m_previousSize.y != size.y) {
+                    m_previousSize = size;
                     getRenderer()->resize(size.x, size.y);
                     m_renderTarget->resize(size.x, size.y);
                     m_camera->resize(size.x, size.y);
@@ -214,10 +215,10 @@ public:
                         }
                         m_currentShader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
                     }
-                    if(ImGui::ColorEdit4("Sun color", glm::value_ptr(m_sunColor))) {
+                    if(ImGui::ColorEdit3("Sun color", glm::value_ptr(m_sunColor))) {
                         m_currentShader->setUniform("uSunColor", m_sunColor);
                     }
-                    if(ImGui::ColorEdit4("Ambient color", glm::value_ptr(m_ambientColor))) {
+                    if(ImGui::ColorEdit3("Ambient color", glm::value_ptr(m_ambientColor))) {
                         m_currentShader->setUniform("uAmbient", m_ambientColor);
                     }
                 }

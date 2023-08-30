@@ -1,47 +1,56 @@
 #version 460 core
 out vec4 fragColor;
 
-struct uMaterial_t {
-    sampler2D diffuseTexture;
-    bool hasDiffuse;
-    vec4 diffuse;
-    vec4 ambient;
-    vec4 specular;
-    float shininess;
+struct material_t {
+    bool exist;
+
+    vec3 albedo;
+    float metallic;
+    float roughness;
+
+    sampler2D albedoTex;
+    sampler2D metallicTex;
+    sampler2D roughnessTex;
 };
-uniform uMaterial_t uMaterial;
+uniform material_t uMaterials[8];
 
-uniform vec3 viewPos;
 
-in vec2 oTexCoord;
-in vec4 oColor;
-in vec3 oNormal;
+in VS_OUT {
+    vec3 normal;
+    vec2 texCoord;
+    float matID;
+    vec4 color;
+    vec3 fragPos;
+    vec3 lightFragPos;
+} fs_in;
 
-in vec3 oFragPos;
-
+uniform vec3 uViewPos;
 uniform vec3 uSunDirection;
-uniform vec4 uSunColor;
-uniform vec4 uAmbient;
+uniform vec3 uSunColor;
+uniform vec3 uAmbient;
 
 void main() {
-    // ambient
-    vec3 ambient = uAmbient.rgb + uMaterial.ambient.rgb;
-    // diffuse 
-    vec3 norm = normalize(oNormal);
-    vec3 lightDir = uSunDirection;
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = uSunColor.rgb * (diff * uMaterial.diffuse.rgb);
-    if(uMaterial.hasDiffuse) {
-        vec4 col = texture(uMaterial.diffuseTexture, oTexCoord);
-        if(col.a < .5) discard;
-        diffuse *= col.rgb;
+    // fallback
+    if(!uMaterials[int(fs_in.matID)].exist) {
+        fragColor = vec4(1, 0, 1, 1);
+        return;
     }
+
+    // ambient
+    vec3 ambient = uAmbient * .30;
+    // diffuse 
+    vec3 norm = normalize(fs_in.normal);
+    vec3 lightDir = uSunDirection;
+
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = uSunColor * (diff * uMaterials[int(fs_in.matID)].albedo);
+    diffuse *= texture(uMaterials[int(fs_in.matID)].albedoTex, fs_in.texCoord).rgb;
     
     // specular
-    vec3 viewDir = normalize(viewPos - oFragPos);
+    vec3 viewDir = normalize(uViewPos - fs_in.fragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), uMaterial.shininess);
-    vec3 specular = uSunColor.rgb * (spec * uMaterial.specular.rgb);  
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), uMaterials[int(fs_in.matID)].metallic);
+    vec3 specular = uSunColor * spec;  
         
     vec3 result = ambient + diffuse + specular;
     fragColor = vec4(result, 1.0);
