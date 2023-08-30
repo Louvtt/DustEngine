@@ -10,12 +10,12 @@
 
 namespace dr = dust::render;
 
-dr::Model::Model(Mesh* mesh)
+dr::Model::Model(MeshPtr mesh)
 : m_meshes({mesh}),
 m_position(.0f, .0f, .0f),
 m_modelMat(1.f) {}
 
-dr::Model::Model(const std::vector<dr::Mesh*> &meshes)
+dr::Model::Model(const std::vector<dr::MeshPtr> &meshes)
 : m_meshes(meshes),
 m_position(.0f, .0f, .0f),
 m_modelMat(1.f)
@@ -23,7 +23,7 @@ m_modelMat(1.f)
 dr::Model::~Model()
 {
     for(auto mesh : m_meshes) {
-        delete mesh;
+        mesh.reset();
     }
     m_meshes.clear();
 }
@@ -40,7 +40,7 @@ glm::vec3 dr::Model::getPosition() const
 }
 
 
-void dr::Model::draw(Shader *shader)
+void dr::Model::draw(ShaderPtr shader)
 {
     shader->setUniform("uModel", m_modelMat);
     for (auto mesh : m_meshes) {

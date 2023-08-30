@@ -31,8 +31,9 @@ dr::Attribute dr::Attribute::Color     {Float4};
 dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
 : m_indexCount(indices.size()),
 m_vertexCount(vertexCount),
-m_material(nullptr)
+m_materialSlots()
 {
+    m_materialSlots.fill(nullptr);
     glCreateVertexArrays(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Mesh] Failed to create VAO");
@@ -73,21 +74,22 @@ dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vecto
 : dr::Mesh::Mesh(vertexData, vertexDataSize, vertexCount, {}, attribute) {}
 
 dr::Mesh::~Mesh()
-{
-    if(m_material) delete m_material;
-    
+{   
     glBindVertexArray(0);
     if(m_vbo) glDeleteBuffers(1, &m_vbo);
     if(m_ebo) glDeleteBuffers(1, &m_ebo);
     glDeleteVertexArrays(1, &m_renderID);
 }
 
-void dr::Mesh::draw(Shader *shader)
+void dr::Mesh::draw(ShaderPtr shader)
 {
-    shader->use();
-    if(m_material != nullptr) m_material->bind(shader);
-    else shader->setUniform("uHasMaterial", false);
+    u32 slot = 0;
+    for(auto& material : m_materialSlots){
+        material->bind(shader, slot);
+        slot += 1;
+    }
     
+    shader->use();    
     glBindVertexArray(m_renderID);
     if(m_ebo != 0) {
         glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
@@ -96,7 +98,9 @@ void dr::Mesh::draw(Shader *shader)
     }
     glBindVertexArray(0);
 
-    if(m_material) m_material->unbind(shader);
+    for(auto& material : m_materialSlots){
+        material->unbind(shader);
+    }
 }
 
 void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
@@ -119,17 +123,22 @@ void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
     }
 }
 
-void dr::Mesh::setMaterial(Material *material)
+void dr::Mesh::setMaterial(u32 index, MaterialPtr material)
 {
-    m_material = material;
+    if(index > DUST_MATERIAL_SLOTS) return;
+    m_materialSlots[index] = material;
+}
+dr::MaterialPtr dr::Mesh::getMaterial(u32 index) const
+{
+    return m_materialSlots.at(index);
 }
 
-dr::Mesh*
+dr::MeshPtr
 dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
 {
     const glm::vec2 half = size*.5f;
     if(!textureCoordinates) {
-        return new Mesh({
+        return createRef<Mesh>(std::vector<f32>{
             // pos                  // normal
             // first triangle
             -half.x, 0.f, +half.y,  0.f, 1.f, 0.f,
@@ -140,9 +149,9 @@ dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
              half.x, 0.f, -half.y,  0.f, 1.f, 0.f,
             -half.x, 0.f, -half.y,  0.f, 1.f, 0.f,
             -half.x, 0.f, +half.y,  0.f, 1.f, 0.f,
-        }, sizeof(f32) * 6, 6, { Attribute::Pos3D, Attribute::Pos3D });
+        }, sizeof(f32) * 6, 6, std::vector<Attribute>{ Attribute::Pos3D, Attribute::Pos3D });
     } else {
-        return new Mesh({
+        return createRef<Mesh>(std::vector<f32>{
             // pos                 //normal       // tex
             // first triangle
             -half.x, 0.f, +half.y, 0.f, 1.f, 0.f,  0.f, 1.f,
@@ -153,16 +162,16 @@ dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
              half.x, 0.f, -half.y, 0.f, 1.f, 0.f,  1.f, 0.f,
             -half.x, 0.f, -half.y, 0.f, 1.f, 0.f,  0.f, 0.f,
             -half.x, 0.f, +half.y, 0.f, 1.f, 0.f,  0.f, 1.f,
-        }, sizeof(f32) * 8, 6, { Attribute::Pos3D, Attribute::Pos3D, Attribute::TexCoords});
+        }, sizeof(f32) * 8, 6, std::vector<Attribute>{ Attribute::Pos3D, Attribute::Pos3D, Attribute::TexCoords});
     }
 }
 
-dr::Mesh*
+dr::MeshPtr
 dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
 {
     const glm::vec3 half = size*.5f;
     if(!textureCoordinates) {
-        return new Mesh({
+        return createRef<Mesh>(std::vector<f32>{
             // position           // normals
             // back face
              half.x, +half.y, -half.z,  0.0f,  0.0f, -1.0f, // bottom-right         
@@ -206,9 +215,9 @@ dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
             -half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-left        
             -half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, // top-left
              half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, // bottom-right
-        }, sizeof(f32) * 6, 36, { Attribute::Pos3D, Attribute::Pos3D });
+        }, sizeof(f32) * 6, 36, std::vector<Attribute>{ Attribute::Pos3D, Attribute::Pos3D });
     } else {
-        return new Mesh({
+        return createRef<Mesh>(std::vector<f32>{
             // position           // normals          // tex coords
             // back face
             -half.x, +half.y, -half.z,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
@@ -252,6 +261,6 @@ dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
              half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
             -half.x, -half.y, -half.z,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-left
             -half.x, -half.y,  half.z,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-        }, sizeof(f32) * 8, 36, { Attribute::Pos3D, Attribute::Pos3D, Attribute::TexCoords });
+        }, sizeof(f32) * 8, 36, std::vector<Attribute>{ Attribute::Pos3D, Attribute::Pos3D, Attribute::TexCoords });
     }
 }

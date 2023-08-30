@@ -1,11 +1,22 @@
 #ifndef _DUST_RENDER_MESH_HPP_
 #define _DUST_RENDER_MESH_HPP_
 
-#include "dust/core/types.hpp"
-#include "dust/render/material.hpp"
+#include "../core/types.hpp"
+#include "../render/material.hpp"
+#include "../render/shader.hpp"
+
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
+#include <array>
 #include <vector>
+
+#ifndef DUST_MATERIAL_SLOTS
+/**
+ * @brief Number of materials slots per mesh
+ */
+#   define DUST_MATERIAL_SLOTS 8
+#endif
+
 
 namespace dust {
 namespace render {
@@ -44,7 +55,7 @@ protected:
     u32 m_indexCount;
     u32 m_vertexCount;
 
-    Material *m_material;
+    std::array<MaterialPtr, DUST_MATERIAL_SLOTS> m_materialSlots;
 
 public:
     Mesh(std::vector<float> vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attributes);
@@ -52,16 +63,19 @@ public:
     Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes);
     ~Mesh();
 
-    void setMaterial(Material *material);
-    void draw(Shader *shader);
+    void setMaterial(u32 index, MaterialPtr material);
+    MaterialPtr getMaterial(u32 index) const;
+    void draw(ShaderPtr shader);
 
     // Meshes
-    static Mesh* createPlane(glm::vec2 size = glm::vec2(1.f), bool requestTextureCoordinates = false);
-    static Mesh* createCube(glm::vec3 size = glm::vec3(1.f), bool requestTextureCoordinates = false);
+    static Ref<Mesh> createPlane(glm::vec2 size = glm::vec2(1.f), bool requestTextureCoordinates = false);
+    static Ref<Mesh> createCube(glm::vec3 size = glm::vec3(1.f), bool requestTextureCoordinates = false);
 
 protected:
     void bindAttributes(const std::vector<Attribute> &attributes);
 };
+using MeshPtr  = Ref<Mesh>;
+using MeshUPtr = Scope<Mesh>;
 
 }
 }
