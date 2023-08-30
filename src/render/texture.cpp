@@ -1,5 +1,6 @@
 #include "dust/render/texture.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/types.hpp"
 #include "dust/render/renderAPI.hpp"
 #include <filesystem>
 
@@ -7,6 +8,8 @@
 #include "stb_image.h"
 
 namespace dr = dust::render;
+
+dr::TexturePtr dr::Texture::s_nullTexture = nullptr;
 
 static u32 toGLFormat(u32 channels)
 {
@@ -26,6 +29,20 @@ m_height(descriptor.height), m_width(descriptor.width),
 m_lastIndex(0),
 m_renderID(0)
 {
+    // Generate null texture (white RGBA 1x1)
+    if(s_nullTexture == nullptr) {
+        const u32 white_pixel = 0xFFFFFFFF;
+        s_nullTexture = createRef<Texture>(TextureDesc{
+            .data     = (void*)(&white_pixel),
+            .width    = 1,
+            .height   = 1,
+            .channels = 4,
+            .filter   = TextureFilter::Point,
+            .wrap     = TextureWrap::Wrap,
+            .mipMaps  = false
+        });
+    }
+
     internalCreate(descriptor);
 }
 
@@ -102,4 +119,9 @@ u32 dr::Texture::getChannels() const
 u32 dr::Texture::getRenderID() const
 {
     return m_renderID;
+}
+
+dr::TexturePtr dr::Texture::getNullTexture()
+{
+    return s_nullTexture;
 }

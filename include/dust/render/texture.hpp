@@ -13,7 +13,9 @@ enum class TextureFilter : int {
 };
 
 enum class TextureWrap : int {
-    NoWrap,
+    ClampEdge,
+    ClampBorder,
+    NoWrap = ClampEdge,
     Wrap,
     Mirror,
 };
@@ -37,6 +39,7 @@ protected:
     u32 m_width, m_height;
     u32 m_channels;
 
+    static Ref<Texture> s_nullTexture;
 public:
     
     Texture(const TextureDesc& descriptor);
@@ -50,6 +53,8 @@ public:
     u32 getChannels() const;
 
     u32 getRenderID() const;
+
+    static Ref<Texture> getNullTexture();
 
 private:
     void internalCreate(const TextureDesc& descriptor);
