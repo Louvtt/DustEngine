@@ -31,25 +31,31 @@ std::vector<float> triangleVertices{
      0.0f,  0.5f, 0.f,   0.f, 0.f, 1.f, 1.f,
 };
 
-class SimpleShaderApp
+class TriangleApp
 : public dust::Application
 {
 private:
     dust::render::ShaderPtr m_shader;
-    dust::render::Mesh m_triangle;
+    dust::render::MeshPtr m_triangle;
 
     bool m_polygonLineMode{false};
 
 public:
-    SimpleShaderApp() 
+    TriangleApp() 
     : dust::Application("Triangle"),
     m_polygonLineMode(false),
     m_shader(dust::createRef<dust::render::Shader>(vCode, fCode)),
-    m_triangle(triangleVertices, sizeof(float) * 8, 3, {
+    m_triangle(dust::createRef<dust::render::Mesh>(triangleVertices, sizeof(float) * 8, 3, 
+    std::vector<dust::render::Attribute>{
         dust::render::Attribute::Pos3D,
         dust::render::Attribute::Color
-    })
+    }))
     {  }
+
+    ~TriangleApp() {
+        m_shader.reset();
+        m_triangle.reset();
+    }
 
     void update() override
     {
@@ -62,9 +68,9 @@ public:
 
     void render() override 
     {
-        m_triangle.draw(m_shader);
+        m_triangle->draw(m_shader);
     }
 };
 
-DUST_SIMPLE_ENTRY(SimpleShaderApp)
+DUST_SIMPLE_ENTRY(TriangleApp)
 
