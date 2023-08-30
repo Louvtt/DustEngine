@@ -28,3 +28,6 @@ add_subdirectory(stb)
 
 ## == assimp ==
 add_subdirectory(assimp)
+
+## == nvidia ==
+add_subdirectory(nvidia)

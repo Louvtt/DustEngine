@@ -11,7 +11,7 @@ dr::Material::Material()
 : m_boundSlot(0) {}
 
 static std::string shaderMaterialLoc(u32 index) {
-    return std::format("uMaterial[{}]", index);
+    return std::format("uMaterials[{}]", index);
 }
 
 dr::ColorMaterial::ColorMaterial(glm::vec3 _color)
@@ -38,7 +38,7 @@ void dr::TextureMaterial::bind(ShaderPtr shader, u32 slot)
     const std::string loc = shaderMaterialLoc(slot);
     shader->setUniform(loc + ".exist", true);
     texture->bind(0);
-    shader->setUniform(loc + ".texture", 0);
+    shader->setUniform(loc + ".albedo", (int)(slot * 3));
 }
 
 void dr::TextureMaterial::unbind(ShaderPtr shader)
@@ -46,7 +46,7 @@ void dr::TextureMaterial::unbind(ShaderPtr shader)
     const std::string loc = shaderMaterialLoc(m_boundSlot);
     texture->unbind();
     shader->setUniform("uHasMaterial", false);
-    shader->setUniform("uMaterial.texture", 0);
+    shader->setUniform("uMaterial.albedoTex", (int)(m_boundSlot * 3));
 }
 
 dr::PBRMaterial::PBRMaterial()
@@ -62,14 +62,15 @@ void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot)
 {
     m_boundSlot = slot;
     const std::string loc = shaderMaterialLoc(slot);
+    const int baseTextureBind = slot * 3;
     // textures
     shader->setUniform(loc + ".exist", true);
     albedoTexture->bind(0);
-    shader->setUniform(loc + ".albedoTex", 0);
+    shader->setUniform(loc + ".albedoTex", baseTextureBind + 0);
     metallicTexture->bind(1);
-    shader->setUniform(loc + ".metallicTex", 1);
+    shader->setUniform(loc + ".metallicTex", baseTextureBind + 1);
     roughnessTexture->bind(2);
-    shader->setUniform(loc + ".roughnessTex", 2);
+    shader->setUniform(loc + ".roughnessTex", baseTextureBind + 2);
 
     // colors
     shader->setUniform(loc + ".albedo", albedo);

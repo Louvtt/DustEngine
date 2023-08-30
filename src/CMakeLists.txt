@@ -61,6 +61,7 @@ PUBLIC
     imgui
 
 PRIVATE
+    nv_dds
     stb
     glad
     OpenGL::GL

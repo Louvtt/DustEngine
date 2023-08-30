@@ -14,6 +14,7 @@ namespace dio = dust::io;
 namespace fs = std::filesystem;
 
 #include <stb_image.h>
+#include <nv_dds.h>
 
 template <>
 dust::Result<dr::TextureDesc> 
@@ -24,22 +25,42 @@ dio::AssetsManager::LoadSync<dr::TextureDesc, bool>(const dio::Path &_path, bool
         DUST_ERROR("[Texture] {} doesn't exists.", path.string());
         return {};
     }
-
     DUST_DEBUG("[Texture] Loading {}", path.string());
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
-    if(data == nullptr) {
-        DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
-        return {};
+
+    // NVIDIA DDS
+    if(path.extension() == ".dds") {
+        nv_dds::CDDSImage image{};
+        image.load(path.string());
+        
+        auto texDesc = dr::TextureDesc{
+            (uint8_t*)image.get_surface(0).get_mipmap(0), 
+            image.get_width(), 
+            image.get_height(), 
+            image.get_components(), 
+            dr::TextureFilter::Linear, 
+            dr::TextureWrap::NoWrap, 
+            image.get_num_mipmaps() > 0
+        };
+        return texDesc;
     }
+    // STB_IMAGE 
+    else { 
+        int width, height, nrChannels;
+        stbi_set_flip_vertically_on_load(true);
+        u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+        if(data == nullptr) {
+            DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
+            return {};
+        }
 
-    auto texDesc = dr::TextureDesc{
-        data, (u32)width, (u32)height, (u32)nrChannels, dr::TextureFilter::Linear, dr::TextureWrap::NoWrap, mipMaps
-    };
+        auto texDesc = dr::TextureDesc{
+            data, (u32)width, (u32)height, (u32)nrChannels, dr::TextureFilter::Linear, dr::TextureWrap::NoWrap, mipMaps
+        };
 
-    stbi_image_free(data);
-    return texDesc;
+        stbi_image_free(data);
+        return texDesc;
+    }
+    return {};
 }
 
 //////////////////////////
@@ -69,19 +90,19 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         aiColor4D color;
 
         // ALBEDO
-        if(aiGetMaterialTexture(material, AI_MATKEY_BASE_COLOR_TEXTURE, &filePath) == AI_SUCCESS) {
+        if(material->GetTexture(aiTextureType_DIFFUSE, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
             const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
             if(texDesc.has_value()) {
                 mat->albedoTexture = createRef<render::Texture>(texDesc.value());
             }
         }
-        if(aiGetMaterialColor(material, AI_MATKEY_BASE_COLOR, &color) == AI_SUCCESS) {
+        if(aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color) == AI_SUCCESS) {
             mat->albedo = {color.r, color.g, color.b};
         }
 
         // Metallic
-        if(aiGetMaterialTexture(material, AI_MATKEY_METALLIC_TEXTURE, &filePath) == AI_SUCCESS) {
+        if(material->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
             const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
             if(texDesc.has_value()) {
@@ -93,7 +114,7 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         }
 
         // Roughness
-        if(aiGetMaterialTexture(material, AI_MATKEY_ROUGHNESS_TEXTURE, &filePath) == AI_SUCCESS) {
+        if(material->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
             const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
             if(texDesc.has_value()) {
