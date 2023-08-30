@@ -4,6 +4,7 @@
 #include "dust/render/material.hpp"
 #include "dust/render/mesh.hpp"
 #include "dust/render/texture.hpp"
+#include <algorithm>
 #include <thread>
 namespace dr = dust::render;
 namespace dio = dust::io;
@@ -115,7 +116,7 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
 }
 
 static std::vector<dr::MeshPtr> 
-processMeshes(const aiScene *scene, const std::vector<dr::MaterialPtr> &materials)
+processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
 {   
     // Attributes
     std::vector<dr::Attribute> attributes {
@@ -129,8 +130,8 @@ processMeshes(const aiScene *scene, const std::vector<dr::MaterialPtr> &material
     // batch all of the model into as less draw calls as possible
     const u32 batchCount = std::ceil((float)materials.size() / (float)DUST_MATERIAL_SLOTS); 
     // pre calculate the number of vertices
-    std::vector<u32> numTotalVertices(batchCount, 0);
-    std::vector<u32> numTotalIndices(batchCount, 0);
+    std::vector<u32> numTotalVertices(batchCount, 0u);
+    std::vector<u32> numTotalIndices(batchCount, 0u);
     for(int i = 0; i < scene->mNumMeshes; ++i) {
         const u32 matId = scene->mMeshes[i]->mMaterialIndex;
         const u32 batchIdx = std::floor(matId / (float)DUST_MATERIAL_SLOTS);
@@ -149,7 +150,7 @@ processMeshes(const aiScene *scene, const std::vector<dr::MaterialPtr> &material
     for (int i = 0; i < scene->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[i];
         const u32 matId = scene->mMeshes[i]->mMaterialIndex;
-        const u32 batchIdx = std::floor(matId / (float)DUST_MATERIAL_SLOTS);
+        const u32 batchIdx = std::floor((float)matId / (float)DUST_MATERIAL_SLOTS);
         const u32 previousVertexCount = vertices[batchIdx].size();
 
         // process vertices
@@ -186,6 +187,7 @@ processMeshes(const aiScene *scene, const std::vector<dr::MaterialPtr> &material
     }
 
     // create meshes
+    u32 materialI = 0;
     std::vector<dr::MeshPtr> res(batchCount);
     for(int i = 0; i < batchCount; ++i) {
         auto mesh = createRef<render::Mesh>(
@@ -196,7 +198,9 @@ processMeshes(const aiScene *scene, const std::vector<dr::MaterialPtr> &material
             attributes
         );
         for(int m = 0; m < DUST_MATERIAL_SLOTS; ++m) {
-            mesh->setMaterial(m, materials.at(i * DUST_MATERIAL_SLOTS + m));
+            if(materialI >= materials.size()) break;
+            mesh->setMaterial(m, materials.at(materialI));
+            materialI += 1;
         }
         res.push_back(mesh);
     }

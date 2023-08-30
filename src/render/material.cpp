@@ -31,7 +31,7 @@ void dr::ColorMaterial::unbind(ShaderPtr shader)
 }
 
 dr::TextureMaterial::TextureMaterial()
-: texture(Texture::getNullTexture()) {}
+: texture(Texture::GetNullTexture()) {}
 void dr::TextureMaterial::bind(ShaderPtr shader, u32 slot)
 {
     m_boundSlot = slot;
@@ -53,9 +53,9 @@ dr::PBRMaterial::PBRMaterial()
 : albedo({1.f, 1.f, 1.f}),
 metallic(0.f),
 roughness(0.f),
-albedoTexture(Texture::getNullTexture()),
-metallicTexture(Texture::getNullTexture()),
-roughnessTexture(Texture::getNullTexture())
+albedoTexture(Texture::GetNullTexture()),
+metallicTexture(Texture::GetNullTexture()),
+roughnessTexture(Texture::GetNullTexture())
 { }
 
 void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot) 
