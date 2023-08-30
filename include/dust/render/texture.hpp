@@ -7,6 +7,27 @@ namespace dust {
 
 namespace render {
 
+enum class TextureFilter : int {
+    Point,
+    Linear,
+};
+
+enum class TextureWrap : int {
+    NoWrap,
+    Wrap,
+    Mirror,
+};
+
+struct TextureDesc {
+    void* data;
+    u32 width;
+    u32 height;
+    u32 channels;
+    TextureFilter filter = TextureFilter::Linear;
+    TextureWrap wrap = TextureWrap::NoWrap;
+    bool mipMaps = false;
+};
+
 class Texture
 {
 protected:
@@ -17,27 +38,8 @@ protected:
     u32 m_channels;
 
 public:
-    enum class Filter : int {
-        Point,
-        Linear,
-    };
-    enum class Wrap : int {
-        NoWrap,
-        Wrap,
-        Mirror,
-    };
-
-    struct Desc {
-        void* data;
-        u32 width;
-        u32 height;
-        u32 channels;
-        Filter filter = Filter::Linear;
-        Wrap wrap = Wrap::NoWrap;
-        bool mipMaps = false;
-    };
-
-    Texture(const Desc& descriptor);
+    
+    Texture(const TextureDesc& descriptor);
     ~Texture();
 
     void bind(u16 index = 0);
@@ -47,11 +49,16 @@ public:
     u32 getHeight() const;
     u32 getChannels() const;
 
+    u32 getRenderID() const;
+
 private:
-    void internalCreate(const Desc& descriptor);
-    static u32 apiValue(Wrap wrap);
-    static u32 apiValue(Filter filter, bool mipMaps);
+    void internalCreate(const TextureDesc& descriptor);
+    static u32 apiValue(TextureWrap wrap);
+    static u32 apiValue(TextureFilter filter, bool mipMaps);
 };
+
+using TexturePtr = Ref<Texture>;
+using TextureUPtr = Scope<Texture>;
 
 }
 }

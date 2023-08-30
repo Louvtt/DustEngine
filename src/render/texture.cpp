@@ -20,7 +20,7 @@ static u32 toGLFormat(u32 channels)
     }
 }
 
-dr::Texture::Texture(const Desc& descriptor) 
+dr::Texture::Texture(const TextureDesc& descriptor) 
 : m_channels(descriptor.channels),
 m_height(descriptor.height), m_width(descriptor.width),
 m_lastIndex(0),
@@ -29,7 +29,7 @@ m_renderID(0)
     internalCreate(descriptor);
 }
 
-void dr::Texture::internalCreate(const Desc& descriptor)
+void dr::Texture::internalCreate(const TextureDesc& descriptor)
 {
     glGenTextures(1, &m_renderID);
     if(m_renderID == 0) {
@@ -50,20 +50,20 @@ void dr::Texture::internalCreate(const Desc& descriptor)
 
     DUST_DEBUG("[OpenGL] Created Texture {}", m_renderID);
 }
-u32 dr::Texture::apiValue(Wrap wrap)
+u32 dr::Texture::apiValue(TextureWrap wrap)
 {
     switch(wrap) {
-        case Wrap::NoWrap: return GL_CLAMP;
-        case Wrap::Wrap:   return GL_REPEAT;
-        case Wrap::Mirror: return GL_MIRRORED_REPEAT;
+        case TextureWrap::NoWrap: return GL_CLAMP;
+        case TextureWrap::Wrap:   return GL_REPEAT;
+        case TextureWrap::Mirror: return GL_MIRRORED_REPEAT;
         default: return GL_CLAMP;
     }
 }
-u32 dr::Texture::apiValue(Filter filter, bool mipMaps)
+u32 dr::Texture::apiValue(TextureFilter filter, bool mipMaps)
 {
     switch(filter) {
-        case Filter::Point: return mipMaps ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
-        case Filter::Linear: return mipMaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+        case TextureFilter::Point: return mipMaps ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
+        case TextureFilter::Linear: return mipMaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
         default: return GL_LINEAR;
     }
 }
@@ -97,4 +97,9 @@ u32 dr::Texture::getHeight() const
 u32 dr::Texture::getChannels() const
 {
     return m_channels;
+}
+
+u32 dr::Texture::getRenderID() const
+{
+    return m_renderID;
 }
