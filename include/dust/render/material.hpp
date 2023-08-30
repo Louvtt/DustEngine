@@ -2,6 +2,8 @@
 #define _DUST_RENDER_MATERIAL_HPP_
 
 #include "../core/types.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 
@@ -9,72 +11,73 @@ namespace dust {
 
 namespace render {
 
-class Shader;
-class Texture;
-
+/**
+ * @brief Base Material Class
+ */
 class Material
 {
+protected:
+    u32 m_boundSlot;
+
 public:
     Material();
     virtual ~Material() = default;
 
-    virtual void bind(Shader *shader) = 0;
-    virtual void unbind(Shader *shader) = 0;
+    virtual void bind(ShaderPtr shader, u32 slot = 0) = 0;
+    virtual void unbind(ShaderPtr shader) = 0;
 };
+using MaterialPtr  = Ref<Material>;
+using MaterialUPtr = Scope<Material>;
+
 
 class ColorMaterial
 : public Material
 {
-protected:
-    glm::vec3 m_color;
-
 public:
     ColorMaterial(glm::vec3 color);
     ~ColorMaterial() = default;
 
-    void bind(Shader *shader) override;
-    void unbind(Shader *shader) override;
+    void bind(ShaderPtr shader, u32 slot = 0) override;
+    void unbind(ShaderPtr shader) override;
+
+    glm::vec3 color;
 };
 
 class TextureMaterial
 : public Material
 {
-protected:
-    Texture* m_texture;
-
 public:
-    TextureMaterial(Texture* texture);
-    ~TextureMaterial();
+    TextureMaterial();
+    ~TextureMaterial() = default;
 
-    void bind(Shader *shader) override;
-    void unbind(Shader *shader) override;
+    void bind(ShaderPtr shader, u32 slot = 0) override;
+    void unbind(ShaderPtr shader) override;
+
+    TexturePtr texture;
 };
 
 class PBRMaterial
 : public Material
 {
 public:
-    struct Data {
-        Texture* diffuse;
+    PBRMaterial();
+    ~PBRMaterial() = default;
 
-        glm::vec4 ambientColor;
-        glm::vec4 diffuseColor;
-        glm::vec4 specularColor;
-        float shininess;
-    };
-protected:
-    Data m_data;
+    void bind(ShaderPtr shader, u32 slot = 0) override;
+    void unbind(ShaderPtr shader) override;
 
-public:
-    PBRMaterial(const Data& data);
-    ~PBRMaterial();
+    // Data
 
-    void bind(Shader *shader) override;
-    void unbind(Shader *shader) override;
+    glm::vec3 albedo;
+    f32 metallic;
+    f32 roughness;
+
+    TexturePtr albedoTexture;
+    TexturePtr metallicTexture;
+    TexturePtr roughnessTexture;
 };
 
 }
-
 }
 
 #endif //_DUST_RENDER_MATERIAL_HPP_

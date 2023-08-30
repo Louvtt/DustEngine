@@ -3,83 +3,85 @@
 #include "dust/render/texture.hpp"
 #include "dust/render/shader.hpp"
 #include "glm/ext/vector_float4.hpp"
+#include <format>
 
 namespace dr = dust::render;
 
-dr::Material::Material() {}
+dr::Material::Material()
+: m_boundSlot(0) {}
 
-
-dr::ColorMaterial::ColorMaterial(glm::vec3 color)
-: m_color(color) { }
-
-void dr::ColorMaterial::bind(Shader *shader)   
-{
-    shader->setUniform("uHasMaterial", true);
-    shader->setUniform("uMaterial.hasDiffuse",false);
-    shader->setUniform("uMaterial.diffuse", glm::vec4{m_color, 1.f});
-    shader->setUniform("uMaterial.ambient", glm::vec4{m_color, 1.f});
-}
-void dr::ColorMaterial::unbind(Shader *shader) 
-{
-    shader->setUniform("uHasMaterial", false);
+static std::string shaderMaterialLoc(u32 index) {
+    return std::format("uMaterial[{}]", index);
 }
 
-dr::TextureMaterial::TextureMaterial(dr::Texture *texture)
-: m_texture(texture) {}
+dr::ColorMaterial::ColorMaterial(glm::vec3 _color)
+: color(_color) { }
 
-dr::TextureMaterial::~TextureMaterial()
+void dr::ColorMaterial::bind(ShaderPtr shader, u32 slot)   
 {
-    if(m_texture) delete m_texture;
+    m_boundSlot = slot;
+    const std::string loc = shaderMaterialLoc(slot);
+    shader->setUniform(loc + ".exist", true);
+    shader->setUniform(loc + ".diffuse", glm::vec4{color, 1.f});
+}
+void dr::ColorMaterial::unbind(ShaderPtr shader) 
+{
+    const std::string loc = shaderMaterialLoc(m_boundSlot);
+    shader->setUniform(loc + ".exist", false);
 }
 
-void dr::TextureMaterial::bind(Shader *shader)
+dr::TextureMaterial::TextureMaterial()
+: texture(Texture::getNullTexture()) {}
+void dr::TextureMaterial::bind(ShaderPtr shader, u32 slot)
 {
-    shader->setUniform("uHasMaterial", true);
-    if(m_texture) {
-        m_texture->bind(0);
-        shader->setUniform("uMaterial.texture", 0);
-        shader->setUniform("uMaterial.hasTexture", true);
-    } else {
-        shader->setUniform("uMaterial.hasTexture", false);
-    }
+    m_boundSlot = slot;
+    const std::string loc = shaderMaterialLoc(slot);
+    shader->setUniform(loc + ".exist", true);
+    texture->bind(0);
+    shader->setUniform(loc + ".texture", 0);
 }
 
-void dr::TextureMaterial::unbind(Shader *shader)
+void dr::TextureMaterial::unbind(ShaderPtr shader)
 {
-    if(m_texture) {
-        m_texture->unbind();
-    }
+    const std::string loc = shaderMaterialLoc(m_boundSlot);
+    texture->unbind();
     shader->setUniform("uHasMaterial", false);
     shader->setUniform("uMaterial.texture", 0);
-    shader->setUniform("uMaterial.hasTexture", false);
 }
 
-dr::PBRMaterial::PBRMaterial(const dr::PBRMaterial::Data& data)
-: m_data(data)
+dr::PBRMaterial::PBRMaterial()
+: albedo({1.f, 1.f, 1.f}),
+metallic(0.f),
+roughness(0.f),
+albedoTexture(Texture::getNullTexture()),
+metallicTexture(Texture::getNullTexture()),
+roughnessTexture(Texture::getNullTexture())
 { }
 
-dr::PBRMaterial::~PBRMaterial()
+void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot) 
 {
-    if(m_data.diffuse) delete m_data.diffuse;
-}
-
-void dr::PBRMaterial::bind(Shader *shader) 
-{
+    m_boundSlot = slot;
+    const std::string loc = shaderMaterialLoc(slot);
     // textures
-    shader->setUniform("uHasMaterial", true);
-    if(m_data.diffuse) m_data.diffuse->bind(0);
-    shader->setUniform("uMaterial.diffuseTexture", 0);
-    shader->setUniform("uMaterial.hasDiffuse",(m_data.diffuse != nullptr));
+    shader->setUniform(loc + ".exist", true);
+    albedoTexture->bind(0);
+    shader->setUniform(loc + ".albedoTex", 0);
+    metallicTexture->bind(1);
+    shader->setUniform(loc + ".metallicTex", 1);
+    roughnessTexture->bind(2);
+    shader->setUniform(loc + ".roughnessTex", 2);
 
     // colors
-    shader->setUniform("uMaterial.diffuse", m_data.diffuseColor);
-    shader->setUniform("uMaterial.ambient", m_data.ambientColor);
-    shader->setUniform("uMaterial.specular", m_data.specularColor);
-    shader->setUniform("uMaterial.shininess", m_data.shininess);
+    shader->setUniform(loc + ".albedo", albedo);
+    shader->setUniform(loc + ".metallic", metallic);
+    shader->setUniform(loc + ".roughness", roughness);
 }
-void dr::PBRMaterial::unbind(Shader *shader) 
+void dr::PBRMaterial::unbind(ShaderPtr shader) 
 {
+    const std::string loc = shaderMaterialLoc(m_boundSlot);
     // unbind textures
-    if(m_data.diffuse) m_data.diffuse->unbind();
-    shader->setUniform("uHasMaterial", false);
+    albedoTexture->unbind();
+    metallicTexture->unbind();
+    roughnessTexture->unbind();
+    shader->setUniform(loc + ".exist", false);
 }
