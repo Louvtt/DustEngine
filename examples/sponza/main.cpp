@@ -42,7 +42,7 @@ class SimpleApp
 private:
     render::ShaderPtr m_shader;
     render::ShaderPtr m_depthShader;
-    render::Shader *m_currentShader;
+    render::ShaderPtr m_currentShader;
 
     ImVec2 m_previousSize;
     render::Framebuffer *m_renderTarget;
@@ -80,7 +80,7 @@ public:
             DUST_ERROR("Exiting ... Shader missing");
             exit(-1);
         }
-        m_currentShader = m_shader.get(); 
+        m_currentShader = m_shader; 
         
         m_sponza = io::AssetsManager::LoadSync<render::ModelPtr>("assets/sponza/sponza.obj");
 
@@ -132,28 +132,28 @@ public:
         f32 delta = (f32)getTime().delta;
         if(InputManager::IsKeyDown(Key::A)) {
             m_camera->rotate({-CAMERA_ROTATE_SPEED * delta, .0f, .0f});
-            m_camera->bind(m_currentShader);
+            m_camera->bind(m_currentShader.get());
         }
         if(InputManager::IsKeyDown(Key::D)) {
             m_camera->rotate({CAMERA_ROTATE_SPEED * delta, .0f, .0f});
-            m_camera->bind(m_currentShader);
+            m_camera->bind(m_currentShader.get());
         }
 
         if(InputManager::IsKeyDown(Key::W)) {
             m_camera->move(m_camera->forward() * CAMERA_SPEED * delta);
-            m_camera->bind(m_currentShader);
+            m_camera->bind(m_currentShader.get());
         }
         if(InputManager::IsKeyDown(Key::S)) {
             m_camera->move(m_camera->forward() * -CAMERA_SPEED * delta);
-            m_camera->bind(m_currentShader);
+            m_camera->bind(m_currentShader.get());
         }
         if(InputManager::IsKeyDown(Key::Space)) {
             m_camera->move(glm::vec3(0, CAMERA_SPEED * delta, 0));
-            m_camera->bind(m_currentShader);
+            m_camera->bind(m_currentShader.get());
         }
         if(InputManager::IsKeyDown(Key::LeftShift)) {
             m_camera->move(glm::vec3(0, -CAMERA_SPEED * delta, 0));
-            m_camera->bind(m_currentShader);
+            m_camera->bind(m_currentShader.get());
         }
     }
 
@@ -171,7 +171,7 @@ public:
                     getRenderer()->resize(size.x, size.y);
                     m_renderTarget->resize(size.x, size.y);
                     m_camera->resize(size.x, size.y);
-                    m_camera->bind(m_currentShader); // update
+                    m_camera->bind(m_currentShader.get()); // update
                 }
                 
                 m_renderTarget->bind();
@@ -230,10 +230,10 @@ public:
                     ImGui::Checkbox("Draw Sponza", &m_drawSponza);
 
                     if(ImGui::Button("Show Depth")) { 
-                        m_currentShader = m_depthShader.get(); 
+                        m_currentShader = m_depthShader; 
                     }
                     if(ImGui::Button("Show Render")) { 
-                        m_currentShader = m_shader.get(); 
+                        m_currentShader = m_shader; 
                     }
 
                     // reload shaders ?
@@ -253,7 +253,7 @@ public:
 
 private:
     void updateUniforms() {
-        m_camera->bind(m_currentShader);
+        m_camera->bind(m_currentShader.get());
         m_shader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
         m_shader->setUniform("uSunColor", m_sunColor);
         m_shader->setUniform("uAmbient", m_ambientColor);

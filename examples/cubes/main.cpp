@@ -125,14 +125,14 @@ public:
         for(const auto& pos : cubesPositions)
         {
             auto cube = render::Mesh::createCube();
-            cube->setMaterial(new render::ColorMaterial({1.f, 1.f, 1.f}));
+            cube->setMaterial(0, createRef<render::ColorMaterial>(glm::vec3{1.f, 1.f, 1.f}));
 
             auto cubeModel = createRef<render::Model>(cube);
             cubeModel->setPosition({pos.x, pos.y, pos.z});
             m_cubes.push_back(cubeModel);
         }
         auto plane = render::Mesh::createPlane({20.f, 20.f});
-        plane->setMaterial(new render::ColorMaterial({1.f, 1.f, 1.f}));
+        plane->setMaterial(0, createRef<render::ColorMaterial>(glm::vec3{1.f, 1.f, 1.f}));
         m_plane = createRef<render::Model>(plane);
         
         // sky color until skybox is created
@@ -202,7 +202,7 @@ public:
         tris.clear();
 
         getRenderer()->setCulling(false);
-        mesh.draw(m_sceneShader.get());
+        mesh.draw(m_sceneShader);
         getRenderer()->setCulling(true);
     }
 
@@ -218,9 +218,9 @@ public:
 
             for(const auto& cube : m_cubes)
             {
-                cube->draw(m_shadowShader.get());
+                cube->draw(m_shadowShader);
             }
-            m_plane->draw(m_shadowShader.get());
+            m_plane->draw(m_shadowShader);
         }
         m_shadowMap->unbind();
         m_shadowMap->bindAttachment(10, render::Framebuffer::AttachmentType::DEPTH);
@@ -232,9 +232,9 @@ public:
 
             for(const auto& cube : m_cubes)
             {
-                cube->draw(m_sceneShader.get());
+                cube->draw(m_sceneShader);
             }
-            m_plane->draw(m_sceneShader.get());
+            m_plane->draw(m_sceneShader);
 
             // draw frustrum
             // render::Camera3DPtr sunCam = createRef<render::Camera3D>(1024,1024,90);

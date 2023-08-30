@@ -35,7 +35,7 @@ class SimpleShaderApp
 : public dust::Application
 {
 private:
-    dust::render::Shader m_shader;
+    dust::render::ShaderPtr m_shader;
     dust::render::Mesh m_triangle;
 
     bool m_polygonLineMode{false};
@@ -44,7 +44,7 @@ public:
     SimpleShaderApp() 
     : dust::Application("Triangle"),
     m_polygonLineMode(false),
-    m_shader(vCode, fCode),
+    m_shader(dust::createRef<dust::render::Shader>(vCode, fCode)),
     m_triangle(triangleVertices, sizeof(float) * 8, 3, {
         dust::render::Attribute::Pos3D,
         dust::render::Attribute::Color
@@ -62,7 +62,7 @@ public:
 
     void render() override 
     {
-        m_triangle.draw(&m_shader);
+        m_triangle.draw(m_shader);
     }
 };
 
