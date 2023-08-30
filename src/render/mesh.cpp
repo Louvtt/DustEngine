@@ -85,6 +85,7 @@ void dr::Mesh::draw(ShaderPtr shader)
 {
     u32 slot = 0;
     for(auto& material : m_materialSlots){
+        if(material == nullptr) continue;
         material->bind(shader, slot);
         slot += 1;
     }
@@ -99,6 +100,7 @@ void dr::Mesh::draw(ShaderPtr shader)
     glBindVertexArray(0);
 
     for(auto& material : m_materialSlots){
+        if(material == nullptr) continue;
         material->unbind(shader);
     }
 }
