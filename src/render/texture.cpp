@@ -23,36 +23,113 @@ static u32 toGLFormat(u32 channels)
     }
 }
 
-dr::Texture::Texture(const TextureDesc& descriptor) 
-: m_channels(descriptor.channels),
-m_height(descriptor.height), m_width(descriptor.width),
+dr::Texture::Texture(u32 width, u32 height, u32 channels) 
+: m_channels(channels),
+m_height(height), m_width(width),
 m_lastIndex(0),
 m_renderID(0)
-{
-    internalCreate(descriptor);
-}
+{ }
 
-void dr::Texture::internalCreate(const TextureDesc& descriptor)
+
+bool dr::Texture::internalCreate(u32 apiTextureType)
 {
     glGenTextures(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Texture] Failed to create a texture.");
-        return;
+        return false;
     }
-    glBindTexture(GL_TEXTURE_2D, m_renderID);
-    glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(descriptor.channels), descriptor.width, descriptor.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, descriptor.data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(descriptor.filter, descriptor.mipMaps));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(descriptor.filter, descriptor.mipMaps));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(descriptor.wrap));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(descriptor.wrap));
-    if(descriptor.mipMaps) {
+    return true;
+}
+
+dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels, void* data, const TextureParam& param) 
+{
+    TexturePtr texture = TexturePtr(new Texture(width, height, channels));
+    if(!texture->internalCreate(GL_TEXTURE_2D)) {
+      texture.reset();
+      return GetNullTexture();
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
+    glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, param.mipMaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, param.mipMaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
+    if(param.mipMaps) {
         DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    DUST_DEBUG("[OpenGL] Created Texture {}", m_renderID);
+    DUST_DEBUG("[OpenGL] Created Texture {}", texture->m_renderID);
+    return texture;
 }
+
+dr::TexturePtr dr::Texture::CreateTexture2DArray(u32 width, u32 height, u32 channels, std::vector<void *>, const TextureParam &param)
+{
+    TexturePtr texture = TexturePtr(new Texture(width, height, channels));
+    if(!texture->internalCreate(GL_TEXTURE_2D_ARRAY)) {
+        texture.reset();
+        return GetNullTexture();
+    }
+    // TODO: Implement texture arrays
+    DUST_WARN("[OpenGL] [Texture] Texture 2D Arrays creation is not implemented yet.");
+    return texture;
+}
+
+dr::TexturePtr dr::Texture::CreateTextureCubeMap(u32 width, u32 height, u32 channels, std::vector<void *> faces, const TextureParam &param)
+{
+    TexturePtr texture = TexturePtr(new Texture(width, height, channels));
+    if(!texture->internalCreate(GL_TEXTURE_CUBE_MAP)) {
+        texture.reset();
+        return GetNullTexture();
+    }
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture->m_renderID);
+    u32 index = 0;
+    for(auto face : faces)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 
+             0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, face
+        );
+        ++index;
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, false));
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, false));
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, apiValue(param.wrap));
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    return texture;
+
+}
+
+dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels, std::vector<void *> data, const TextureParam &param)
+{
+    TexturePtr texture = TexturePtr(new Texture(width, height, channels));
+    if(!texture->internalCreate(GL_TEXTURE_2D)) {
+        texture.reset();
+        return GetNullTexture();
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, param.mipMaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, param.mipMaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
+    for(int i = 0; i < data.size(); ++i) {
+        glTexImage2D(GL_TEXTURE_2D, i, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.at(i));
+    }
+    if(param.mipMaps) {
+        DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    DUST_DEBUG("[OpenGL] Created Texture {}", texture->m_renderID);
+    return texture;
+    return texture;
+}
+
 u32 dr::Texture::apiValue(TextureWrap wrap)
 {
     switch(wrap) {
@@ -112,15 +189,17 @@ dr::TexturePtr dr::Texture::GetNullTexture()
     // Generate null texture (white RGBA 1x1)
     if(s_nullTexture == nullptr) {
         const u32 white_pixel = 0xFFFFFFFF;
-        s_nullTexture = createRef<Texture>(TextureDesc{
-            .data     = (void*)(&white_pixel),
-            .width    = 1,
-            .height   = 1,
-            .channels = 4,
-            .filter   = TextureFilter::Point,
-            .wrap     = TextureWrap::Wrap,
-            .mipMaps  = false
-        });
+        s_nullTexture = CreateTexture2D(
+            1,
+            1,
+            4,
+            (void*)(&white_pixel),
+            TextureParam {
+                .filter   = TextureFilter::Point,
+                .wrap     = TextureWrap::Wrap,
+                .mipMaps  = false
+            }
+        );
     }
     return s_nullTexture;
 }

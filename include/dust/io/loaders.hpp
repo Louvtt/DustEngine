@@ -11,12 +11,16 @@
 using namespace dust;
 namespace dr = dust::render;
 
-DUST_ADD_LOADER_SYNC_DEF_EX(dr::TextureDesc, bool mipMaps);
+namespace dust::io {
 
-DUST_ADD_LOADER_SYNC_DEF(dr::ModelPtr);
-DUST_ADD_LOADER_ASYNC_DEF(dr::ModelPtr);
+DUST_ADD_LOADER(dr::TexturePtr, Texture2D);
 
-DUST_ADD_LOADER_SYNC_DEF(std::string);
+DUST_ADD_LOADER(dr::ModelPtr, Model);
+DUST_ADD_LOADER_ASYNC(dr::ModelPtr, Model);
+
+DUST_ADD_LOADER(std::string, File);
+
+}
 
 
 #endif //_DUST_IO_IMAGELOADER_HPP_

@@ -82,7 +82,7 @@ public:
         }
         m_currentShader = m_shader; 
         
-        m_sponza = io::AssetsManager::LoadSync<render::ModelPtr>("assets/sponza_pbr/sponza.obj");
+        m_sponza = io::LoadModel("assets/sponza_pbr/sponza.obj");
 
         m_camera->setPosition(glm::vec3(0.f, 20.f, 0.f));
 

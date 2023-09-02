@@ -75,8 +75,8 @@ void dr::Shader::setUniform(const std::string &name, glm::mat4 value)
 }
 
 void dr::Shader::reload() {
-    const auto &resultVert = dust::io::AssetsManager::LoadSync<std::string>(m_vertexFilePath);
-    const auto &resultFrag = dust::io::AssetsManager::LoadSync<std::string>(m_fragmentFilePath);
+    const auto &resultVert = dust::io::LoadFile(m_vertexFilePath);
+    const auto &resultFrag = dust::io::LoadFile(m_fragmentFilePath);
     if(resultVert.has_value() && resultFrag.has_value()) {
         u32 reloadedShaderID = internalCreate(resultVert.value(), resultFrag.value());
         if(reloadedShaderID != 0) {
@@ -100,8 +100,8 @@ dr::Shader::loadFromFile(const std::string &vertexPath, const std::string &fragm
     // }
 
     // read files
-    const auto &resultVert = dust::io::AssetsManager::LoadSync<std::string>(vertexPath);
-    const auto &resultFrag = dust::io::AssetsManager::LoadSync<std::string>(fragmentPath);
+    const auto &resultVert = dust::io::LoadFile(vertexPath);
+    const auto &resultFrag = dust::io::LoadFile(fragmentPath);
     if(resultVert.has_value() && resultFrag.has_value()) {
         auto res = dust::createRef<Shader>(
             resultVert.value(), resultFrag.value()

@@ -26,19 +26,12 @@ protected:
     inline static u32 m_usedThreads{0};
     inline static std::array<std::thread, ASSETS_MANAGER_THREADS_COUNT> m_threadPool{};
 
-    static Path fromAssetsDir(const Path &path);
 
 public:
-    static Path getAssetsDir();
+    static Path FromAssetsDir(const Path &path);
+    static Path GetAssetsDir();
 
-    template <typename LoadedType, typename ...Args, typename ResultType = Result<LoadedType>>
-    static ResultType
-    LoadSync(const Path &path, Args ...args);
-    
-    template <typename LoadedType, typename ...Args>
-    static void LoadAsync(const Path &path, Args ...args, ResultPtr<LoadedType> result);
-
-    static std::vector<Path> listAssetsDir(bool recursive = false);
+    static std::vector<Path> ListAssetsDir(bool recursive = false);
 };
 
 }
@@ -47,21 +40,12 @@ public:
 //////////////////////////
 /// MACROS
 
-#define DUST_ADD_LOADER_SYNC_DEF(ResultType)         \
-template<> Result<ResultType>                        \
-dust::io::AssetsManager::LoadSync<ResultType>(const Path &path)
+#define DUST_ADD_LOADER(ResultType, Name)       \
+dust::Result<ResultType>              \
+Load##Name(const dust::io::Path &path)
 
-#define DUST_ADD_LOADER_SYNC_DEF_EX(ResultType, ...) \
-template<> Result<ResultType>                        \
-dust::io::AssetsManager::LoadSync<ResultType>(const Path &path, __VA_ARGS__)
-
-#define DUST_ADD_LOADER_ASYNC_DEF(ResultType)        \
-template<> void                                      \
-dust::io::AssetsManager::LoadAsync<ResultType>(const Path &path, ResultPtr<ResultType> result)
-
-#define DUST_ADD_LOADER_ASYNC_DEF_EX(ResultType, ...) \
-template<> void                                       \
-dust::io::AssetsManager::LoadAsync<ResultType>(const Path &path, __VA_ARGS__, ResultPtr<ResultType> result)
+#define DUST_ADD_LOADER_ASYNC(ResultType, Name) \
+void Load##Name##Async(const dust::io::Path &path, dust::ResultPtr<ResultType> result)
 
 //////////////////////////
 

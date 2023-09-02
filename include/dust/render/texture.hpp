@@ -2,6 +2,7 @@
 #define _DUST_RENDER_TEXTURE_HPP_
 
 #include "../core/types.hpp"
+#include <vector>
 
 namespace dust {
 
@@ -20,14 +21,10 @@ enum class TextureWrap : int {
     Mirror,
 };
 
-struct TextureDesc {
-    void* data;
-    u32 width;
-    u32 height;
-    u32 channels;
-    TextureFilter filter = TextureFilter::Linear;
-    TextureWrap wrap = TextureWrap::NoWrap;
-    bool mipMaps = false;
+struct TextureParam {
+  TextureFilter filter = TextureFilter::Point;
+  TextureWrap   wrap   = TextureWrap::NoWrap;
+  bool          mipMaps = true;
 };
 
 class Texture
@@ -40,9 +37,16 @@ protected:
     u32 m_channels;
 
     static Ref<Texture> s_nullTexture;
+private:
+    /**
+     * @brief Set every default, see static creators to create a texture.
+     */
+    Texture(u32 width, u32 height, u32 channels);
+
 public:
-    
-    Texture(const TextureDesc& descriptor);
+    /**
+     * @brief Delete the texture and the allocated gpu texture
+     */
     ~Texture();
 
     void bind(u16 index = 0);
@@ -56,8 +60,24 @@ public:
 
     static Ref<Texture> GetNullTexture();
 
+    /**
+     * @brief Create Texture 2D
+     */
+    static Ref<Texture> CreateTexture2D(u32 width, u32 height, u32 channels, void* data, const TextureParam& param);
+    /**
+     * @brief Create Texture 2D with layers
+     * @param width Width of the Texture
+     * @param height Height of the Texture
+     * @param channels Channels count of the texture
+     * @param data List of the data for each mipmaps level
+     */
+    static Ref<Texture> CreateTexture2D(u32 width, u32 height, u32 channels, std::vector<void*> data, const TextureParam& param);
+    static Ref<Texture> CreateTextureCubeMap(u32 width, u32 height, u32 channels, std::vector<void*> faces, const TextureParam& param);
+    static Ref<Texture> CreateTexture2DArray(u32 width, u32 height, u32 channels, std::vector<void*>, const TextureParam& param);
+
+
 private:
-    void internalCreate(const TextureDesc& descriptor);
+    bool internalCreate(u32 apiTextureType);
     static u32 apiValue(TextureWrap wrap);
     static u32 apiValue(TextureFilter filter, bool mipMaps);
 };

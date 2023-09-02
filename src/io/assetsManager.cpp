@@ -4,18 +4,18 @@
 
 namespace dio = dust::io;
 
-dio::Path dio::AssetsManager::getAssetsDir()
+dio::Path dio::AssetsManager::GetAssetsDir()
 {
     return m_assetsDir;
 }
 
-dio::Path dio::AssetsManager::fromAssetsDir(const Path &path)
+dio::Path dio::AssetsManager::FromAssetsDir(const Path &path)
 {
     return m_assetsDir / path;
 }
 
 std::vector<dio::Path> 
-dio::AssetsManager::listAssetsDir(bool recursive)
+dio::AssetsManager::ListAssetsDir(bool recursive)
 {
     std::vector<dio::Path> result{};
     std::vector<dio::Path> toScan{m_assetsDir};

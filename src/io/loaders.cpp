@@ -1,5 +1,6 @@
 #include "dust/io/loaders.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/types.hpp"
 #include "dust/io/assetsManager.hpp"
 #include "dust/render/material.hpp"
 #include "dust/render/mesh.hpp"
@@ -16,11 +17,10 @@ namespace fs = std::filesystem;
 #include <stb_image.h>
 #include <nv_dds.h>
 
-template <>
-dust::Result<dr::TextureDesc> 
-dio::AssetsManager::LoadSync<dr::TextureDesc, bool>(const dio::Path &_path, bool mipMaps) 
+dust::Result<dr::TexturePtr> 
+dio::LoadTexture2D(const dio::Path &_path) 
 {
-    auto path = fromAssetsDir(_path);
+    auto path = AssetsManager::FromAssetsDir(_path);
     if(!fs::exists(path)) {
         DUST_ERROR("[Texture] {} doesn't exists.", path.string());
         return {};
@@ -31,17 +31,27 @@ dio::AssetsManager::LoadSync<dr::TextureDesc, bool>(const dio::Path &_path, bool
     if(path.extension() == ".dds") {
         nv_dds::CDDSImage image{};
         image.load(path.string());
-        
-        auto texDesc = dr::TextureDesc{
-            (uint8_t*)image.get_surface(0).get_mipmap(0), 
-            image.get_width(), 
-            image.get_height(), 
-            image.get_components(), 
-            dr::TextureFilter::Linear, 
-            dr::TextureWrap::NoWrap, 
-            image.get_num_mipmaps() > 0
-        };
-        return texDesc;
+        if(image.get_type() == nv_dds::TextureType::TextureFlat) {
+            std::vector<void*> mipmaps{};
+            for(int i = 0; i < image.get_num_mipmaps(); ++i) {
+                mipmaps.push_back((uint8_t*)image.get_mipmap(i));
+            }
+
+            return render::Texture::CreateTexture2D(
+                image.get_width(), 
+                image.get_height(), 
+                image.get_components(),
+                mipmaps,
+                {
+                    dr::TextureFilter::Linear, 
+                    dr::TextureWrap::NoWrap, 
+                    image.get_num_mipmaps() > 0
+                }
+            );
+        } else {
+            // cubmaps
+            return {};
+        }
     }
     // STB_IMAGE 
     else { 
@@ -52,13 +62,21 @@ dio::AssetsManager::LoadSync<dr::TextureDesc, bool>(const dio::Path &_path, bool
             DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
             return {};
         }
-
-        auto texDesc = dr::TextureDesc{
-            data, (u32)width, (u32)height, (u32)nrChannels, dr::TextureFilter::Linear, dr::TextureWrap::NoWrap, mipMaps
-        };
+        
+        render::TexturePtr res = render::Texture::CreateTexture2D(
+            width, 
+            height, 
+            nrChannels,
+            data,
+            {
+                dr::TextureFilter::Linear, 
+                dr::TextureWrap::NoWrap, 
+                true
+            }
+        );
 
         stbi_image_free(data);
-        return texDesc;
+        return res;
     }
     return {};
 }
@@ -92,9 +110,9 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         // ALBEDO
         if(material->GetTexture(aiTextureType_DIFFUSE, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-            const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
-            if(texDesc.has_value()) {
-                mat->albedoTexture = createRef<render::Texture>(texDesc.value());
+            const auto texture = dio::LoadTexture2D(texPath);
+            if(texture.has_value()) {
+                mat->albedoTexture = texture.value();
             }
         }
         if(aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color) == AI_SUCCESS) {
@@ -104,9 +122,9 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         // Metallic
         if(material->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-            const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
-            if(texDesc.has_value()) {
-                mat->metallicTexture = createRef<render::Texture>(texDesc.value());
+             const auto texture = dio::LoadTexture2D(texPath);
+            if(texture.has_value()) {
+                mat->metallicTexture = texture.value();
             }
         }
         if(aiGetMaterialFloat(material, AI_MATKEY_METALLIC_FACTOR, &factor) == aiReturn_SUCCESS) {
@@ -116,9 +134,9 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         // Roughness
         if(material->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-            const auto texDesc = dio::AssetsManager::LoadSync<dr::TextureDesc>(texPath, true);
-            if(texDesc.has_value()) {
-                mat->metallicTexture = createRef<render::Texture>(texDesc.value());
+            const auto texture = dio::LoadTexture2D(texPath);
+            if(texture.has_value()) {
+                mat->metallicTexture = texture.value();
             }
         }
         if(aiGetMaterialFloat(material, AI_MATKEY_ROUGHNESS_FACTOR, &factor) == aiReturn_SUCCESS) {
@@ -228,11 +246,10 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
     return res;
 }
 
-template <>
 dust::Result<dr::ModelPtr> 
-dio::AssetsManager::LoadSync<Ref<dr::Model>>(const dio::Path &_path)
+dio::LoadModel(const dio::Path &_path)
 {
-    auto path = fromAssetsDir(_path);
+    auto path = AssetsManager::FromAssetsDir(_path);
     if(!fs::exists(path)) {
         DUST_ERROR("[Model] {} doesn't exists.", path.string());
         return nullptr;
@@ -254,8 +271,8 @@ dio::AssetsManager::LoadSync<Ref<dr::Model>>(const dio::Path &_path)
 }
 //////////////////////////////
 
-template<> void                                      \
-dio::AssetsManager::LoadAsync<Ref<render::Model>>(const Path &path, ResultPtr<render::ModelPtr> result)
+void                                      \
+dio::LoadModelAsync(const Path &path, ResultPtr<render::ModelPtr> result)
 {   
     DUST_WARN("[AssetsManager] Async Model Loader isn't working yet.");
     return;
@@ -273,11 +290,10 @@ dio::AssetsManager::LoadAsync<Ref<render::Model>>(const Path &path, ResultPtr<re
 
 //////////////////////////
 
-template <>
 dust::Result<std::string> 
-dio::AssetsManager::LoadSync<std::string>(const dio::Path &_path) 
+dio::LoadFile(const dio::Path &_path) 
 {
-    auto path = fromAssetsDir(_path);
+    auto path = AssetsManager::FromAssetsDir(_path);
     std::error_code error{};
     if(!fs::exists(path, error)) {
         DUST_ERROR("[File] {} doesn't exists (error {} : {})", path.string(), error.value(), error.message());
