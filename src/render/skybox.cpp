@@ -50,7 +50,7 @@ dr::Skybox::Skybox(std::array<std::string, 6> skyboxTexturePaths)
 m_mesh(dr::Mesh::createCube({2.f, 2.f, 2.f})),
 m_shader(dust::createRef<Shader>(vCode, fCode))
 {
-    io::Path assetsDirPath = io::AssetsManager::getAssetsDir();
+    io::Path assetsDirPath = io::AssetsManager::GetAssetsDir();
     glGenTextures(1, &m_renderID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
     // load each side
