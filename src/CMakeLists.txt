@@ -66,6 +66,7 @@ PRIVATE
     glad
     OpenGL::GL
     assimp
+    Tracy::TracyClient
 )
 
 target_compile_features(dustlib PUBLIC cxx_std_20)

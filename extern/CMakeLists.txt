@@ -31,3 +31,10 @@ add_subdirectory(assimp)
 
 ## == nvidia ==
 add_subdirectory(nvidia)
+
+## == tracy ==
+if(DustEngine_PROFILING)
+    option( TRACY_ENABLE "" ON)
+    option( TRACY_ON_DEMAND "" ON)
+endif()
+add_subdirectory(tracy)

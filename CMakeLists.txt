@@ -8,6 +8,7 @@ project(DustEngine
 option(DustEngine_BUILD_EXAMPLES "Build the mx engine examples" ON)
 option(DustEngine_BUILD_TESTS    "Build the mx engine test" OFF)
 option(DustEngine_BUILD_DOCS     "Build the mx engine documentation (Doxygen)" OFF)
+option(DustEngine_PROFILING      "Enable engine profiling" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
