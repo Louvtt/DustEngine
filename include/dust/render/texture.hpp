@@ -31,6 +31,7 @@ class Texture
 {
 protected:
     u32 m_renderID;
+    u32 m_apiType;
 
     u16 m_lastIndex;
     u32 m_width, m_height;

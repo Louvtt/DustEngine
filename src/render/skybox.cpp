@@ -1,6 +1,7 @@
 #include "dust/render/skybox.hpp"
 #include "dust/core/application.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/core/types.hpp"
 #include "dust/io/assetsManager.hpp"
 #include "dust/render/renderAPI.hpp"
@@ -50,6 +51,7 @@ dr::Skybox::Skybox(std::array<std::string, 6> skyboxTexturePaths)
 m_mesh(dr::Mesh::createCube({2.f, 2.f, 2.f})),
 m_shader(dust::createRef<Shader>(vCode, fCode))
 {
+    DUST_PROFILE_SECTION("Skybox::Constructor");
     io::Path assetsDirPath = io::AssetsManager::GetAssetsDir();
     glGenTextures(1, &m_renderID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
@@ -84,6 +86,7 @@ m_shader(dust::createRef<Shader>(vCode, fCode))
 }
 dr::Skybox::~Skybox()
 {
+    DUST_PROFILE;
     glDeleteTextures(1, &m_renderID);
     m_mesh.reset();
     m_shader.reset();
@@ -91,6 +94,7 @@ dr::Skybox::~Skybox()
 
 void dr::Skybox::draw(Camera* camera)
 {
+    DUST_PROFILE_GPU("Skybox draw");
     // disable depth
     glDisable(GL_CULL_FACE);
     glDepthFunc(GL_LEQUAL);

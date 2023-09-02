@@ -1,5 +1,6 @@
 #include "dust/render/renderer.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/render/renderAPI.hpp"
 
 #include "GLFW/glfw3.h"
@@ -91,6 +92,7 @@ static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id, GLenum _se
 
 dust::Renderer::Renderer(const dust::Window& window)
 {
+    DUST_PROFILE_SECTION("Renderer::Constructor");
     // init glad
     if(!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         DUST_ERROR("[Glad] Failed to load OpenGL");
@@ -100,6 +102,7 @@ dust::Renderer::Renderer(const dust::Window& window)
     m_renderApiName    = (const char*)glGetString(GL_RENDERER);
     m_renderApiVersion = (const char*)glGetString(GL_VERSION);
     DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion, m_renderApiName);
+    DUST_PROFILE_GPU_SETUP;
 
     // avoid skipping pixels
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -122,8 +125,6 @@ dust::Renderer::Renderer(const dust::Window& window)
     setClearColor(.1f, .1f, .1f);
     resize(window.getWidth(), window.getHeight());
 
-    TracyGpuContext;
-
     // const char* shading_version = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
     // DUST_DEBUG("[OpenGL] Shading Language version : {}", shading_version);
     if(!ImGui_ImplOpenGL3_Init("#version 460 core")) {
@@ -134,6 +135,7 @@ dust::Renderer::Renderer(const dust::Window& window)
 }
 dust::Renderer::~Renderer()
 {
+    DUST_PROFILE;
     ImGui_ImplOpenGL3_Shutdown();
     DUST_INFO("[Glad] Unloading OpenGL");
     gladLoaderUnloadGL();
@@ -141,12 +143,14 @@ dust::Renderer::~Renderer()
 
 void dust::Renderer::newFrame()
 {
+    DUST_PROFILE_GPU("renderer new frame");
     clear();
     ImGui_ImplOpenGL3_NewFrame();
 }
 
 void dust::Renderer::clear(bool clearColor)
 {
+    DUST_PROFILE_GPU("renderer clear");
     int clearBits = GL_STENCIL_BUFFER_BIT;
 
     if(m_depthEnabled) {
@@ -162,12 +166,13 @@ void dust::Renderer::clear(bool clearColor)
 
 void dust::Renderer::endFrame()
 {
+    DUST_PROFILE_GPU("end frame");
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    FrameMark;
 }
 
 void dust::Renderer::setCulling(bool culling)
 {
+    DUST_PROFILE_GPU("renderer set culling");
     if(culling) {
         glEnable(GL_CULL_FACE);   
     } else {
@@ -176,6 +181,7 @@ void dust::Renderer::setCulling(bool culling)
 }
 void dust::Renderer::setCullFaces(bool back, bool front)
 {
+    DUST_PROFILE_GPU("renderer set cull face");
     glCullFace(
         back ?
             (front ?
@@ -189,6 +195,7 @@ void dust::Renderer::setCullFaces(bool back, bool front)
 
 void dust::Renderer::setClearColor(float r, float g, float b, float a)
 {
+    DUST_PROFILE_GPU("renderer set clear color");
     glClearColor(r, g, b, a);
 }
 void dust::Renderer::setClearColor(glm::vec4 color)
@@ -198,10 +205,12 @@ void dust::Renderer::setClearColor(glm::vec4 color)
 
 void dust::Renderer::setDepthWrite(bool write)
 {
+    DUST_PROFILE_GPU("renderer set depth write");
     glDepthMask(write);
 }
 void dust::Renderer::setDepthTest(bool test)
 {
+    DUST_PROFILE_GPU("renderer set depth test");
     if(test) {
         glEnable(GL_DEPTH_TEST);
     } else {
@@ -211,11 +220,13 @@ void dust::Renderer::setDepthTest(bool test)
 
 void dust::Renderer::resize(u32 width, u32 height)
 {
+    DUST_PROFILE_GPU("renderer resize");
     glViewport(0, 0, width, height);
 }
 
 void dust::Renderer::setDrawWireframe(bool wireframe)
 {
+    DUST_PROFILE_GPU("renderer set wireframe");
     if(wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {

@@ -1,6 +1,7 @@
 #include "dust/render/shader.hpp"
 
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/io/assetsManager.hpp"
 #include "dust/io/loaders.hpp"
 #include "dust/render/renderAPI.hpp"
@@ -11,7 +12,6 @@
 #include <fstream>
 #include <system_error>
 
-namespace fs = std::filesystem;
 namespace dr = dust::render;
 
 #define INFO_LOG_SIZE 2048
@@ -26,10 +26,12 @@ dr::Shader::Shader()
 : m_renderID(0) {}
 dr::Shader::~Shader()
 {
+    DUST_PROFILE;
     glDeleteProgram(m_renderID);
 }
 
 void dr::Shader::use() {
+    DUST_PROFILE_GPU("UseProgram");
     glUseProgram(m_renderID);
 }
 
@@ -75,6 +77,7 @@ void dr::Shader::setUniform(const std::string &name, glm::mat4 value)
 }
 
 void dr::Shader::reload() {
+    DUST_PROFILE_SECTION("Shader::reload");
     const auto &resultVert = dust::io::LoadFile(m_vertexFilePath);
     const auto &resultFrag = dust::io::LoadFile(m_fragmentFilePath);
     if(resultVert.has_value() && resultFrag.has_value()) {
@@ -89,6 +92,7 @@ void dr::Shader::reload() {
 dust::Ref<dr::Shader>
 dr::Shader::loadFromFile(const std::string &vertexPath, const std::string &fragmentPath)
 {
+    DUST_PROFILE_SECTION("Shader::loadFromFile");
     // std::error_code error{};
     // if(!fs::exists(vertexPath, error)) {
     //     DUST_ERROR("[File][Shader] Vertex {} doesn't exist (error {} : {})", vertexPath, error.value(), error.message());
@@ -115,11 +119,13 @@ dr::Shader::loadFromFile(const std::string &vertexPath, const std::string &fragm
 
 u32 dr::Shader::getUniformLocation(const std::string &name)
 {
+    DUST_PROFILE;
     return glGetUniformLocation(m_renderID, name.c_str());
 }
 
 u32 dr::Shader::internalCreate(const std::string &vertexCode, const std::string &fragmentCode)
 {
+    DUST_PROFILE_GPU("Shader program creation");
     const u32 vertex   = compileShader(GL_VERTEX_SHADER, vertexCode);
     if(vertex == 0) { 
         DUST_ERROR("[OpenGL][Shader] Failed to create a vertex shader."); 
@@ -148,6 +154,7 @@ u32 dr::Shader::internalCreate(const std::string &vertexCode, const std::string 
 
 u32 dr::Shader::compileShader(int type, const std::string& code)
 {
+    DUST_PROFILE_GPU("Shader internal create");
     const u32 id = glCreateShader(type);
     if(id == 0) return id;
     const char* codeRaw = code.c_str();
@@ -164,6 +171,7 @@ u32 dr::Shader::compileShader(int type, const std::string& code)
 }
 bool dr::Shader::linkShaders(u32 program, u32 vertexShader, u32 fragmentShader)
 {
+    DUST_PROFILE_GPU("Shader internal link");
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);

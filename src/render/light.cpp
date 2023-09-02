@@ -1,5 +1,6 @@
 #include "dust/render/light.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/core/types.hpp"
 #include "dust/render/camera.hpp"
 #include "dust/render/shader.hpp"
@@ -46,6 +47,7 @@ dr::DirectionnalLight::~DirectionnalLight() {}
 
 void dr::DirectionnalLight::bind(Shader* shader) const
 {
+    DUST_PROFILE;
     shader->setUniform("uLightDir", m_direction);
     shader->setUniform("uLightColor", m_color);
 }
@@ -70,6 +72,8 @@ void dr::DirectionnalLight::setColor(glm::vec3 color)
 
 void dr::DirectionnalLight::updateRenderPos()
 {
+    DUST_PROFILE;
+    // DUST_PROFILE_SECTION("DirectionnalLight::updateRenderPos");
     const auto camera = Camera::GetActive();
     if(!camera) return;
     const dr::CameraFrustrum frustrum = camera->getFrustrum();

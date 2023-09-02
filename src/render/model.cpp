@@ -1,6 +1,7 @@
 #include "dust/render/model.hpp"
 
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/render/mesh.hpp"
 #include "dust/render/material.hpp"
 #include "dust/render/texture.hpp"
@@ -22,6 +23,7 @@ m_modelMat(1.f)
 { }
 dr::Model::~Model()
 {
+    DUST_PROFILE;
     for(auto mesh : m_meshes) {
         mesh.reset();
     }
@@ -30,6 +32,7 @@ dr::Model::~Model()
 
 void dr::Model::setPosition(glm::vec3 position)
 {
+    DUST_PROFILE;
     m_position = position;
     m_modelMat = glm::translate(glm::mat4(1.f), position); 
 }
@@ -42,6 +45,7 @@ glm::vec3 dr::Model::getPosition() const
 
 void dr::Model::draw(ShaderPtr shader)
 {
+    DUST_PROFILE_SECTION("Model::Draw");
     shader->setUniform("uModel", m_modelMat);
     for (auto mesh : m_meshes) {
         if(!mesh) { continue; }

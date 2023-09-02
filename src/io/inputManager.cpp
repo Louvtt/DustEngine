@@ -1,6 +1,7 @@
 #include "dust/io/inputManager.hpp"
 #include "GLFW/glfw3.h"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/core/types.hpp"
 #include "dust/io/keycodes.hpp"
 #include "imgui_impl_glfw.h"
@@ -10,6 +11,7 @@ dust::InputManager::InputManager(const dust::Window& window)
 m_mbuttons(),
 m_mousePos()
 { 
+    DUST_PROFILE;
     auto nativeWindow = window.getNativeWindow();
     s_instance = dust::Scope<dust::InputManager>(this);
     glfwSetKeyCallback(nativeWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -35,6 +37,7 @@ dust::InputManager::~InputManager()
 void dust::InputManager::keyCallback(int key, int scancode, int _mods, int action)
 {
     // Unknown key
+    DUST_PROFILE;
     if(key < (int)dust::Key::Space || key > (int)dust::Key::Last) return;
     dust::Key dKey = (dust::Key)(key);
     m_keys.at((std::size_t)dKey) = (action == GLFW_PRESS || action == GLFW_REPEAT) ? 
@@ -44,6 +47,7 @@ void dust::InputManager::keyCallback(int key, int scancode, int _mods, int actio
 void dust::InputManager::buttonCallback(int button, int _mods, int action)
 {
     // Unknown button
+    DUST_PROFILE;
     if(button > (int)dust::MButton::Last) return;
     dust::MButton dButton = (dust::MButton)(button);
     m_mbuttons.at((std::size_t)dButton) = (action == GLFW_PRESS || action == GLFW_REPEAT) ? 
@@ -52,12 +56,14 @@ void dust::InputManager::buttonCallback(int button, int _mods, int action)
 }
 void dust::InputManager::mousePosCallback(double x, double y)
 {
+    DUST_PROFILE;
     m_mousePos.x = (float)x;
     m_mousePos.y = (float)y;
 }
 
 void dust::InputManager::updateState()
 {
+    DUST_PROFILE_SECTION("Input::updateState");
     for(auto& keyState : m_keys) 
     {
         switch(keyState) {

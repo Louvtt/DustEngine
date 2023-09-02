@@ -1,14 +1,13 @@
 #include "dust/render/framebuffer.hpp"
 #include "dust/core/types.hpp"
 #include "dust/core/window.hpp"
-#include "dust/render/renderAPI.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/core/log.hpp"
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "dust/render/renderAPI.hpp"
+
 #include <algorithm>
 #include <type_traits>
 
-#include "tracy/Tracy.hpp"
 
 namespace dr = dust::render;
 using drf = dr::Framebuffer;
@@ -81,6 +80,7 @@ m_height(desc.height),
 m_renderID(0),
 m_colorAttachmentCount(0)
 {
+    DUST_PROFILE;
     // fill up default attachments vector
     for(const auto& a : desc.attachments) {
         m_attachments.push_back({
@@ -92,6 +92,8 @@ m_colorAttachmentCount(0)
 
 void drf::createInternal()
 {
+    DUST_PROFILE_SECTION("Framebuffer::createInternal");
+    DUST_PROFILE_GPU("Framebuffer creation");
     u32 renderID = 0;
     glGenFramebuffers(1, &renderID);
     if(renderID == 0) {
@@ -196,12 +198,14 @@ void drf::createInternal()
 
 drf::~Framebuffer()
 {
+    DUST_PROFILE;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffers(1, &m_renderID);
 }
 
 void drf::resize(u32 width, u32 height, bool recreate)
 {
+    DUST_PROFILE;
     m_width  = width;
     m_height = height;
     if(recreate) {
@@ -245,7 +249,7 @@ u32 drf::getHeight() const
 dust::Result<drf::Attachment> 
 drf::getAttachment(AttachmentType type, u32 index)
 {
-    ZoneScoped;
+    DUST_PROFILE_SECTION("Framebuffer:getAttachment");
     decltype(auto) found = std::find_if(m_attachments.begin(), m_attachments.end(), [=](Attachment value) -> bool {
         return value.type == type && value.index == index;
     });
@@ -258,7 +262,7 @@ drf::getAttachment(AttachmentType type, u32 index)
 
 void drf::bindAttachment(u32 bindIndex, AttachmentType type, u32 index)
 {
-    ZoneScoped;
+    DUST_PROFILE_SECTION("Framebuffer:bindAttachment");
     decltype(auto) found = this->getAttachment(type, index);
     if(found.has_value() && found.value().isReadable) {
         // DUST_DEBUG("[Framebuffer] Binding texture to {}", bindIndex);

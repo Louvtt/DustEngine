@@ -1,5 +1,6 @@
 #include "dust/core/application.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/io/assetsManager.hpp"
 
 #include <cstdlib>

@@ -1,5 +1,6 @@
 #include "dust/render/mesh.hpp"
 
+#include "dust/core/profiling.hpp"
 #include "dust/render/renderAPI.hpp"
 #include "dust/core/log.hpp"
 #include "dust/render/shader.hpp"
@@ -33,7 +34,9 @@ dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vecto
 m_vertexCount(vertexCount),
 m_materialSlots()
 {
+    DUST_PROFILE;
     m_materialSlots.fill(nullptr);
+    DUST_PROFILE_GPU("CreateMesh");
     glCreateVertexArrays(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Mesh] Failed to create VAO");
@@ -75,6 +78,7 @@ dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vecto
 
 dr::Mesh::~Mesh()
 {   
+    DUST_PROFILE;
     glBindVertexArray(0);
     if(m_vbo) glDeleteBuffers(1, &m_vbo);
     if(m_ebo) glDeleteBuffers(1, &m_ebo);
@@ -83,6 +87,7 @@ dr::Mesh::~Mesh()
 
 void dr::Mesh::draw(ShaderPtr shader)
 {
+    DUST_PROFILE;
     u32 slot = 0;
     for(auto& material : m_materialSlots){
         if(material == nullptr) continue;
@@ -93,8 +98,10 @@ void dr::Mesh::draw(ShaderPtr shader)
     shader->use();    
     glBindVertexArray(m_renderID);
     if(m_ebo != 0) {
+        DUST_PROFILE_GPU("DrawElements");
         glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
     } else {
+        DUST_PROFILE_GPU("DrawArrays");
         glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
     }
     glBindVertexArray(0);
@@ -107,6 +114,7 @@ void dr::Mesh::draw(ShaderPtr shader)
 
 void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
 {
+    DUST_PROFILE_GPU("MeshAttribute");
     u32 stride = 0;
     std::for_each(attributes.begin(), attributes.end(), [&](const Attribute &attrib){
         stride += attrib.getSize();
@@ -127,6 +135,7 @@ void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
 
 void dr::Mesh::setMaterial(u32 index, MaterialPtr material)
 {
+    DUST_PROFILE;
     if(index > DUST_MATERIAL_SLOTS) return;
     m_materialSlots[index] = material;
 }
@@ -138,6 +147,7 @@ dr::MaterialPtr dr::Mesh::getMaterial(u32 index) const
 dr::MeshPtr
 dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
 {
+    DUST_PROFILE;
     const glm::vec2 half = size*.5f;
     if(!textureCoordinates) {
         return createRef<Mesh>(std::vector<f32>{
@@ -171,6 +181,7 @@ dr::Mesh::createPlane(glm::vec2 size, bool textureCoordinates)
 dr::MeshPtr
 dr::Mesh::createCube(glm::vec3 size, bool textureCoordinates)
 {
+    DUST_PROFILE;
     const glm::vec3 half = size*.5f;
     if(!textureCoordinates) {
         return createRef<Mesh>(std::vector<f32>{

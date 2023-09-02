@@ -71,6 +71,7 @@ public:
 
     // Data
 
+    /*
     glm::vec3 albedo;
     f32 metallic;
     f32 roughness;
@@ -79,6 +80,16 @@ public:
     TexturePtr metallicTexture;
     TexturePtr roughnessTexture;
     TexturePtr normalTexture;
+    */
+
+    glm::vec3 albedo;
+    TexturePtr albedoTexture;
+    TexturePtr emissivityTexture;
+    TexturePtr normalTexture;
+    f32 roughness;
+    // TexturePtr roughnessTexture;
+    glm::vec3 reflectance;
+    TexturePtr reflectanceTexture;
 };
 
 }

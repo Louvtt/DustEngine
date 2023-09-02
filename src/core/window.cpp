@@ -1,4 +1,5 @@
 #include "dust/core/window.hpp"
+#include "dust/core/profiling.hpp"
 
 #include "dust/core/application.hpp"
 #include "dust/core/log.hpp"
@@ -6,6 +7,7 @@
 #include "backends/imgui_impl_glfw.h"
 
 #include "GLFW/glfw3.h"
+#include <type_traits>
 
 bool dust::Window::isWindowManagerInitialized = false;
 
@@ -19,6 +21,7 @@ dust::Window::Window(const std::string& name, u32 width, u32 height, Flags flags
 : m_width(width),
 m_height(height)
 {
+    DUST_PROFILE_SECTION("Window::Constructor");
     // glfw initialisation
     if(!isWindowManagerInitialized) {
         if(!glfwInit()) {
@@ -36,6 +39,7 @@ m_height(height)
 
     // create window
     {
+        DUST_PROFILE_SECTION("Window::GLFWwindow Creation");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         #ifndef __MACOSX__
@@ -71,6 +75,7 @@ m_height(height)
 
 dust::Window::~Window()
 {
+    DUST_PROFILE;
     ImGui_ImplGlfw_Shutdown();
 
     glfwMakeContextCurrent(nullptr);
@@ -83,8 +88,9 @@ dust::Window::~Window()
 
 void dust::Window::flush()
 {
+    DUST_PROFILE_SECTION("Window::flush");
     glfwPollEvents();
-    glfwSwapBuffers(m_window);
+    swapBuffers();
 
     ImGui_ImplGlfw_NewFrame();
 }
@@ -92,6 +98,7 @@ void dust::Window::flush()
 void dust::Window::swapBuffers() 
 {
     glfwSwapBuffers(m_window);
+    DUST_PROFILE_GPU_COLLECT;
 }
 
 void dust::Window::setVSync(bool vsync)

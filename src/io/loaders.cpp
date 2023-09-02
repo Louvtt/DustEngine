@@ -1,5 +1,6 @@
 #include "dust/io/loaders.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/core/types.hpp"
 #include "dust/io/assetsManager.hpp"
 #include "dust/render/material.hpp"
@@ -20,6 +21,7 @@ namespace fs = std::filesystem;
 dust::Result<dr::TexturePtr> 
 dio::LoadTexture2D(const dio::Path &_path) 
 {
+    DUST_PROFILE_SECTION("io::LoadTexture2D");
     auto path = AssetsManager::FromAssetsDir(_path);
     if(!fs::exists(path)) {
         DUST_ERROR("[Texture] {} doesn't exists.", path.string());
@@ -29,6 +31,7 @@ dio::LoadTexture2D(const dio::Path &_path)
 
     // NVIDIA DDS
     if(path.extension() == ".dds") {
+        DUST_PROFILE_SECTION("io::LoadTexture2D nv_dds");
         nv_dds::CDDSImage image{};
         image.load(path.string());
         if(image.get_type() == nv_dds::TextureType::TextureFlat) {
@@ -59,6 +62,7 @@ dio::LoadTexture2D(const dio::Path &_path)
     }
     // STB_IMAGE 
     else { 
+        DUST_PROFILE_SECTION("io::LoadTexture2D stb_image");
         int width, height, nrChannels;
         stbi_set_flip_vertically_on_load(true);
         u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
@@ -100,6 +104,7 @@ dio::LoadTexture2D(const dio::Path &_path)
 static std::vector<dr::MaterialPtr> 
 processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
 {
+    DUST_PROFILE_SECTION("io::LoadModel processMaterials");
     std::vector<dr::MaterialPtr> materials{};
     materials.reserve(scene->mNumMaterials);
     for(int i = 0; i < scene->mNumMaterials; ++i) {
@@ -124,26 +129,26 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         }
 
         // Metallic
-        if(material->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &filePath) == AI_SUCCESS) {
+        if(material->GetTexture(aiTextureType_REFLECTION, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
              const auto texture = dio::LoadTexture2D(texPath);
             if(texture.has_value()) {
-                mat->metallicTexture = texture.value();
+                mat->reflectanceTexture = texture.value();
             }
         }
-        if(material->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS) {
-            mat->metallic = factor;
+        if(material->Get(AI_MATKEY_COLOR_REFLECTIVE, color) == aiReturn_SUCCESS) {
+            mat->reflectance = {color.r, color.g, color.b};
         }
 
-        // Roughness
-        if(material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &filePath) == AI_SUCCESS) {
+        if(material->GetTexture(aiTextureType_EMISSIVE, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
             const auto texture = dio::LoadTexture2D(texPath);
             if(texture.has_value()) {
-                mat->roughnessTexture = texture.value();
+                mat->emissivityTexture = texture.value();
             }
         }
-        if(aiGetMaterialFloat(material, AI_MATKEY_ROUGHNESS_FACTOR, &factor) == aiReturn_SUCCESS) {
+        // Roughness
+        if(material->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == aiReturn_SUCCESS) {
             mat->roughness = factor;
         }
 
@@ -198,6 +203,7 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
 static std::vector<dr::MeshPtr> 
 processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
 {   
+    DUST_PROFILE_SECTION("io::LoadModel processMeshes");
     // Attributes
     std::vector<dr::Attribute> attributes {
         dr::Attribute::Pos3D,
@@ -227,62 +233,68 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
     }
 
     // parse all meshes
-    for (int i = 0; i < scene->mNumMeshes; ++i) {
-        auto mesh = scene->mMeshes[i];
-        const u32 matId = scene->mMeshes[i]->mMaterialIndex;
-        const u32 batchIdx = std::floor((float)matId / (float)DUST_MATERIAL_SLOTS);
-        const u32 previousVertexCount = vertices[batchIdx].size();
+    {
+        DUST_PROFILE_SECTION("io::LoadModel parse meshes");
+        for (int i = 0; i < scene->mNumMeshes; ++i) {
+            auto mesh = scene->mMeshes[i];
+            const u32 matId = scene->mMeshes[i]->mMaterialIndex;
+            const u32 batchIdx = std::floor((float)matId / (float)DUST_MATERIAL_SLOTS);
+            const u32 previousVertexCount = vertices[batchIdx].size();
 
-        // process vertices
-        for(int i = 0; i < mesh->mNumVertices; ++i) {
-            auto pos    = mesh->mVertices[i];
-            auto color  = mesh->mColors[i];
+            // process vertices
+            for(int i = 0; i < mesh->mNumVertices; ++i) {
+                auto pos    = mesh->mVertices[i];
+                auto color  = mesh->mColors[i];
 
-            dr::ModelVertex vertex = {{ pos.x, pos.y, pos.z }};
-            if(mesh->HasTextureCoords(0)) { 
-                auto tex   = mesh->mTextureCoords[0][i];
-                vertex.tex = { tex.x, tex.y }; 
-            }
-            if(mesh->HasNormals()) { 
-                auto normal = mesh->mNormals[i];
-                vertex.normal = { normal.x, normal.y, normal.z};
-            }
-            if(mesh->HasVertexColors(i)) {
-                auto color = mesh->mColors[i];
-                vertex.color = { color->r, color->g, color->b, color->a };
-            }
-            vertex.materialID = (float)(matId % DUST_MATERIAL_SLOTS); // matId in batch 
+                dr::ModelVertex vertex = {{ pos.x, pos.y, pos.z }};
+                if(mesh->HasTextureCoords(0)) { 
+                    auto tex   = mesh->mTextureCoords[0][i];
+                    vertex.tex = { tex.x, tex.y }; 
+                }
+                if(mesh->HasNormals()) { 
+                    auto normal = mesh->mNormals[i];
+                    vertex.normal = { normal.x, normal.y, normal.z};
+                }
+                if(mesh->HasVertexColors(i)) {
+                    auto color = mesh->mColors[i];
+                    vertex.color = { color->r, color->g, color->b, color->a };
+                }
+                vertex.materialID = (float)(matId % DUST_MATERIAL_SLOTS); // matId in batch 
 
-            vertices[batchIdx].push_back(vertex);
-        }
-        // parses mesh indices and offset it by the previous number of vertices
-        for(int i = 0; i < mesh->mNumFaces; ++i) {
-            auto face = mesh->mFaces[i];
-            // only manage triangles
-            if(face.mNumIndices != 3) continue;
-            indices[batchIdx].push_back(previousVertexCount + face.mIndices[0]);
-            indices[batchIdx].push_back(previousVertexCount + face.mIndices[1]);
-            indices[batchIdx].push_back(previousVertexCount + face.mIndices[2]);
+                vertices[batchIdx].push_back(vertex);
+            }
+            // parses mesh indices and offset it by the previous number of vertices
+            for(int i = 0; i < mesh->mNumFaces; ++i) {
+                auto face = mesh->mFaces[i];
+                // only manage triangles
+                if(face.mNumIndices != 3) continue;
+                indices[batchIdx].push_back(previousVertexCount + face.mIndices[0]);
+                indices[batchIdx].push_back(previousVertexCount + face.mIndices[1]);
+                indices[batchIdx].push_back(previousVertexCount + face.mIndices[2]);
+            }
         }
     }
 
     // create meshes
     u32 materialI = 0;
     std::vector<dr::MeshPtr> res(batchCount);
-    for(int i = 0; i < batchCount; ++i) {
-        auto mesh = createRef<render::Mesh>(
-            &vertices[i].front(),
-            sizeof(dr::ModelVertex),
-            vertices[i].size(),
-            indices[i],
-            attributes
-        );
-        for(int m = 0; m < DUST_MATERIAL_SLOTS; ++m) {
-            if(materialI >= materials.size()) break;
-            mesh->setMaterial(m, materials.at(materialI));
-            materialI += 1;
+    {
+        DUST_PROFILE_SECTION("io::LoadModel create meshes");
+        for(int i = 0; i < batchCount; ++i) {
+            auto mesh = createRef<render::Mesh>(
+                &vertices[i].front(),
+                sizeof(dr::ModelVertex),
+                vertices[i].size(),
+                indices[i],
+                attributes
+            );
+            for(int m = 0; m < DUST_MATERIAL_SLOTS; ++m) {
+                if(materialI >= materials.size()) break;
+                mesh->setMaterial(m, materials.at(materialI));
+                materialI += 1;
+            }
+            res.push_back(mesh);
         }
-        res.push_back(mesh);
     }
     return res;
 }
@@ -290,6 +302,7 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
 dust::Result<dr::ModelPtr> 
 dio::LoadModel(const dio::Path &_path)
 {
+    DUST_PROFILE_SECTION("io::LoadModel");
     auto path = AssetsManager::FromAssetsDir(_path);
     if(!fs::exists(path)) {
         DUST_ERROR("[Model] {} doesn't exists.", path.string());
@@ -334,6 +347,7 @@ dio::LoadModelAsync(const Path &path, ResultPtr<render::ModelPtr> result)
 dust::Result<std::string> 
 dio::LoadFile(const dio::Path &_path) 
 {
+    DUST_PROFILE_SECTION("io::LoadFile");
     auto path = AssetsManager::FromAssetsDir(_path);
     std::error_code error{};
     if(!fs::exists(path, error)) {
@@ -345,6 +359,7 @@ dio::LoadFile(const dio::Path &_path)
     in.exceptions(std::ios::badbit | std::ios::failbit);
     if (in)
     {
+        DUST_PROFILE_SECTION("io::LoadFile read content");
         std::string contents;
         in.seekg(0, std::ios::end);
         contents.resize(in.tellg());

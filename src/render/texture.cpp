@@ -1,5 +1,6 @@
 #include "dust/render/texture.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/core/types.hpp"
 #include "dust/render/renderAPI.hpp"
 #include <GL/gl.h>
@@ -26,14 +27,19 @@ static u32 toGLFormat(u32 channels)
 
 dr::Texture::Texture(u32 width, u32 height, u32 channels) 
 : m_channels(channels),
+m_apiType(GL_TEXTURE_2D),
 m_height(height), m_width(width),
 m_lastIndex(0),
 m_renderID(0)
-{ }
+{ 
+    DUST_PROFILE;
+}
 
 
 bool dr::Texture::internalCreate(u32 apiTextureType)
 {
+    DUST_PROFILE;
+    m_apiType = apiTextureType;
     glGenTextures(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Texture] Failed to create a texture.");
@@ -44,6 +50,7 @@ bool dr::Texture::internalCreate(u32 apiTextureType)
 
 dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels, void* data, const TextureParam& param) 
 {
+    DUST_PROFILE_SECTION("Texture 2D flat");
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     if(!texture->internalCreate(GL_TEXTURE_2D)) {
       texture.reset();
@@ -68,6 +75,7 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
 
 dr::TexturePtr dr::Texture::CreateTexture2DArray(u32 width, u32 height, u32 channels, std::vector<void *>, const TextureParam &param)
 {
+    DUST_PROFILE_SECTION("Texture 2D Array");
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     if(!texture->internalCreate(GL_TEXTURE_2D_ARRAY)) {
         texture.reset();
@@ -80,19 +88,21 @@ dr::TexturePtr dr::Texture::CreateTexture2DArray(u32 width, u32 height, u32 chan
 
 dr::TexturePtr dr::Texture::CreateTextureRaw(int apiType, u32 width, u32 height, u32 channels)
 {
+    DUST_PROFILE_SECTION("Texture Flat");
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     texture->internalCreate(apiType);
     texture->bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(apiType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(apiType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(apiType, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(apiType, GL_TEXTURE_WRAP_T, GL_REPEAT);
     texture->unbind();
     return texture;
 }
 
 dr::TexturePtr dr::Texture::CreateTextureCubeMap(u32 width, u32 height, u32 channels, std::vector<void *> faces, const TextureParam &param)
 {
+    DUST_PROFILE_SECTION("Texture Cubemap");
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     if(!texture->internalCreate(GL_TEXTURE_CUBE_MAP)) {
         texture.reset();
@@ -119,6 +129,7 @@ dr::TexturePtr dr::Texture::CreateTextureCubeMap(u32 width, u32 height, u32 chan
 
 dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels, std::vector<void *> data, const TextureParam &param)
 {
+    DUST_PROFILE_SECTION("Texture 2D mipmaps");
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     if(!texture->internalCreate(GL_TEXTURE_2D)) {
         texture.reset();
@@ -146,6 +157,7 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
 
 dr::TexturePtr dr::Texture::CreateTextureCompressed2D(u32 width, u32 height, u32 channels, u32 size, std::vector<void *> data, const TextureParam &param)
 {
+    DUST_PROFILE_SECTION("Texture compressed 2D");
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     if(!texture->internalCreate(GL_TEXTURE_2D)) {
         texture.reset();
@@ -191,20 +203,23 @@ u32 dr::Texture::apiValue(TextureFilter filter, bool mipMaps)
 
 dr::Texture::~Texture()
 {
+    DUST_PROFILE;
     unbind();
     glDeleteTextures(1, &m_renderID);
 }
 
 void dr::Texture::bind(u16 index)
 {
+    DUST_PROFILE;
     m_lastIndex = index;
     glActiveTexture(GL_TEXTURE0 + m_lastIndex);
-    glBindTexture(GL_TEXTURE_2D, m_renderID);
+    glBindTexture(m_apiType, m_renderID);
 }
 void dr::Texture::unbind()
 {
+    DUST_PROFILE;
     glActiveTexture(GL_TEXTURE0 + m_lastIndex);
-    glBindTexture(GL_TEXTURE_2D, m_renderID);
+    glBindTexture(m_apiType, m_renderID);
 }
 
 u32 dr::Texture::getWidth() const

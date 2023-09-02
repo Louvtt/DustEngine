@@ -1,9 +1,11 @@
 #include "dust/core/application.hpp"
 #include "dust/core/layer.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/core/types.hpp"
 #include "dust/core/log.hpp"
 #include "dust/io/inputManager.hpp"
 #include "dust/render/renderer.hpp"
+#include "dust/core/profiling.hpp"
 
 #include "imgui.h"
 
@@ -14,13 +16,12 @@
 
 #include <memory>
 
-#include "tracy/Tracy.hpp"
-
 dust::Application::Application(const std::string& name, u32 width, u32 height)
 : m_name(name),
 m_time(),
 m_layers()
 {
+    DUST_PROFILE_SECTION("Application::Constructor");
     if(s_instance) {
         DUST_ERROR("Cannot create another application instance");
         return;
@@ -68,18 +69,20 @@ dust::Application::~Application()
 
 void dust::Application::update()
 { 
-    ZoneScoped;
+    DUST_PROFILE_SECTION("AppUpdate");
 }
 
 void dust::Application::render()
 { 
-    ZoneScoped;
+    DUST_PROFILE_SECTION("render");
 }
 
 void dust::Application::run()
 {
+    DUST_PROFILE;
     while(!m_window->shouldClose())
     {
+        DUST_PROFILE_FRAME("main");
         m_window->flush();
         m_time.delta = glfwGetTime() - m_time.time;
         m_time.time  = glfwGetTime();
@@ -142,6 +145,7 @@ dust::Application::getProgramPath() const
 
 void dust::Application::pushLayer(Layer* layer)
 {
+    DUST_PROFILE;
     m_layers.insert({
         layer->getName(),
         layer
@@ -149,6 +153,7 @@ void dust::Application::pushLayer(Layer* layer)
 }
 void dust::Application::popLayer(std::string name)
 {
+    DUST_PROFILE;
     auto found = m_layers.find(name);
     if(found == m_layers.end()) return; // not found
     auto deletedLayer = m_layers.erase(found);
