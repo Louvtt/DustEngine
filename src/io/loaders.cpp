@@ -119,7 +119,7 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
                 mat->albedoTexture = texture.value();
             }
         }
-        if(aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color) == AI_SUCCESS) {
+        if(material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
             mat->albedo = {color.r, color.g, color.b};
         }
 
@@ -131,27 +131,64 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
                 mat->metallicTexture = texture.value();
             }
         }
-        if(aiGetMaterialFloat(material, AI_MATKEY_METALLIC_FACTOR, &factor) == aiReturn_SUCCESS) {
+        if(material->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS) {
             mat->metallic = factor;
         }
 
         // Roughness
-        if(material->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &filePath) == AI_SUCCESS) {
+        if(material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
             const auto texture = dio::LoadTexture2D(texPath);
             if(texture.has_value()) {
-                mat->metallicTexture = texture.value();
+                mat->roughnessTexture = texture.value();
             }
         }
         if(aiGetMaterialFloat(material, AI_MATKEY_ROUGHNESS_FACTOR, &factor) == aiReturn_SUCCESS) {
-            mat->metallic = factor;
+            mat->roughness = factor;
+        }
+
+        // Normals
+        if(material->GetTexture(aiTextureType_HEIGHT, 0, &filePath) == AI_SUCCESS) {
+            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            const auto texture = dio::LoadTexture2D(texPath);
+            if(texture.has_value()) {
+                mat->normalTexture = texture.value();
+            }
         }
 
         // Clearcoat
+        /*
+        if(material->GetTexture(aiTextureType_CLEARCOAT, 0, &filePath) == AI_SUCCESS) {
+            // const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            // const auto texture = dio::LoadTexture2D(texPath);
+            // if(texture.has_value()) {
+            //     // mat->clearCoatTexture = texture.value();
+            // }
+        }
         // Emissive
-        // Normals
+        if(material->GetTexture(aiTextureType_EMISSIVE, 0, &filePath) == AI_SUCCESS) {
+            // const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            // const auto texture = dio::LoadTexture2D(texPath);
+            // if(texture.has_value()) {
+            //     // mat->clearCoatTexture = texture.value();
+            // }
+        }
+        if(material->GetTexture(aiTextureType_EMISSION_COLOR, 0, &filePath) == AI_SUCCESS) {
+            // const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            // const auto texture = dio::LoadTexture2D(texPath);
+            // if(texture.has_value()) {
+            //     // mat->clearCoatTexture = texture.value();
+            // }
+        }
+        if(aiGetMaterialFloat(material, AI_MATKEY_EMISSIVE_INTENSITY, &factor) == aiReturn_SUCCESS) {
+            mat->metallic = factor;
+        }
         // Transmission
+        // if(material->GetTexture(aiTextureType_TRANSMISSION, 0, &filePath) == AI_SUCCESS) {
+        // AO
+        // if(material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &filePath) == AI_SUCCESS) {
         // ...
+        */
 
         materials.push_back(mat);
     }

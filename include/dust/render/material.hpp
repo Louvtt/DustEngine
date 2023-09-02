@@ -11,6 +11,9 @@ namespace dust {
 
 namespace render {
 
+/** @brief Max number of textures a material bind */
+constexpr u32 MAX_MATERIAL_TEXTURE_COUNT = 4;
+
 /**
  * @brief Base Material Class
  */
@@ -75,6 +78,7 @@ public:
     TexturePtr albedoTexture;
     TexturePtr metallicTexture;
     TexturePtr roughnessTexture;
+    TexturePtr normalTexture;
 };
 
 }

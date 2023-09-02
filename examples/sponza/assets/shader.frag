@@ -11,6 +11,7 @@ struct material_t {
     sampler2D albedoTex;
     sampler2D metallicTex;
     sampler2D roughnessTex;
+    sampler2D normalTex;
 };
 uniform material_t uMaterials[8];
 
@@ -39,12 +40,14 @@ void main() {
     // ambient
     vec3 ambient = uAmbient * .30;
     // diffuse 
-    vec3 norm = normalize(fs_in.normal);
+    vec3 norm = normalize(fs_in.normal * texture(uMaterials[int(fs_in.matID)].normalTex, fs_in.texCoord).rgb);
     vec3 lightDir = uSunDirection;
 
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = (diff * uMaterials[int(fs_in.matID)].albedo);
-    diffuse *= texture(uMaterials[int(fs_in.matID)].albedoTex, fs_in.texCoord).rgb;
+    vec4 diffColorTex = texture(uMaterials[int(fs_in.matID)].albedoTex, fs_in.texCoord);
+    if(diffColorTex.a < .5) discard;
+    diffuse *= diffColorTex.rgb;
     
     // specular
     vec3 viewDir = normalize(uViewPos - fs_in.fragPos);

@@ -38,7 +38,7 @@ void dr::TextureMaterial::bind(ShaderPtr shader, u32 slot)
     const std::string loc = shaderMaterialLoc(slot);
     shader->setUniform(loc + ".exist", true);
     texture->bind(0);
-    shader->setUniform(loc + ".albedo", (int)(slot * 3));
+    shader->setUniform(loc + ".albedo", (int)(slot * MAX_MATERIAL_TEXTURE_COUNT));
 }
 
 void dr::TextureMaterial::unbind(ShaderPtr shader)
@@ -46,7 +46,7 @@ void dr::TextureMaterial::unbind(ShaderPtr shader)
     const std::string loc = shaderMaterialLoc(m_boundSlot);
     texture->unbind();
     shader->setUniform("uHasMaterial", false);
-    shader->setUniform("uMaterial.albedoTex", (int)(m_boundSlot * 3));
+    shader->setUniform("uMaterial.albedoTex", (int)(m_boundSlot * MAX_MATERIAL_TEXTURE_COUNT));
 }
 
 dr::PBRMaterial::PBRMaterial()
@@ -55,14 +55,15 @@ metallic(0.f),
 roughness(0.f),
 albedoTexture(Texture::GetNullTexture()),
 metallicTexture(Texture::GetNullTexture()),
-roughnessTexture(Texture::GetNullTexture())
+roughnessTexture(Texture::GetNullTexture()),
+normalTexture(Texture::GetNullTexture())
 { }
 
 void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot) 
 {
     m_boundSlot = slot;
     const std::string loc = shaderMaterialLoc(slot);
-    const int baseTextureBind = slot * 3;
+    const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
     // textures
     shader->setUniform(loc + ".exist", true);
     albedoTexture->bind(baseTextureBind + 0);
@@ -71,6 +72,8 @@ void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot)
     shader->setUniform(loc + ".metallicTex", baseTextureBind + 1);
     roughnessTexture->bind(baseTextureBind + 2);
     shader->setUniform(loc + ".roughnessTex", baseTextureBind + 2);
+    normalTexture->bind(baseTextureBind + 3);
+    shader->setUniform(loc + ".normalTex", baseTextureBind + 3);
 
     // colors
     shader->setUniform(loc + ".albedo", albedo);
