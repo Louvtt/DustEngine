@@ -20,3 +20,6 @@
 [submodule "extern/assimp"]
 	path = extern/assimp
 	url = git@github.com:assimp/assimp.git
+[submodule "extern/tracy"]
+	path = extern/tracy
+	url = https://github.com/wolfpld/tracy
