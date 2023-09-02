@@ -52,7 +52,7 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
 
     glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
     glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, param.mipMaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, false));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, param.mipMaps));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
@@ -83,11 +83,10 @@ dr::TexturePtr dr::Texture::CreateTextureRaw(int apiType, u32 width, u32 height,
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     texture->internalCreate(apiType);
     texture->bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glGenerateMipmap(GL_TEXTURE_2D);
     texture->unbind();
     return texture;
 }
@@ -127,14 +126,14 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
     }
 
     glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, param.mipMaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, false));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, param.mipMaps));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
     for(int i = 0; i < data.size(); ++i) {
         glTexImage2D(GL_TEXTURE_2D, i, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.at(i));
     }
-    if(param.mipMaps) {
+    if(data.size() > 0) {
         DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
@@ -154,14 +153,14 @@ dr::TexturePtr dr::Texture::CreateTextureCompressed2D(u32 width, u32 height, u32
     }
 
     glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, true));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, false));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, true));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
     for(int i = 0; i < data.size(); ++i) {
         glCompressedTexImage2D(GL_TEXTURE_2D, i, toGLFormat(channels), width, height, 0, size, data.at(i));
     }
-    if(param.mipMaps) {
+    if(data.size() > 0) {
         DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
