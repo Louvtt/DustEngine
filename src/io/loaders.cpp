@@ -32,25 +32,29 @@ dio::LoadTexture2D(const dio::Path &_path)
         nv_dds::CDDSImage image{};
         image.load(path.string());
         if(image.get_type() == nv_dds::TextureType::TextureFlat) {
-            std::vector<void*> mipmaps{};
-            for(int i = 0; i < image.get_num_mipmaps(); ++i) {
-                mipmaps.push_back((uint8_t*)image.get_mipmap(i));
-            }
-
-            return render::Texture::CreateTexture2D(
+            render::TexturePtr res = render::Texture::CreateTextureRaw(
+                GL_TEXTURE_2D,
                 image.get_width(), 
                 image.get_height(), 
-                image.get_components(),
-                mipmaps,
-                {
-                    dr::TextureFilter::Linear, 
-                    dr::TextureWrap::NoWrap, 
-                    image.get_num_mipmaps() > 0
-                }
+                image.get_components()
             );
-        } else {
-            // cubmaps
-            return {};
+            res->bind();
+            image.upload_texture2D();
+            res->unbind();
+            image.clear();
+            return res;
+        } else if(image.get_type() == nv_dds::TextureType::TextureCubemap) {
+            render::TexturePtr res = render::Texture::CreateTextureRaw(
+                GL_TEXTURE_CUBE_MAP,
+                image.get_width(), 
+                image.get_height(), 
+                image.get_components()
+            );
+            res->bind();
+            image.upload_textureCubemap();
+            res->unbind();
+            image.clear();
+            return res;
         }
     }
     // STB_IMAGE 

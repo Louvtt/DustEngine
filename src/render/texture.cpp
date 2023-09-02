@@ -2,6 +2,7 @@
 #include "dust/core/log.hpp"
 #include "dust/core/types.hpp"
 #include "dust/render/renderAPI.hpp"
+#include <GL/gl.h>
 #include <filesystem>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -77,6 +78,13 @@ dr::TexturePtr dr::Texture::CreateTexture2DArray(u32 width, u32 height, u32 chan
     return texture;
 }
 
+dr::TexturePtr dr::Texture::CreateTextureRaw(int apiType, u32 width, u32 height, u32 channels)
+{
+    TexturePtr texture = TexturePtr(new Texture(width, height, channels));
+    texture->internalCreate(apiType);
+    return texture;
+}
+
 dr::TexturePtr dr::Texture::CreateTextureCubeMap(u32 width, u32 height, u32 channels, std::vector<void *> faces, const TextureParam &param)
 {
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
@@ -130,13 +138,40 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
     return texture;
 }
 
+dr::TexturePtr dr::Texture::CreateTextureCompressed2D(u32 width, u32 height, u32 channels, u32 size, std::vector<void *> data, const TextureParam &param)
+{
+    TexturePtr texture = TexturePtr(new Texture(width, height, channels));
+    if(!texture->internalCreate(GL_TEXTURE_2D)) {
+        texture.reset();
+        return GetNullTexture();
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, true));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, true));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
+    for(int i = 0; i < data.size(); ++i) {
+        glCompressedTexImage2D(GL_TEXTURE_2D, i, toGLFormat(channels), width, height, 0, size, data.at(i));
+    }
+    if(param.mipMaps) {
+        DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    DUST_DEBUG("[OpenGL] Created Texture {}", texture->m_renderID);
+    return texture;
+}
+
 u32 dr::Texture::apiValue(TextureWrap wrap)
 {
     switch(wrap) {
-        case TextureWrap::NoWrap: return GL_CLAMP;
-        case TextureWrap::Wrap:   return GL_REPEAT;
-        case TextureWrap::Mirror: return GL_MIRRORED_REPEAT;
-        default: return GL_CLAMP;
+        case TextureWrap::ClampEdge:   return GL_CLAMP_TO_EDGE;
+        case TextureWrap::ClampBorder: return GL_CLAMP_TO_BORDER;
+        case TextureWrap::Wrap:        return GL_REPEAT;
+        case TextureWrap::Mirror:      return GL_MIRRORED_REPEAT;
+        default: return GL_CLAMP_TO_EDGE;
     }
 }
 u32 dr::Texture::apiValue(TextureFilter filter, bool mipMaps)
@@ -200,6 +235,7 @@ dr::TexturePtr dr::Texture::GetNullTexture()
                 .mipMaps  = false
             }
         );
+        DUST_INFO("[Texture] Created Default white texture.");
     }
     return s_nullTexture;
 }

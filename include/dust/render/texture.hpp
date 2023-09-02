@@ -15,8 +15,8 @@ enum class TextureFilter : int {
 
 enum class TextureWrap : int {
     ClampEdge,
-    ClampBorder,
     NoWrap = ClampEdge,
+    ClampBorder,
     Wrap,
     Mirror,
 };
@@ -65,16 +65,30 @@ public:
      */
     static Ref<Texture> CreateTexture2D(u32 width, u32 height, u32 channels, void* data, const TextureParam& param);
     /**
-     * @brief Create Texture 2D with layers
+     * @brief Create Texture 2D with mipMaps layers
      * @param width Width of the Texture
      * @param height Height of the Texture
      * @param channels Channels count of the texture
      * @param data List of the data for each mipmaps level
      */
     static Ref<Texture> CreateTexture2D(u32 width, u32 height, u32 channels, std::vector<void*> data, const TextureParam& param);
+
+    /**
+     * @brief Create Texture 2D with mipMaps layers
+     * @param width Width of the Texture
+     * @param height Height of the Texture
+     * @param channels Channels count of the texture
+     * @param data List of the data for each mipmaps level
+     */
+    static Ref<Texture> CreateTextureCompressed2D(u32 width, u32 height, u32 channels, u32 size, std::vector<void*> data, const TextureParam& param);
+
     static Ref<Texture> CreateTextureCubeMap(u32 width, u32 height, u32 channels, std::vector<void*> faces, const TextureParam& param);
     static Ref<Texture> CreateTexture2DArray(u32 width, u32 height, u32 channels, std::vector<void*>, const TextureParam& param);
 
+    /**
+     * @brief Create Texture manually, just allocate the gpu texture type for you to use
+     */
+    static Ref<Texture> CreateTextureRaw(int apiType, u32 width, u32 height, u32 channels);
 
 private:
     bool internalCreate(u32 apiTextureType);
