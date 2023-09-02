@@ -65,11 +65,11 @@ void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot)
     const int baseTextureBind = slot * 3;
     // textures
     shader->setUniform(loc + ".exist", true);
-    albedoTexture->bind(0);
+    albedoTexture->bind(baseTextureBind + 0);
     shader->setUniform(loc + ".albedoTex", baseTextureBind + 0);
-    metallicTexture->bind(1);
+    metallicTexture->bind(baseTextureBind + 1);
     shader->setUniform(loc + ".metallicTex", baseTextureBind + 1);
-    roughnessTexture->bind(2);
+    roughnessTexture->bind(baseTextureBind + 2);
     shader->setUniform(loc + ".roughnessTex", baseTextureBind + 2);
 
     // colors

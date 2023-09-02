@@ -43,14 +43,14 @@ void main() {
     vec3 lightDir = uSunDirection;
 
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = uSunColor * (diff * uMaterials[int(fs_in.matID)].albedo);
+    vec3 diffuse = (diff * uMaterials[int(fs_in.matID)].albedo);
     diffuse *= texture(uMaterials[int(fs_in.matID)].albedoTex, fs_in.texCoord).rgb;
     
     // specular
     vec3 viewDir = normalize(uViewPos - fs_in.fragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), uMaterials[int(fs_in.matID)].metallic);
-    vec3 specular = uSunColor * spec;  
+    vec3 specular = vec3(0); // uSunColor * spec;  
         
     vec3 result = ambient + diffuse + specular;
     fragColor = vec4(result, 1.0);

@@ -214,7 +214,7 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
                 auto color = mesh->mColors[i];
                 vertex.color = { color->r, color->g, color->b, color->a };
             }
-            vertex.materialID = matId;
+            vertex.materialID = (float)(matId % DUST_MATERIAL_SLOTS); // matId in batch 
 
             vertices[batchIdx].push_back(vertex);
         }

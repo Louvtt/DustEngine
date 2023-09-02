@@ -82,6 +82,13 @@ dr::TexturePtr dr::Texture::CreateTextureRaw(int apiType, u32 width, u32 height,
 {
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
     texture->internalCreate(apiType);
+    texture->bind();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    texture->unbind();
     return texture;
 }
 
