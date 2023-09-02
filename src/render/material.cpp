@@ -5,6 +5,8 @@
 #include "glm/ext/vector_float4.hpp"
 #include <format>
 
+#include "tracy/Tracy.hpp"
+
 namespace dr = dust::render;
 
 dr::Material::Material()
@@ -61,6 +63,7 @@ normalTexture(Texture::GetNullTexture())
 
 void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot) 
 {
+    ZoneScoped;
     m_boundSlot = slot;
     const std::string loc = shaderMaterialLoc(slot);
     const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;

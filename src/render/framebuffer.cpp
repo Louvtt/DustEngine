@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "tracy/Tracy.hpp"
+
 namespace dr = dust::render;
 using drf = dr::Framebuffer;
 
@@ -243,6 +245,7 @@ u32 drf::getHeight() const
 dust::Result<drf::Attachment> 
 drf::getAttachment(AttachmentType type, u32 index)
 {
+    ZoneScoped;
     decltype(auto) found = std::find_if(m_attachments.begin(), m_attachments.end(), [=](Attachment value) -> bool {
         return value.type == type && value.index == index;
     });
@@ -255,6 +258,7 @@ drf::getAttachment(AttachmentType type, u32 index)
 
 void drf::bindAttachment(u32 bindIndex, AttachmentType type, u32 index)
 {
+    ZoneScoped;
     decltype(auto) found = this->getAttachment(type, index);
     if(found.has_value() && found.value().isReadable) {
         // DUST_DEBUG("[Framebuffer] Binding texture to {}", bindIndex);

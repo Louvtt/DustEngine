@@ -14,6 +14,8 @@
 
 #include <memory>
 
+#include "tracy/Tracy.hpp"
+
 dust::Application::Application(const std::string& name, u32 width, u32 height)
 : m_name(name),
 m_time(),
@@ -65,10 +67,14 @@ dust::Application::~Application()
 }
 
 void dust::Application::update()
-{ }
+{ 
+    ZoneScoped;
+}
 
 void dust::Application::render()
-{ }
+{ 
+    ZoneScoped;
+}
 
 void dust::Application::run()
 {

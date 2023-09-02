@@ -5,6 +5,9 @@
 #include "GLFW/glfw3.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include "tracy/Tracy.hpp"
+#include "tracy/TracyOpenGL.hpp"
+
 #pragma region "OpenGL Utils"
 
 #define GLCASETOSTR(name) case name: return #name;
@@ -119,6 +122,8 @@ dust::Renderer::Renderer(const dust::Window& window)
     setClearColor(.1f, .1f, .1f);
     resize(window.getWidth(), window.getHeight());
 
+    TracyGpuContext;
+
     // const char* shading_version = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
     // DUST_DEBUG("[OpenGL] Shading Language version : {}", shading_version);
     if(!ImGui_ImplOpenGL3_Init("#version 460 core")) {
@@ -158,6 +163,7 @@ void dust::Renderer::clear(bool clearColor)
 void dust::Renderer::endFrame()
 {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    FrameMark;
 }
 
 void dust::Renderer::setCulling(bool culling)

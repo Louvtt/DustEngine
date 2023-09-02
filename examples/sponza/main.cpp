@@ -1,3 +1,4 @@
+#include "dust/core/application.hpp"
 #include "dust/core/layer.hpp"
 #include "dust/core/log.hpp"
 #include "dust/dust.hpp"
@@ -129,6 +130,7 @@ public:
 
     void update() override
     {
+        dust::Application::update();
         f32 delta = (f32)getTime().delta;
         if(InputManager::IsKeyDown(Key::A)) {
             m_camera->rotate({-CAMERA_ROTATE_SPEED * delta, .0f, .0f});
@@ -159,6 +161,7 @@ public:
 
     void render() override
     {
+        dust::Application::render();
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         // Main Rendering
