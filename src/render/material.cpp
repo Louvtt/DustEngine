@@ -58,7 +58,7 @@ void dr::TextureMaterial::unbind(ShaderPtr shader)
 
 dr::PBRMaterial::PBRMaterial()
 : albedo({1.f, 1.f, 1.f}),
-reflectance(0.f),
+ior(0.f),
 roughness(0.f),
 albedoTexture(Texture::GetNullTexture()),
 reflectanceTexture(Texture::GetNullTexture()),
@@ -85,7 +85,7 @@ void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot)
 
     // colors
     shader->setUniform(loc + ".albedo", albedo);
-    shader->setUniform(loc + ".reflectance", reflectance);
+    shader->setUniform(loc + ".ior", ior);
     shader->setUniform(loc + ".roughness", roughness);
 }
 void dr::PBRMaterial::unbind(ShaderPtr shader) 

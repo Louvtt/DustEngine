@@ -7,6 +7,7 @@
 
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/geometric.hpp"
+#include <format>
 
 namespace dr = dust::render;
 
@@ -45,11 +46,13 @@ m_direction(direction)
 dr::DirectionnalLight::~DirectionnalLight() {}
 
 
-void dr::DirectionnalLight::bind(Shader* shader) const
+void dr::DirectionnalLight::bind(ShaderPtr shader, u32 index) const
 {
     DUST_PROFILE;
-    shader->setUniform("uLightDir", m_direction);
-    shader->setUniform("uLightColor", m_color);
+    std::string loc = std::format("uLights[{}]", index);
+    shader->setUniform(loc + ".type", 0);
+    shader->setUniform(loc + ".direction", m_direction);
+    shader->setUniform(loc + ".color", m_color);
 }
 
 glm::vec3 dr::DirectionnalLight::getDirection() const

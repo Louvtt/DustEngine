@@ -8,6 +8,7 @@
 #include "dust/io/loaders.hpp"
 #include "dust/render/camera.hpp"
 #include "dust/render/framebuffer.hpp"
+#include "dust/render/light.hpp"
 #include "dust/render/shader.hpp"
 
 
@@ -37,7 +38,7 @@ using namespace dust;
 constexpr f32 CAMERA_SPEED = 100.f;
 constexpr f32 CAMERA_ROTATE_SPEED = 50.f;
 
-class SimpleApp
+class SponzaApp
 : public Application
 {
 private:
@@ -52,21 +53,17 @@ private:
     render::Camera3DPtr m_camera;
     render::SkyboxPtr m_skybox;
 
-    glm::vec3 m_sunDirection;
-    glm::vec3 m_sunColor;
-    glm::vec3 m_ambientColor;
+    render::DirectionnalLight m_sun;
 
     bool m_wireframe;
     bool m_drawSponza;
 public:
-    SimpleApp()
-    : Application("Sponza", 1920u, 1080u),
+    SponzaApp()
+    : Application("Sponza Demo", 1920u, 1080u),
     m_shader(nullptr),
     m_sponza(),
     m_camera(createRef<render::Camera3D>(getWindow()->getWidth(), getWindow()->getHeight(), 90, 2000)),
-    m_sunDirection(-.5f, .5f, 0.f),
-    m_sunColor(234/255.f, 198/255.f, 147/255.f),
-    m_ambientColor(4/255.f, 0/255.f, 14/255.f),
+    m_sun(glm::normalize(glm::vec3(-2.0f, 4.0f, -1.0f)), {25/255.f, 108/255.f, 225/255.f}),
     m_drawSponza(true), m_wireframe(false), m_renderTarget(nullptr)
     { 
         getWindow()->setVSync(false);
@@ -115,7 +112,7 @@ public:
         // getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
     }
 
-    ~SimpleApp() 
+    ~SponzaApp() 
     {
         m_shader.reset();
         m_depthShader.reset();
@@ -212,17 +209,17 @@ public:
 
                 ImGui::SeparatorText("Lighting"); 
                 {
-                    if(ImGui::InputFloat3("Sun Direction", glm::value_ptr(m_sunDirection), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        if(m_sunDirection.length() == 0) {
-                            m_sunDirection = glm::vec3(0, 1, 0); // reset
+                    glm::vec3 sunDir = m_sun.getDirection();
+                    if(ImGui::InputFloat3("Sun Direction", glm::value_ptr(sunDir), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        if(sunDir.length() != 0) {
+                            m_sun.setDirection(sunDir);
+                            updateUniforms();
                         }
-                        m_currentShader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
                     }
-                    if(ImGui::ColorEdit3("Sun color", glm::value_ptr(m_sunColor))) {
-                        m_currentShader->setUniform("uSunColor", m_sunColor);
-                    }
-                    if(ImGui::ColorEdit3("Ambient color", glm::value_ptr(m_ambientColor))) {
-                        m_currentShader->setUniform("uAmbient", m_ambientColor);
+                    glm::vec3 sunColor = m_sun.getColor();
+                    if(ImGui::ColorEdit3("Sun color", glm::value_ptr(sunColor))) {
+                        m_sun.setColor(sunColor);
+                        updateUniforms();
                     }
                 }
 
@@ -258,11 +255,9 @@ public:
 private:
     void updateUniforms() {
         m_camera->bind(m_currentShader.get());
-        m_shader->setUniform("uSunDirection", glm::normalize(m_sunDirection));
-        m_shader->setUniform("uSunColor", m_sunColor);
-        m_shader->setUniform("uAmbient", m_ambientColor);
+        m_sun.bind(m_currentShader);
     }
 };
 
-DUST_SIMPLE_ENTRY(SimpleApp)
+DUST_SIMPLE_ENTRY(SponzaApp)
 

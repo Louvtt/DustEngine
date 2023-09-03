@@ -360,7 +360,7 @@ public:
 
 private:
     void updateUniforms() {
-        m_sun.bind(m_sceneShader.get());
+        m_sun.bind(m_sceneShader);
         m_camera->bind(m_sceneShader.get());
         m_sceneShader->setUniform("uShadowMap", 10);
         m_sceneShader->setUniform("uAmbient", m_ambientColor);

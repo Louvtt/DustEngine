@@ -25,7 +25,7 @@ public:
     Light();
     virtual ~Light() = default;
     virtual void updateRenderPos() = 0;
-    virtual void bind(Shader* shader) const = 0;
+    virtual void bind(ShaderPtr shader, u32 index = 0) const = 0;
 
     glm::mat4 getView() const;
     glm::mat4 getProj() const;
@@ -45,7 +45,7 @@ public:
     virtual ~DirectionnalLight();
 
     void updateRenderPos() override;
-    virtual void bind(Shader* shader) const override;
+    virtual void bind(ShaderPtr shader, u32 index = 0) const override;
 
     glm::vec3 getDirection() const;
     glm::vec3 getColor() const;

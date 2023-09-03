@@ -9,8 +9,9 @@ namespace render {
 
 struct ModelVertex {
     glm::vec3 pos;
-    glm::vec3 normal;
     glm::vec2 tex;
+    glm::vec3 normal;
+    glm::vec3 tangent;
     glm::vec4 color;
     float materialID;
 

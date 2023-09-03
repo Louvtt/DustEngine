@@ -128,7 +128,7 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
             mat->albedo = {color.r, color.g, color.b};
         }
 
-        // Metallic
+        // ?
         if(material->GetTexture(aiTextureType_REFLECTION, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
              const auto texture = dio::LoadTexture2D(texPath);
@@ -136,10 +136,12 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
                 mat->reflectanceTexture = texture.value();
             }
         }
+        // IOR
         if(material->Get(AI_MATKEY_COLOR_REFLECTIVE, color) == aiReturn_SUCCESS) {
-            mat->reflectance = {color.r, color.g, color.b};
+            mat->ior = {color.r, color.g, color.b};
         }
 
+        // Emission
         if(material->GetTexture(aiTextureType_EMISSIVE, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
             const auto texture = dio::LoadTexture2D(texPath);
@@ -150,6 +152,11 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         // Roughness
         if(material->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == aiReturn_SUCCESS) {
             mat->roughness = factor;
+        }
+
+        // Metallic
+        if(material->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS) {
+            mat->metallic = factor;
         }
 
         // Normals
@@ -207,8 +214,9 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
     // Attributes
     std::vector<dr::Attribute> attributes {
         dr::Attribute::Pos3D,
-        dr::Attribute::Pos3D,     // normals
         dr::Attribute::TexCoords,
+        dr::Attribute::Pos3D,     // normals
+        dr::Attribute::Pos3D,     // tangents
         dr::Attribute::Color,
         dr::Attribute::Float      // matID
     };
@@ -254,6 +262,10 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
                 if(mesh->HasNormals()) { 
                     auto normal = mesh->mNormals[i];
                     vertex.normal = { normal.x, normal.y, normal.z};
+                }
+                if(mesh->HasTangentsAndBitangents()) {
+                    auto tangent = mesh->mTangents[i];
+                    vertex.tangent = { tangent.x, tangent.y, tangent.z };
                 }
                 if(mesh->HasVertexColors(i)) {
                     auto color = mesh->mColors[i];
