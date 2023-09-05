@@ -121,6 +121,7 @@ void drf::createInternal()
             glGenTextures(1, &newAttachment.id);
             if(newAttachment.id == 0) { DUST_ERROR("[OpenGL][Framebuffer] Failed to create texture."); continue; }
             glBindTexture(GL_TEXTURE_2D, newAttachment.id);
+            DUST_PROFILE_GPU("TexImage2D");
             glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, getGLType(attachment.type), nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -147,6 +148,7 @@ void drf::createInternal()
             glGenRenderbuffers(1, &newAttachment.id);
             if(newAttachment.id == 0) { DUST_ERROR("[OpenGL][Framebuffer] Failed to create renderbuffer."); continue; }
             glBindRenderbuffer(GL_RENDERBUFFER, newAttachment.id);
+            DUST_PROFILE_GPU("RenderbufferStorage");
             glRenderbufferStorage(GL_RENDERBUFFER, format, m_width, m_height);
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, binding, GL_RENDERBUFFER, newAttachment.id);
@@ -218,10 +220,12 @@ void drf::resize(u32 width, u32 height, bool recreate)
         u32 format  = getGLFormat(attachment.type);
         if(attachment.isReadable) {
             glBindTexture(GL_TEXTURE_2D, attachment.id);
+            DUST_PROFILE_GPU("TexImage2D");
             glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, NULL);
             glBindTexture(GL_TEXTURE_2D, 0);
         } else {
             glBindRenderbuffer(GL_RENDERBUFFER, attachment.id);
+            DUST_PROFILE_GPU("RenderbufferStorage");
             glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
         }
@@ -230,10 +234,12 @@ void drf::resize(u32 width, u32 height, bool recreate)
 
 void drf::bind()
 {
+    DUST_PROFILE_GPU("BindFramebuffer");
     glBindFramebuffer(GL_FRAMEBUFFER, m_renderID);
 }
 void drf::unbind()
 {
+    DUST_PROFILE_GPU("BindFramebuffer");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

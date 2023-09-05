@@ -6,9 +6,6 @@
 #include <GL/gl.h>
 #include <filesystem>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 namespace dr = dust::render;
 
 dr::TexturePtr dr::Texture::s_nullTexture = nullptr;
@@ -40,6 +37,7 @@ bool dr::Texture::internalCreate(u32 apiTextureType)
 {
     DUST_PROFILE;
     m_apiType = apiTextureType;
+    DUST_PROFILE_GPU("GenTextures");
     glGenTextures(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Texture] Failed to create a texture.");
@@ -58,6 +56,7 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
     }
 
     glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
+    DUST_PROFILE_GPU("TexImage2D");
     glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, false));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, param.mipMaps));
@@ -65,6 +64,7 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
     if(param.mipMaps) {
         DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
+        DUST_PROFILE_GPU("GenerateMipmap");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -90,13 +90,16 @@ dr::TexturePtr dr::Texture::CreateTextureRaw(int apiType, u32 width, u32 height,
 {
     DUST_PROFILE_SECTION("Texture Flat");
     TexturePtr texture = TexturePtr(new Texture(width, height, channels));
-    texture->internalCreate(apiType);
-    texture->bind();
-    glTexParameteri(apiType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(apiType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(apiType, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(apiType, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    texture->unbind();
+    if(texture->internalCreate(apiType)) {
+        texture->bind();
+        DUST_PROFILE_GPU("TexImage2D");
+        glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr); // reserve memory
+        glTexParameteri(apiType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(apiType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(apiType, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(apiType, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        texture->unbind();
+    }
     return texture;
 }
 
@@ -112,6 +115,7 @@ dr::TexturePtr dr::Texture::CreateTextureCubeMap(u32 width, u32 height, u32 chan
     u32 index = 0;
     for(auto face : faces)
     {
+        DUST_PROFILE_GPU("TexImage2D");
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 
              0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, face
         );
@@ -135,17 +139,18 @@ dr::TexturePtr dr::Texture::CreateTexture2D(u32 width, u32 height, u32 channels,
         texture.reset();
         return GetNullTexture();
     }
-
     glBindTexture(GL_TEXTURE_2D, texture->m_renderID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, apiValue(param.filter, false));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, apiValue(param.filter, param.mipMaps));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
     for(int i = 0; i < data.size(); ++i) {
+        DUST_PROFILE_GPU("TexImage2D");
         glTexImage2D(GL_TEXTURE_2D, i, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.at(i));
     }
     if(data.size() > 0) {
         DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
+        DUST_PROFILE_GPU("GenerateMipmap");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -170,10 +175,12 @@ dr::TexturePtr dr::Texture::CreateTextureCompressed2D(u32 width, u32 height, u32
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, apiValue(param.wrap));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, apiValue(param.wrap));
     for(int i = 0; i < data.size(); ++i) {
+        DUST_PROFILE_GPU("CompressedTexImage2D");
         glCompressedTexImage2D(GL_TEXTURE_2D, i, toGLFormat(channels), width, height, 0, size, data.at(i));
     }
     if(data.size() > 0) {
         DUST_DEBUG("[OpenGL][Texture] Creating mipmaps...");
+        DUST_PROFILE_GPU("GenerateMipmap");
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -213,12 +220,14 @@ void dr::Texture::bind(u16 index)
     DUST_PROFILE;
     m_lastIndex = index;
     glActiveTexture(GL_TEXTURE0 + m_lastIndex);
+    DUST_PROFILE_GPU("BindTexture");
     glBindTexture(m_apiType, m_renderID);
 }
 void dr::Texture::unbind()
 {
     DUST_PROFILE;
     glActiveTexture(GL_TEXTURE0 + m_lastIndex);
+    DUST_PROFILE_GPU("UnbindTexture");
     glBindTexture(m_apiType, m_renderID);
 }
 

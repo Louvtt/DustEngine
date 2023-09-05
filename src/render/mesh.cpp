@@ -36,7 +36,7 @@ m_materialSlots()
 {
     DUST_PROFILE;
     m_materialSlots.fill(nullptr);
-    DUST_PROFILE_GPU("CreateMesh");
+    DUST_PROFILE_GPU("CreateVertexArrays");
     glCreateVertexArrays(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Mesh] Failed to create VAO");
@@ -51,9 +51,13 @@ m_materialSlots()
     } else {
         DUST_DEBUG("[OpenGL][Mesh] Created VBO {}", m_vbo);
     }
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexDataSize * vertexCount, vertexData, GL_STATIC_DRAW);
-
+    // VBO
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        DUST_PROFILE_GPU("BufferData (VBO)");
+        glBufferData(GL_ARRAY_BUFFER, vertexDataSize * vertexCount, vertexData, GL_STATIC_DRAW);
+    }
+    // EBO
     m_ebo = 0;
     if(m_indexCount > 0) {
         glGenBuffers(1, &m_ebo);
@@ -64,6 +68,7 @@ m_materialSlots()
             DUST_DEBUG("[OpenGL][Mesh] Created EBO {}", m_ebo);
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+        DUST_PROFILE_GPU("BufferData (EBO)");
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(u32), &indices.front(), GL_STATIC_DRAW);
     }
 

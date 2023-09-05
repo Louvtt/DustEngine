@@ -15,6 +15,7 @@ namespace dio = dust::io;
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <nv_dds.h>
 

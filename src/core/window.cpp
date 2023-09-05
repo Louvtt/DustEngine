@@ -24,6 +24,7 @@ m_height(height)
     DUST_PROFILE_SECTION("Window::Constructor");
     // glfw initialisation
     if(!isWindowManagerInitialized) {
+        DUST_PROFILE_SECTION("GLFW Init");
         if(!glfwInit()) {
             const char* errorDescription;
             int code = glfwGetError(&errorDescription);
