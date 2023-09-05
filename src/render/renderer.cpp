@@ -75,7 +75,11 @@ const char* getGLIDStr(GLuint _id)
 static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id, GLenum _severity, GLsizei _length, const GLchar* _message, const void* _userParam)
 {
     if(_severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
-        DUST_INFO("[OpenGL] [From {}]: {}", getGLSourceStr(_source), _message);
+        DUST_INFO("[OpenGL] [{} | {}]({}): {}", 
+            getGLTypeStr(_type),
+            getGLSourceStr(_source),
+            getGLIDStr(_id), 
+            _message);
         return;
     }
     
@@ -111,11 +115,12 @@ dust::Renderer::Renderer(const dust::Window& window)
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     #ifdef _DEBUG
-    DUST_INFO("[OpengL] Set up debug message callback.");
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(glDebugCallback, nullptr);
+        DUST_INFO("[OpengL] Set up debug message callback.");
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(glDebugCallback, nullptr);
     #endif
 
     glEnable(GL_CULL_FACE);
@@ -124,6 +129,8 @@ dust::Renderer::Renderer(const dust::Window& window)
 
     setClearColor(.1f, .1f, .1f);
     resize(window.getWidth(), window.getHeight());
+
+    // Query device driver informations
 
     // const char* shading_version = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
     // DUST_DEBUG("[OpenGL] Shading Language version : {}", shading_version);

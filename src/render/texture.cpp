@@ -93,7 +93,7 @@ dr::TexturePtr dr::Texture::CreateTextureRaw(int apiType, u32 width, u32 height,
     if(texture->internalCreate(apiType)) {
         texture->bind();
         DUST_PROFILE_GPU("TexImage2D");
-        glTexImage2D(GL_TEXTURE_2D, 0, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr); // reserve memory
+        glTexImage2D(apiType, 0, toGLFormat(channels), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr); // reserve memory
         glTexParameteri(apiType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(apiType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(apiType, GL_TEXTURE_WRAP_S, GL_REPEAT);

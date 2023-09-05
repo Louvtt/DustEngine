@@ -71,20 +71,21 @@ void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot)
     DUST_PROFILE;
     m_boundSlot = slot;
     
-    const std::string loc = shaderMaterialLoc(slot);
+    const std::string bufAccess = std::format("[{}]", slot);
+    const std::string loc = "uMaterials" + bufAccess;
     shader->setUniform(loc + ".exist", true);
 
     // textures
     const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
-    static constexpr std::string matBaseUniformFormat = "uMat{}[{}]";
+    static constexpr std::string baseUniform = "uMat";
     albedoTexture->bind(baseTextureBind + 0);
-    shader->setUniform(std::format(matBaseUniformFormat, "Albedo", baseTextureBind + 0), baseTextureBind + 0);
     emissivityTexture->bind(baseTextureBind + 1);
-    shader->setUniform(std::format(matBaseUniformFormat, "Emmissive", baseTextureBind + 1), baseTextureBind + 1);
     reflectanceTexture->bind(baseTextureBind + 2);
-    shader->setUniform(std::format(matBaseUniformFormat, "Reflectance", baseTextureBind + 2), baseTextureBind + 2);
     normalTexture->bind(baseTextureBind + 3);
-    shader->setUniform(std::format(matBaseUniformFormat, "Normal", baseTextureBind + 3), baseTextureBind + 3);
+    shader->setUniform((baseUniform + std::string("Albedo")      + bufAccess), baseTextureBind + 0);
+    shader->setUniform((baseUniform + std::string("Emmissive")   + bufAccess), baseTextureBind + 1);
+    shader->setUniform((baseUniform + std::string("Reflectance") + bufAccess), baseTextureBind + 2);
+    shader->setUniform((baseUniform + std::string("Normal")      + bufAccess), baseTextureBind + 3);
 
     // colors
     shader->setUniform(loc + ".albedo", albedo);
@@ -95,9 +96,9 @@ void dr::PBRMaterial::unbind(ShaderPtr shader)
 {
     const std::string loc = shaderMaterialLoc(m_boundSlot);
     // unbind textures
-    albedoTexture->unbind();
-    reflectanceTexture->unbind();
-    emissivityTexture->unbind();
-    normalTexture->unbind();
+    // albedoTexture->unbind();
+    // reflectanceTexture->unbind();
+    // emissivityTexture->unbind();
+    // normalTexture->unbind();
     shader->setUniform(loc + ".exist", false);
 }
