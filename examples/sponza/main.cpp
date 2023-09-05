@@ -256,6 +256,7 @@ private:
     void updateUniforms() {
         m_camera->bind(m_currentShader.get());
         m_sun.bind(m_currentShader);
+        m_currentShader->setUniform("uLightCount", 0);
     }
 };
 

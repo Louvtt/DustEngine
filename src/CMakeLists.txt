@@ -82,6 +82,8 @@ endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(dustlib PRIVATE "_DEBUG")
+    target_compile_options(dustlib PRIVATE -fsanitize=leak)
+    target_link_options(dustlib PRIVATE -fsanitize=leak)
 endif()
 
 

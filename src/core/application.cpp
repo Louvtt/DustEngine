@@ -103,6 +103,7 @@ void dust::Application::run()
         ImGui::Render();
         m_renderer->endFrame();
     }
+    DUST_INFO("Exitting app main loop.");
 }
 
 void dust::Application::setProgramPath(const std::filesystem::path& path)

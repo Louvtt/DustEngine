@@ -70,18 +70,21 @@ void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot)
 {
     DUST_PROFILE;
     m_boundSlot = slot;
+    
     const std::string loc = shaderMaterialLoc(slot);
-    const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
-    // textures
     shader->setUniform(loc + ".exist", true);
+
+    // textures
+    const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
+    static constexpr std::string matBaseUniformFormat = "uMat{}[{}]";
     albedoTexture->bind(baseTextureBind + 0);
-    shader->setUniform(loc + ".albedoTex", baseTextureBind + 0);
+    shader->setUniform(std::format(matBaseUniformFormat, "Albedo", baseTextureBind + 0), baseTextureBind + 0);
     emissivityTexture->bind(baseTextureBind + 1);
-    shader->setUniform(loc + ".emissivityTex", baseTextureBind + 1);
+    shader->setUniform(std::format(matBaseUniformFormat, "Emmissive", baseTextureBind + 1), baseTextureBind + 1);
     reflectanceTexture->bind(baseTextureBind + 2);
-    shader->setUniform(loc + ".reflectanceTex", baseTextureBind + 2);
+    shader->setUniform(std::format(matBaseUniformFormat, "Reflectance", baseTextureBind + 2), baseTextureBind + 2);
     normalTexture->bind(baseTextureBind + 3);
-    shader->setUniform(loc + ".normalTex", baseTextureBind + 3);
+    shader->setUniform(std::format(matBaseUniformFormat, "Normal", baseTextureBind + 3), baseTextureBind + 3);
 
     // colors
     shader->setUniform(loc + ".albedo", albedo);

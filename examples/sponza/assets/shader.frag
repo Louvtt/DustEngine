@@ -6,6 +6,7 @@ out vec4 fragColor;
 /***********************************************/
 // Materials
 
+#define MAT_COUNT 8
 struct material_t {
     bool exist;
 
@@ -14,12 +15,12 @@ struct material_t {
     float roughness;
     float metallic;
 
-    sampler2D albedoTex;
-    sampler2D reflectanceTex;
-    sampler2D emissiveTex;
-    sampler2D normalTex;
 };
-uniform material_t uMaterials[8];
+uniform sampler2D uMatAlbedo[MAT_COUNT];
+uniform sampler2D uMatReflectance[MAT_COUNT];
+uniform sampler2D uMatEmissive[MAT_COUNT];
+uniform sampler2D uMatNormal[MAT_COUNT];
+uniform material_t uMaterials[MAT_COUNT];
 
 /***********************************************/
 // Lights
@@ -63,7 +64,7 @@ vec3 CalcNormal()
     vec3 tangent = normalize(fs_in.tangent);
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     vec3 biTangent = cross(tangent, normal);
-    vec3 bumpMapNormal = texture(uMaterials[int(fs_in.matID)].normalTex, fs_in.texCoord).xyz;
+    vec3 bumpMapNormal = texture(uMatNormal[int(fs_in.matID)], fs_in.texCoord).xyz;
     bumpMapNormal = 2.0 * bumpMapNormal - vec3(1);
     mat3 TBN = mat3(tangent, biTangent, normal);
     return normalize(TBN * bumpMapNormal);
@@ -113,19 +114,20 @@ vec3 lerp(vec3 a, vec3 b, float t)
 vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
 {
     // Mat param
-    vec4 color = texture(uMaterials[int(fs_in.matID)].albedoTex, fs_in.texCoord);
-    float metallic = uMaterials[int(fs_in.matID)].metallic;
-    float alpha = uMaterials[int(fs_in.matID)].roughness;
+    material_t mat = uMaterials[int(fs_in.matID)];
+    vec4 color = texture(uMatAlbedo[int(fs_in.matID)], fs_in.texCoord);
+    float metallic = mat.metallic;
+    float alpha = mat.roughness;
 
     // Calculate color at normal incidence
-    vec3 ior = uMaterials[int(fs_in.matID)].ior;
+    vec3 ior = mat.ior;
     vec3 F0 = abs((1.0 - ior) / (1.0 + ior));
     F0 = F0 * F0;
     F0 = lerp(F0, color.rgb, metallic);
 
     // Power Conservation
     vec3 Ks = F(F0, V, H);
-    vec3 Kd = (vec3(1) - Ks) * (1.0 - uMaterials[int(fs_in.matID)].metallic);
+    vec3 Kd = (vec3(1) - Ks) * (1.0 - metallic);
 
     vec3 lambert = color.rgb / PI;
     
@@ -136,7 +138,7 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
     vec3 cookTorrance = cookTorranceNum / cookTorranceDen;
 
     vec3 BRDF = Kd * lambert * cookTorrance;
-    vec3 emissivity = texture(uMaterials[int(fs_in.matID)].reflectanceTex, fs_in.texCoord).rgb;
+    vec3 emissivity = texture(uMatEmissive[int(fs_in.matID)], fs_in.texCoord).rgb;
     vec3 res = emissivity + BRDF * uLights[0].color * LdotN;
 
     return res;
@@ -146,7 +148,8 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
 
 void main() {
     // fallback
-    if(!uMaterials[int(fs_in.matID)].exist) {
+    material_t mat = uMaterials[int(fs_in.matID)];
+    if(!mat.exist) {
         fragColor = vec4(1, 0, 1, 1);
         return;
     }
