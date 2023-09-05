@@ -27,6 +27,7 @@ dr::Shader::Shader()
 dr::Shader::~Shader()
 {
     DUST_PROFILE;
+    glUseProgram(0);
     glDeleteProgram(m_renderID);
 }
 
@@ -83,6 +84,7 @@ void dr::Shader::reload() {
     if(resultVert.has_value() && resultFrag.has_value()) {
         u32 reloadedShaderID = internalCreate(resultVert.value(), resultFrag.value());
         if(reloadedShaderID != 0) {
+            glUseProgram(0);
             glDeleteProgram(m_renderID);
             m_renderID = reloadedShaderID;
         }
@@ -139,6 +141,7 @@ u32 dr::Shader::internalCreate(const std::string &vertexCode, const std::string 
     const u32 renderID = glCreateProgram();
     if(renderID == 0) { return m_renderID; }
     if(!linkShaders(renderID, vertex, fragment)) {
+        glUseProgram(0);
         glDeleteShader(vertex);
         glDeleteShader(fragment);
         glDeleteProgram(renderID);
@@ -165,6 +168,7 @@ u32 dr::Shader::compileShader(int type, const std::string& code)
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
     if(!success) {
         glGetShaderInfoLog(id, INFO_LOG_SIZE, NULL, infoLog);
+        glDeleteShader(id);
         DUST_ERROR("[OpenGL][Shader Compilation] : {}", infoLog);
     }
     return id;

@@ -173,8 +173,8 @@ void drf::createInternal()
             DUST_DEBUG("[OpenGL] Deleting previous framebuffer {} and its attachments.", m_renderID);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             for(auto attachment : m_attachments) {
-                if(attachment.isReadable) { glDeleteTextures(1, &attachment.id); }
-                else                      { glDeleteRenderbuffers(1, &attachment.id); }
+                if(attachment.isReadable) { glBindTexture(GL_TEXTURE_2D, 0);        glDeleteTextures(1, &attachment.id); }
+                else                      { glBindRenderbuffer(GL_RENDERBUFFER, 0); glDeleteRenderbuffers(1, &attachment.id); }
             }
             m_attachments.clear();
             glDeleteFramebuffers(1, &m_renderID);
@@ -188,8 +188,8 @@ void drf::createInternal()
         // delete everything
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         for(auto attachment : attachments) {
-            if(attachment.isReadable) { glDeleteTextures(1, &attachment.id); }
-            else                      { glDeleteRenderbuffers(1, &attachment.id); }
+            if(attachment.isReadable) { glBindTexture(GL_TEXTURE_2D, 0);        glDeleteTextures(1, &attachment.id); }
+            else                      { glBindRenderbuffer(GL_RENDERBUFFER, 0); glDeleteRenderbuffers(1, &attachment.id); }
         }
         attachments.clear();
         glDeleteFramebuffers(1, &renderID);
@@ -202,6 +202,10 @@ drf::~Framebuffer()
 {
     DUST_PROFILE;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    for(auto attachment : m_attachments) {
+        if(attachment.isReadable) { glBindTexture(GL_TEXTURE_2D, 0);        glDeleteTextures(1, &attachment.id); }
+        else                      { glBindRenderbuffer(GL_RENDERBUFFER, 0); glDeleteRenderbuffers(1, &attachment.id); }
+    }
     glDeleteFramebuffers(1, &m_renderID);
 }
 
@@ -216,6 +220,7 @@ void drf::resize(u32 width, u32 height, bool recreate)
     }
 
     // else resize all attachments
+    bind();
     for(auto attachment : m_attachments) {
         u32 format  = getGLFormat(attachment.type);
         if(attachment.isReadable) {
@@ -230,6 +235,7 @@ void drf::resize(u32 width, u32 height, bool recreate)
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
         }
     }
+    unbind();
 }
 
 void drf::bind()
