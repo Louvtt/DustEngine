@@ -126,7 +126,7 @@ u32 dr::Shader::getUniformLocation(const std::string &name)
     DUST_PROFILE;
     const auto found = m_uniforms.find(name);
     if(found == m_uniforms.end()) {
-        return 0;
+        return -1;
     }
     return found->second.index;
 }
