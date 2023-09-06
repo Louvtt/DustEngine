@@ -5,9 +5,9 @@ project(DustEngine
     LANGUAGES CXX C    
 )
 
-option(DustEngine_BUILD_EXAMPLES "Build the mx engine examples" ON)
-option(DustEngine_BUILD_TESTS    "Build the mx engine test" OFF)
-option(DustEngine_BUILD_DOCS     "Build the mx engine documentation (Doxygen)" OFF)
+option(DustEngine_BUILD_EXAMPLES "Build the engine examples" ON)
+option(DustEngine_BUILD_TESTS    "Build the engine test" OFF)
+option(DustEngine_BUILD_DOCS     "Build the engine documentation (Doxygen)" OFF)
 option(DustEngine_PROFILING      "Enable engine profiling" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -19,7 +19,7 @@ if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
     set(CMAKE_CXX_STANDARD_REQUIRE ON) # enable stdc++fs
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-    set(OpenGL_GL_PREFERENCE "GLVND") # not legacy OpenGL
+    set(OpenGL_GL_PREFERENCE "GLVND") # modern OpenGL
 
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
