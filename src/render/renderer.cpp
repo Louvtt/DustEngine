@@ -111,7 +111,7 @@ dust::Renderer::Renderer(const dust::Window& window)
     // avoid skipping pixels
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    // glEnable(GL_STENCIL_TEST);
+    glEnable(GL_STENCIL_TEST);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glEnable(GL_BLEND);
@@ -151,7 +151,7 @@ dust::Renderer::~Renderer()
 void dust::Renderer::newFrame()
 {
     DUST_PROFILE_GPU("renderer new frame");
-    clear();
+    // clear();
     ImGui_ImplOpenGL3_NewFrame();
 }
 
