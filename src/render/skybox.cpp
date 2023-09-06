@@ -16,7 +16,7 @@
 
 namespace dr = dust::render;
 
-std::string vCode = SHADER_SOURCE(
+constexpr static const char* vCode = SHADER_SOURCE(
     "#version 460 core",
     layout (location = 0) in vec3 aPos;
     out vec3 TexCoords;
@@ -34,7 +34,7 @@ std::string vCode = SHADER_SOURCE(
 );
 std::vector<dr::Attribute> CUBE_ATTRIBUTES { dr::Attribute::Pos3D };
 
-std::string fCode = SHADER_SOURCE(
+constexpr static const char* fCode = SHADER_SOURCE(
     "#version 460 core",
     out vec4 FragColor;
 
@@ -81,6 +81,8 @@ m_shader(dust::createRef<Shader>(vCode, fCode))
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
+    m_shader->setUniform("uSkybox", 0);
+
     // Generate cube
     DUST_DEBUG("[Skybox] Created Skybox {}", m_renderID);
 }
@@ -106,7 +108,6 @@ void dr::Skybox::draw(Camera* camera)
     // bind cubemap
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
-    m_shader->setUniform("uSkybox", 0);
 
     m_mesh->draw(m_shader);
  
