@@ -223,7 +223,7 @@ void dr::Texture::bind(u16 index)
     DUST_PROFILE_GPU("BindTexture");
     glBindTexture(m_apiType, m_renderID);
 }
-void dr::Texture::unbind()
+void dr::Texture::unbind()  // PIKMIN
 {
     DUST_PROFILE;
     glActiveTexture(GL_TEXTURE0 + m_lastIndex);
