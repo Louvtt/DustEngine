@@ -85,8 +85,14 @@ public:
         m_sun.updateRenderPos();
         getWindow()->setVSync(false);
 
-        m_sceneShader = render::Shader::loadFromFile("assets/shader.vert", "assets/shader.frag");
-        m_shadowShader = render::Shader::loadFromFile("assets/depth.vert", "assets/depth.frag");
+        const auto sceneShader = render::Shader::loadFromFile("assets/shader.vert", "assets/shader.frag");
+        if(!sceneShader.has_value()) exit(EXIT_FAILURE);
+        m_sceneShader = sceneShader.value();
+
+        const auto shadowShader = render::Shader::loadFromFile("assets/depth.vert", "assets/depth.frag");
+        if(!shadowShader.has_value()) exit(EXIT_FAILURE);
+        m_shadowShader = shadowShader.value();
+
         m_skybox = render::SkyboxPtr(new render::Skybox({
             "assets/cubemap/right.png", "assets/cubemap/left.png",
             "assets/cubemap/top.png", "assets/cubemap/bottom.png",

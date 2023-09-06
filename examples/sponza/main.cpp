@@ -15,6 +15,7 @@
 #include "dust/render/skybox.hpp"
 #include "glm/ext/quaternion_geometric.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <cstdlib>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -68,16 +69,19 @@ public:
     { 
         getWindow()->setVSync(false);
 
-        m_shader = render::Shader::loadFromFile("assets/shader.vert", "assets/shader.frag");
-        if(!(bool)m_shader) {
-            DUST_ERROR("Exiting ... Shader missing");
-            exit(-1);
+        const auto shader = render::Shader::loadFromFile("assets/shader.vert", "assets/shader.frag");
+        if(!shader.has_value()) {
+            DUST_ERROR("Exiting ... PBR Shader missing");
+            exit(EXIT_FAILURE);
         }
-        m_depthShader = render::Shader::loadFromFile("assets/shader.vert", "assets/depth.frag");
-        if(!(bool)m_depthShader) {
-            DUST_ERROR("Exiting ... Shader missing");
-            exit(-1);
+        m_shader = shader.value();
+
+        const auto depthShader = render::Shader::loadFromFile("assets/shader.vert", "assets/depth.frag");
+        if(!depthShader.has_value()) {
+            DUST_ERROR("Exiting ... Depth Shader missing");
+            exit(EXIT_FAILURE);
         }
+        m_depthShader = depthShader.value();
         m_currentShader = m_shader; 
         
         m_sponza = io::LoadModel("assets/sponza_pbr/sponza.obj");
@@ -256,7 +260,7 @@ private:
     void updateUniforms() {
         m_camera->bind(m_currentShader.get());
         m_sun.bind(m_currentShader);
-        m_currentShader->setUniform("uLightCount", 0);
+        m_currentShader->setUniform("uLightCount", 1);
     }
 };
 
