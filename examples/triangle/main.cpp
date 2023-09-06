@@ -68,6 +68,7 @@ public:
 
     void render() override 
     {
+        getRenderer()->clear();
         m_triangle->draw(m_shader);
     }
 };
