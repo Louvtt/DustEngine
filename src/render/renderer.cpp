@@ -145,13 +145,12 @@ dust::Renderer::~Renderer()
     DUST_PROFILE;
     ImGui_ImplOpenGL3_Shutdown();
     DUST_INFO("[Glad] Unloading OpenGL");
-    gladLoaderUnloadGL();
 }
 
 void dust::Renderer::newFrame()
 {
     DUST_PROFILE_GPU("renderer new frame");
-    // clear();
+    clear();
     ImGui_ImplOpenGL3_NewFrame();
 }
 

@@ -26,6 +26,8 @@ extern "C" {
 int GLAD_VK_VERSION_1_0 = 0;
 int GLAD_VK_VERSION_1_1 = 0;
 int GLAD_VK_VERSION_1_2 = 0;
+int GLAD_VK_EXT_debug_report = 0;
+int GLAD_VK_EXT_debug_utils = 0;
 
 
 
@@ -37,6 +39,7 @@ PFN_vkBindBufferMemory glad_vkBindBufferMemory = NULL;
 PFN_vkBindBufferMemory2 glad_vkBindBufferMemory2 = NULL;
 PFN_vkBindImageMemory glad_vkBindImageMemory = NULL;
 PFN_vkBindImageMemory2 glad_vkBindImageMemory2 = NULL;
+PFN_vkCmdBeginDebugUtilsLabelEXT glad_vkCmdBeginDebugUtilsLabelEXT = NULL;
 PFN_vkCmdBeginQuery glad_vkCmdBeginQuery = NULL;
 PFN_vkCmdBeginRenderPass glad_vkCmdBeginRenderPass = NULL;
 PFN_vkCmdBeginRenderPass2 glad_vkCmdBeginRenderPass2 = NULL;
@@ -62,11 +65,13 @@ PFN_vkCmdDrawIndexedIndirect glad_vkCmdDrawIndexedIndirect = NULL;
 PFN_vkCmdDrawIndexedIndirectCount glad_vkCmdDrawIndexedIndirectCount = NULL;
 PFN_vkCmdDrawIndirect glad_vkCmdDrawIndirect = NULL;
 PFN_vkCmdDrawIndirectCount glad_vkCmdDrawIndirectCount = NULL;
+PFN_vkCmdEndDebugUtilsLabelEXT glad_vkCmdEndDebugUtilsLabelEXT = NULL;
 PFN_vkCmdEndQuery glad_vkCmdEndQuery = NULL;
 PFN_vkCmdEndRenderPass glad_vkCmdEndRenderPass = NULL;
 PFN_vkCmdEndRenderPass2 glad_vkCmdEndRenderPass2 = NULL;
 PFN_vkCmdExecuteCommands glad_vkCmdExecuteCommands = NULL;
 PFN_vkCmdFillBuffer glad_vkCmdFillBuffer = NULL;
+PFN_vkCmdInsertDebugUtilsLabelEXT glad_vkCmdInsertDebugUtilsLabelEXT = NULL;
 PFN_vkCmdNextSubpass glad_vkCmdNextSubpass = NULL;
 PFN_vkCmdNextSubpass2 glad_vkCmdNextSubpass2 = NULL;
 PFN_vkCmdPipelineBarrier glad_vkCmdPipelineBarrier = NULL;
@@ -92,6 +97,8 @@ PFN_vkCreateBuffer glad_vkCreateBuffer = NULL;
 PFN_vkCreateBufferView glad_vkCreateBufferView = NULL;
 PFN_vkCreateCommandPool glad_vkCreateCommandPool = NULL;
 PFN_vkCreateComputePipelines glad_vkCreateComputePipelines = NULL;
+PFN_vkCreateDebugReportCallbackEXT glad_vkCreateDebugReportCallbackEXT = NULL;
+PFN_vkCreateDebugUtilsMessengerEXT glad_vkCreateDebugUtilsMessengerEXT = NULL;
 PFN_vkCreateDescriptorPool glad_vkCreateDescriptorPool = NULL;
 PFN_vkCreateDescriptorSetLayout glad_vkCreateDescriptorSetLayout = NULL;
 PFN_vkCreateDescriptorUpdateTemplate glad_vkCreateDescriptorUpdateTemplate = NULL;
@@ -112,9 +119,12 @@ PFN_vkCreateSampler glad_vkCreateSampler = NULL;
 PFN_vkCreateSamplerYcbcrConversion glad_vkCreateSamplerYcbcrConversion = NULL;
 PFN_vkCreateSemaphore glad_vkCreateSemaphore = NULL;
 PFN_vkCreateShaderModule glad_vkCreateShaderModule = NULL;
+PFN_vkDebugReportMessageEXT glad_vkDebugReportMessageEXT = NULL;
 PFN_vkDestroyBuffer glad_vkDestroyBuffer = NULL;
 PFN_vkDestroyBufferView glad_vkDestroyBufferView = NULL;
 PFN_vkDestroyCommandPool glad_vkDestroyCommandPool = NULL;
+PFN_vkDestroyDebugReportCallbackEXT glad_vkDestroyDebugReportCallbackEXT = NULL;
+PFN_vkDestroyDebugUtilsMessengerEXT glad_vkDestroyDebugUtilsMessengerEXT = NULL;
 PFN_vkDestroyDescriptorPool glad_vkDestroyDescriptorPool = NULL;
 PFN_vkDestroyDescriptorSetLayout glad_vkDestroyDescriptorSetLayout = NULL;
 PFN_vkDestroyDescriptorUpdateTemplate glad_vkDestroyDescriptorUpdateTemplate = NULL;
@@ -190,7 +200,10 @@ PFN_vkGetSemaphoreCounterValue glad_vkGetSemaphoreCounterValue = NULL;
 PFN_vkInvalidateMappedMemoryRanges glad_vkInvalidateMappedMemoryRanges = NULL;
 PFN_vkMapMemory glad_vkMapMemory = NULL;
 PFN_vkMergePipelineCaches glad_vkMergePipelineCaches = NULL;
+PFN_vkQueueBeginDebugUtilsLabelEXT glad_vkQueueBeginDebugUtilsLabelEXT = NULL;
 PFN_vkQueueBindSparse glad_vkQueueBindSparse = NULL;
+PFN_vkQueueEndDebugUtilsLabelEXT glad_vkQueueEndDebugUtilsLabelEXT = NULL;
+PFN_vkQueueInsertDebugUtilsLabelEXT glad_vkQueueInsertDebugUtilsLabelEXT = NULL;
 PFN_vkQueueSubmit glad_vkQueueSubmit = NULL;
 PFN_vkQueueWaitIdle glad_vkQueueWaitIdle = NULL;
 PFN_vkResetCommandBuffer glad_vkResetCommandBuffer = NULL;
@@ -199,8 +212,11 @@ PFN_vkResetDescriptorPool glad_vkResetDescriptorPool = NULL;
 PFN_vkResetEvent glad_vkResetEvent = NULL;
 PFN_vkResetFences glad_vkResetFences = NULL;
 PFN_vkResetQueryPool glad_vkResetQueryPool = NULL;
+PFN_vkSetDebugUtilsObjectNameEXT glad_vkSetDebugUtilsObjectNameEXT = NULL;
+PFN_vkSetDebugUtilsObjectTagEXT glad_vkSetDebugUtilsObjectTagEXT = NULL;
 PFN_vkSetEvent glad_vkSetEvent = NULL;
 PFN_vkSignalSemaphore glad_vkSignalSemaphore = NULL;
+PFN_vkSubmitDebugUtilsMessageEXT glad_vkSubmitDebugUtilsMessageEXT = NULL;
 PFN_vkTrimCommandPool glad_vkTrimCommandPool = NULL;
 PFN_vkUnmapMemory glad_vkUnmapMemory = NULL;
 PFN_vkUpdateDescriptorSetWithTemplate glad_vkUpdateDescriptorSetWithTemplate = NULL;
@@ -396,6 +412,26 @@ static void glad_vk_load_VK_VERSION_1_2( GLADuserptrloadfunc load, void* userptr
     glad_vkSignalSemaphore = (PFN_vkSignalSemaphore) load(userptr, "vkSignalSemaphore");
     glad_vkWaitSemaphores = (PFN_vkWaitSemaphores) load(userptr, "vkWaitSemaphores");
 }
+static void glad_vk_load_VK_EXT_debug_report( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_debug_report) return;
+    glad_vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT) load(userptr, "vkCreateDebugReportCallbackEXT");
+    glad_vkDebugReportMessageEXT = (PFN_vkDebugReportMessageEXT) load(userptr, "vkDebugReportMessageEXT");
+    glad_vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT) load(userptr, "vkDestroyDebugReportCallbackEXT");
+}
+static void glad_vk_load_VK_EXT_debug_utils( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_debug_utils) return;
+    glad_vkCmdBeginDebugUtilsLabelEXT = (PFN_vkCmdBeginDebugUtilsLabelEXT) load(userptr, "vkCmdBeginDebugUtilsLabelEXT");
+    glad_vkCmdEndDebugUtilsLabelEXT = (PFN_vkCmdEndDebugUtilsLabelEXT) load(userptr, "vkCmdEndDebugUtilsLabelEXT");
+    glad_vkCmdInsertDebugUtilsLabelEXT = (PFN_vkCmdInsertDebugUtilsLabelEXT) load(userptr, "vkCmdInsertDebugUtilsLabelEXT");
+    glad_vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) load(userptr, "vkCreateDebugUtilsMessengerEXT");
+    glad_vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT) load(userptr, "vkDestroyDebugUtilsMessengerEXT");
+    glad_vkQueueBeginDebugUtilsLabelEXT = (PFN_vkQueueBeginDebugUtilsLabelEXT) load(userptr, "vkQueueBeginDebugUtilsLabelEXT");
+    glad_vkQueueEndDebugUtilsLabelEXT = (PFN_vkQueueEndDebugUtilsLabelEXT) load(userptr, "vkQueueEndDebugUtilsLabelEXT");
+    glad_vkQueueInsertDebugUtilsLabelEXT = (PFN_vkQueueInsertDebugUtilsLabelEXT) load(userptr, "vkQueueInsertDebugUtilsLabelEXT");
+    glad_vkSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT) load(userptr, "vkSetDebugUtilsObjectNameEXT");
+    glad_vkSetDebugUtilsObjectTagEXT = (PFN_vkSetDebugUtilsObjectTagEXT) load(userptr, "vkSetDebugUtilsObjectTagEXT");
+    glad_vkSubmitDebugUtilsMessageEXT = (PFN_vkSubmitDebugUtilsMessageEXT) load(userptr, "vkSubmitDebugUtilsMessageEXT");
+}
 
 
 
@@ -526,6 +562,8 @@ static int glad_vk_find_extensions_vulkan( VkPhysicalDevice physical_device) {
     char **extensions = NULL;
     if (!glad_vk_get_extensions(physical_device, &extension_count, &extensions)) return 0;
 
+    GLAD_VK_EXT_debug_report = glad_vk_has_extension("VK_EXT_debug_report", extension_count, extensions);
+    GLAD_VK_EXT_debug_utils = glad_vk_has_extension("VK_EXT_debug_utils", extension_count, extensions);
 
     GLAD_UNUSED(glad_vk_has_extension);
 
@@ -582,6 +620,8 @@ int gladLoadVulkanUserPtr( VkPhysicalDevice physical_device, GLADuserptrloadfunc
     glad_vk_load_VK_VERSION_1_2(load, userptr);
 
     if (!glad_vk_find_extensions_vulkan( physical_device)) return 0;
+    glad_vk_load_VK_EXT_debug_report(load, userptr);
+    glad_vk_load_VK_EXT_debug_utils(load, userptr);
 
 
     return version;
@@ -596,340 +636,6 @@ int gladLoadVulkan( VkPhysicalDevice physical_device, GLADloadfunc load) {
 
  
 
-#ifdef GLAD_VULKAN
-
-#ifndef GLAD_LOADER_LIBRARY_C_
-#define GLAD_LOADER_LIBRARY_C_
-
-#include <stddef.h>
-#include <stdlib.h>
-
-#if GLAD_PLATFORM_WIN32
-#include <windows.h>
-#else
-#include <dlfcn.h>
-#endif
-
-
-static void* glad_get_dlopen_handle(const char *lib_names[], int length) {
-    void *handle = NULL;
-    int i;
-
-    for (i = 0; i < length; ++i) {
-#if GLAD_PLATFORM_WIN32
-  #if GLAD_PLATFORM_UWP
-        size_t buffer_size = (strlen(lib_names[i]) + 1) * sizeof(WCHAR);
-        LPWSTR buffer = (LPWSTR) malloc(buffer_size);
-        if (buffer != NULL) {
-            int ret = MultiByteToWideChar(CP_ACP, 0, lib_names[i], -1, buffer, buffer_size);
-            if (ret != 0) {
-                handle = (void*) LoadPackagedLibrary(buffer, 0);
-            }
-            free((void*) buffer);
-        }
-  #else
-        handle = (void*) LoadLibraryA(lib_names[i]);
-  #endif
-#else
-        handle = dlopen(lib_names[i], RTLD_LAZY | RTLD_LOCAL);
-#endif
-        if (handle != NULL) {
-            return handle;
-        }
-    }
-
-    return NULL;
-}
-
-static void glad_close_dlopen_handle(void* handle) {
-    if (handle != NULL) {
-#if GLAD_PLATFORM_WIN32
-        FreeLibrary((HMODULE) handle);
-#else
-        dlclose(handle);
-#endif
-    }
-}
-
-static GLADapiproc glad_dlsym_handle(void* handle, const char *name) {
-    if (handle == NULL) {
-        return NULL;
-    }
-
-#if GLAD_PLATFORM_WIN32
-    return (GLADapiproc) GetProcAddress((HMODULE) handle, name);
-#else
-    return GLAD_GNUC_EXTENSION (GLADapiproc) dlsym(handle, name);
-#endif
-}
-
-#endif /* GLAD_LOADER_LIBRARY_C_ */
-
-
-static const char* DEVICE_FUNCTIONS[] = {
-    "vkAllocateCommandBuffers",
-    "vkAllocateDescriptorSets",
-    "vkAllocateMemory",
-    "vkBeginCommandBuffer",
-    "vkBindBufferMemory",
-    "vkBindBufferMemory2",
-    "vkBindImageMemory",
-    "vkBindImageMemory2",
-    "vkCmdBeginQuery",
-    "vkCmdBeginRenderPass",
-    "vkCmdBeginRenderPass2",
-    "vkCmdBindDescriptorSets",
-    "vkCmdBindIndexBuffer",
-    "vkCmdBindPipeline",
-    "vkCmdBindVertexBuffers",
-    "vkCmdBlitImage",
-    "vkCmdClearAttachments",
-    "vkCmdClearColorImage",
-    "vkCmdClearDepthStencilImage",
-    "vkCmdCopyBuffer",
-    "vkCmdCopyBufferToImage",
-    "vkCmdCopyImage",
-    "vkCmdCopyImageToBuffer",
-    "vkCmdCopyQueryPoolResults",
-    "vkCmdDispatch",
-    "vkCmdDispatchBase",
-    "vkCmdDispatchIndirect",
-    "vkCmdDraw",
-    "vkCmdDrawIndexed",
-    "vkCmdDrawIndexedIndirect",
-    "vkCmdDrawIndexedIndirectCount",
-    "vkCmdDrawIndirect",
-    "vkCmdDrawIndirectCount",
-    "vkCmdEndQuery",
-    "vkCmdEndRenderPass",
-    "vkCmdEndRenderPass2",
-    "vkCmdExecuteCommands",
-    "vkCmdFillBuffer",
-    "vkCmdNextSubpass",
-    "vkCmdNextSubpass2",
-    "vkCmdPipelineBarrier",
-    "vkCmdPushConstants",
-    "vkCmdResetEvent",
-    "vkCmdResetQueryPool",
-    "vkCmdResolveImage",
-    "vkCmdSetBlendConstants",
-    "vkCmdSetDepthBias",
-    "vkCmdSetDepthBounds",
-    "vkCmdSetDeviceMask",
-    "vkCmdSetEvent",
-    "vkCmdSetLineWidth",
-    "vkCmdSetScissor",
-    "vkCmdSetStencilCompareMask",
-    "vkCmdSetStencilReference",
-    "vkCmdSetStencilWriteMask",
-    "vkCmdSetViewport",
-    "vkCmdUpdateBuffer",
-    "vkCmdWaitEvents",
-    "vkCmdWriteTimestamp",
-    "vkCreateBuffer",
-    "vkCreateBufferView",
-    "vkCreateCommandPool",
-    "vkCreateComputePipelines",
-    "vkCreateDescriptorPool",
-    "vkCreateDescriptorSetLayout",
-    "vkCreateDescriptorUpdateTemplate",
-    "vkCreateEvent",
-    "vkCreateFence",
-    "vkCreateFramebuffer",
-    "vkCreateGraphicsPipelines",
-    "vkCreateImage",
-    "vkCreateImageView",
-    "vkCreatePipelineCache",
-    "vkCreatePipelineLayout",
-    "vkCreateQueryPool",
-    "vkCreateRenderPass",
-    "vkCreateRenderPass2",
-    "vkCreateSampler",
-    "vkCreateSamplerYcbcrConversion",
-    "vkCreateSemaphore",
-    "vkCreateShaderModule",
-    "vkDestroyBuffer",
-    "vkDestroyBufferView",
-    "vkDestroyCommandPool",
-    "vkDestroyDescriptorPool",
-    "vkDestroyDescriptorSetLayout",
-    "vkDestroyDescriptorUpdateTemplate",
-    "vkDestroyDevice",
-    "vkDestroyEvent",
-    "vkDestroyFence",
-    "vkDestroyFramebuffer",
-    "vkDestroyImage",
-    "vkDestroyImageView",
-    "vkDestroyPipeline",
-    "vkDestroyPipelineCache",
-    "vkDestroyPipelineLayout",
-    "vkDestroyQueryPool",
-    "vkDestroyRenderPass",
-    "vkDestroySampler",
-    "vkDestroySamplerYcbcrConversion",
-    "vkDestroySemaphore",
-    "vkDestroyShaderModule",
-    "vkDeviceWaitIdle",
-    "vkEndCommandBuffer",
-    "vkFlushMappedMemoryRanges",
-    "vkFreeCommandBuffers",
-    "vkFreeDescriptorSets",
-    "vkFreeMemory",
-    "vkGetBufferDeviceAddress",
-    "vkGetBufferMemoryRequirements",
-    "vkGetBufferMemoryRequirements2",
-    "vkGetBufferOpaqueCaptureAddress",
-    "vkGetDescriptorSetLayoutSupport",
-    "vkGetDeviceGroupPeerMemoryFeatures",
-    "vkGetDeviceMemoryCommitment",
-    "vkGetDeviceMemoryOpaqueCaptureAddress",
-    "vkGetDeviceProcAddr",
-    "vkGetDeviceQueue",
-    "vkGetDeviceQueue2",
-    "vkGetEventStatus",
-    "vkGetFenceStatus",
-    "vkGetImageMemoryRequirements",
-    "vkGetImageMemoryRequirements2",
-    "vkGetImageSparseMemoryRequirements",
-    "vkGetImageSparseMemoryRequirements2",
-    "vkGetImageSubresourceLayout",
-    "vkGetPipelineCacheData",
-    "vkGetQueryPoolResults",
-    "vkGetRenderAreaGranularity",
-    "vkGetSemaphoreCounterValue",
-    "vkInvalidateMappedMemoryRanges",
-    "vkMapMemory",
-    "vkMergePipelineCaches",
-    "vkQueueBindSparse",
-    "vkQueueSubmit",
-    "vkQueueWaitIdle",
-    "vkResetCommandBuffer",
-    "vkResetCommandPool",
-    "vkResetDescriptorPool",
-    "vkResetEvent",
-    "vkResetFences",
-    "vkResetQueryPool",
-    "vkSetEvent",
-    "vkSignalSemaphore",
-    "vkTrimCommandPool",
-    "vkUnmapMemory",
-    "vkUpdateDescriptorSetWithTemplate",
-    "vkUpdateDescriptorSets",
-    "vkWaitForFences",
-    "vkWaitSemaphores",
-};
-
-static int glad_vulkan_is_device_function(const char *name) {
-    /* Exists as a workaround for:
-     * https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/issues/2323
-     *
-     * `vkGetDeviceProcAddr` does not return NULL for non-device functions.
-     */
-    int i;
-    int length = sizeof(DEVICE_FUNCTIONS) / sizeof(DEVICE_FUNCTIONS[0]);
-
-    for (i=0; i < length; ++i) {
-        if (strcmp(DEVICE_FUNCTIONS[i], name) == 0) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-struct _glad_vulkan_userptr {
-    void *vk_handle;
-    VkInstance vk_instance;
-    VkDevice vk_device;
-    PFN_vkGetInstanceProcAddr get_instance_proc_addr;
-    PFN_vkGetDeviceProcAddr get_device_proc_addr;
-};
-
-static GLADapiproc glad_vulkan_get_proc(void *vuserptr, const char *name) {
-    struct _glad_vulkan_userptr userptr = *(struct _glad_vulkan_userptr*) vuserptr;
-    PFN_vkVoidFunction result = NULL;
-
-    if (userptr.vk_device != NULL && glad_vulkan_is_device_function(name)) {
-        result = userptr.get_device_proc_addr(userptr.vk_device, name);
-    }
-
-    if (result == NULL && userptr.vk_instance != NULL) {
-        result = userptr.get_instance_proc_addr(userptr.vk_instance, name);
-    }
-
-    if(result == NULL) {
-        result = (PFN_vkVoidFunction) glad_dlsym_handle(userptr.vk_handle, name);
-    }
-
-    return (GLADapiproc) result;
-}
-
-
-static void* _glad_Vulkan_loader_handle = NULL;
-
-static void* glad_vulkan_dlopen_handle(void) {
-    static const char *NAMES[] = {
-#if GLAD_PLATFORM_APPLE
-        "libvulkan.1.dylib",
-#elif GLAD_PLATFORM_WIN32
-        "vulkan-1.dll",
-        "vulkan.dll",
-#else
-        "libvulkan.so.1",
-        "libvulkan.so",
-#endif
-    };
-
-    if (_glad_Vulkan_loader_handle == NULL) {
-        _glad_Vulkan_loader_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
-    }
-
-    return _glad_Vulkan_loader_handle;
-}
-
-static struct _glad_vulkan_userptr glad_vulkan_build_userptr(void *handle, VkInstance instance, VkDevice device) {
-    struct _glad_vulkan_userptr userptr;
-    userptr.vk_handle = handle;
-    userptr.vk_instance = instance;
-    userptr.vk_device = device;
-    userptr.get_instance_proc_addr = (PFN_vkGetInstanceProcAddr) glad_dlsym_handle(handle, "vkGetInstanceProcAddr");
-    userptr.get_device_proc_addr = (PFN_vkGetDeviceProcAddr) glad_dlsym_handle(handle, "vkGetDeviceProcAddr");
-    return userptr;
-}
-
-int gladLoaderLoadVulkan( VkInstance instance, VkPhysicalDevice physical_device, VkDevice device) {
-    int version = 0;
-    void *handle = NULL;
-    int did_load = 0;
-    struct _glad_vulkan_userptr userptr;
-
-    did_load = _glad_Vulkan_loader_handle == NULL;
-    handle = glad_vulkan_dlopen_handle();
-    if (handle != NULL) {
-        userptr = glad_vulkan_build_userptr(handle, instance, device);
-
-        if (userptr.get_instance_proc_addr != NULL && userptr.get_device_proc_addr != NULL) {
-            version = gladLoadVulkanUserPtr( physical_device, glad_vulkan_get_proc, &userptr);
-        }
-
-        if (!version && did_load) {
-            gladLoaderUnloadVulkan();
-        }
-    }
-
-    return version;
-}
-
-
-
-void gladLoaderUnloadVulkan(void) {
-    if (_glad_Vulkan_loader_handle != NULL) {
-        glad_close_dlopen_handle(_glad_Vulkan_loader_handle);
-        _glad_Vulkan_loader_handle = NULL;
-    }
-}
-
-#endif /* GLAD_VULKAN */
 
 #ifdef __cplusplus
 }
