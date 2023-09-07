@@ -42,6 +42,10 @@ glm::vec3 dr::Model::getPosition() const
     return m_position;
 }
 
+std::vector<dr::MeshPtr> dr::Model::getMeshes() const
+{
+    return m_meshes;
+}
 
 void dr::Model::draw(Shader* shader)
 {

@@ -67,6 +67,8 @@ public:
     MaterialPtr getMaterial(u32 index) const;
     void draw(Shader *shader);
 
+    std::array<MaterialPtr, DUST_MATERIAL_SLOTS> getMaterials() const;
+
     // Meshes
     static Ref<Mesh> createPlane(glm::vec2 size = glm::vec2(1.f), bool requestTextureCoordinates = false);
     static Ref<Mesh> createCube(glm::vec3 size = glm::vec3(1.f), bool requestTextureCoordinates = false);

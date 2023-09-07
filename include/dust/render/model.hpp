@@ -32,6 +32,7 @@ public:
 
     void setPosition(glm::vec3 position);
     glm::vec3 getPosition() const;
+    std::vector<MeshPtr> getMeshes() const;
 
     void draw(Shader *shader);    
 };

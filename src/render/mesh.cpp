@@ -117,6 +117,11 @@ void dr::Mesh::draw(Shader *shader)
     }
 }
 
+std::array<dr::MaterialPtr, DUST_MATERIAL_SLOTS> dr::Mesh::getMaterials() const
+{
+    return m_materialSlots;
+}
+
 void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
 {
     DUST_PROFILE_GPU("MeshAttribute");
