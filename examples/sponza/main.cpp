@@ -184,7 +184,7 @@ public:
                     getRenderer()->clear();
                     // sponza
                     if(m_drawSponza && m_sponza.has_value()) {
-                        m_sponza.value()->draw(m_currentShader);
+                        m_sponza.value()->draw(m_currentShader.get());
                     }
 
                     // skybox

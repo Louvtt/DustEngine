@@ -65,7 +65,7 @@ public:
 
     void setMaterial(u32 index, MaterialPtr material);
     MaterialPtr getMaterial(u32 index) const;
-    void draw(ShaderPtr shader);
+    void draw(Shader *shader);
 
     // Meshes
     static Ref<Mesh> createPlane(glm::vec2 size = glm::vec2(1.f), bool requestTextureCoordinates = false);

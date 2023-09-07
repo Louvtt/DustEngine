@@ -109,7 +109,7 @@ void dr::Skybox::draw(Camera* camera)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
 
-    m_mesh->draw(m_shader);
+    m_mesh->draw(m_shader.get());
  
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);

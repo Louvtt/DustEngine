@@ -26,8 +26,9 @@ public:
     Material();
     virtual ~Material() = default;
 
-    virtual void bind(ShaderPtr shader, u32 slot = 0) = 0;
-    virtual void unbind(ShaderPtr shader) = 0;
+    virtual void setupUniforms(Shader *shader, u32 slot = 0) = 0;
+    virtual void bind(Shader *shader, u32 slot = 0) = 0;
+    virtual void unbind(Shader *shader) = 0;
 };
 using MaterialPtr  = Ref<Material>;
 using MaterialUPtr = Scope<Material>;
@@ -40,8 +41,9 @@ public:
     ColorMaterial(glm::vec3 color);
     ~ColorMaterial() = default;
 
-    void bind(ShaderPtr shader, u32 slot = 0) override;
-    void unbind(ShaderPtr shader) override;
+    void setupUniforms(Shader *shader, u32 slot = 0) override;
+    void bind(Shader *shader, u32 slot = 0) override;
+    void unbind(Shader *shader) override;
 
     glm::vec3 color;
 };
@@ -53,8 +55,9 @@ public:
     TextureMaterial();
     ~TextureMaterial() = default;
 
-    void bind(ShaderPtr shader, u32 slot = 0) override;
-    void unbind(ShaderPtr shader) override;
+    void setupUniforms(Shader *shader, u32 slot = 0) override;
+    void bind(Shader *shader, u32 slot = 0) override;
+    void unbind(Shader *shader) override;
 
     TexturePtr texture;
 };
@@ -66,8 +69,9 @@ public:
     PBRMaterial();
     ~PBRMaterial() = default;
 
-    void bind(ShaderPtr shader, u32 slot = 0) override;
-    void unbind(ShaderPtr shader) override;
+    void setupUniforms(Shader *shader, u32 slot = 0) override;
+    void bind(Shader *shader, u32 slot = 0) override;
+    void unbind(Shader *shader) override;
 
     // Data
 

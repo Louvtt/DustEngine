@@ -208,7 +208,7 @@ public:
         tris.clear();
 
         getRenderer()->setCulling(false);
-        mesh.draw(m_sceneShader);
+        mesh.draw(m_sceneShader.get());
         getRenderer()->setCulling(true);
     }
 
@@ -224,9 +224,9 @@ public:
 
             for(const auto& cube : m_cubes)
             {
-                cube->draw(m_shadowShader);
+                cube->draw(m_shadowShader.get());
             }
-            m_plane->draw(m_shadowShader);
+            m_plane->draw(m_shadowShader.get());
         }
         m_shadowMap->unbind();
         m_shadowMap->bindAttachment(10, render::Framebuffer::AttachmentType::DEPTH);
@@ -238,9 +238,9 @@ public:
 
             for(const auto& cube : m_cubes)
             {
-                cube->draw(m_sceneShader);
+                cube->draw(m_sceneShader.get());
             }
-            m_plane->draw(m_sceneShader);
+            m_plane->draw(m_sceneShader.get());
 
             // draw frustrum
             // render::Camera3DPtr sunCam = createRef<render::Camera3D>(1024,1024,90);

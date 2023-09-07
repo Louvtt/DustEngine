@@ -90,7 +90,7 @@ dr::Mesh::~Mesh()
     glDeleteVertexArrays(1, &m_renderID);
 }
 
-void dr::Mesh::draw(ShaderPtr shader)
+void dr::Mesh::draw(Shader *shader)
 {
     DUST_PROFILE;
     u32 slot = 0;

@@ -20,7 +20,9 @@ static std::string shaderMaterialLoc(u32 index) {
 dr::ColorMaterial::ColorMaterial(glm::vec3 _color)
 : color(_color) { }
 
-void dr::ColorMaterial::bind(ShaderPtr shader, u32 slot)   
+void dr::ColorMaterial::setupUniforms(Shader *shader, u32 slot)
+{ }
+void dr::ColorMaterial::bind(Shader *shader, u32 slot)   
 {
     DUST_PROFILE;
     m_boundSlot = slot;
@@ -28,7 +30,7 @@ void dr::ColorMaterial::bind(ShaderPtr shader, u32 slot)
     shader->setUniform(loc + ".exist", true);
     shader->setUniform(loc + ".diffuse", glm::vec4{color, 1.f});
 }
-void dr::ColorMaterial::unbind(ShaderPtr shader) 
+void dr::ColorMaterial::unbind(Shader *shader) 
 {
     DUST_PROFILE;
     const std::string loc = shaderMaterialLoc(m_boundSlot);
@@ -37,7 +39,12 @@ void dr::ColorMaterial::unbind(ShaderPtr shader)
 
 dr::TextureMaterial::TextureMaterial()
 : texture(Texture::GetNullTexture()) {}
-void dr::TextureMaterial::bind(ShaderPtr shader, u32 slot)
+void dr::TextureMaterial::setupUniforms(Shader *shader, u32 slot)
+{ 
+    const std::string loc = shaderMaterialLoc(slot);
+    shader->setUniform(loc + ".albedo", (int)(slot * MAX_MATERIAL_TEXTURE_COUNT));
+}
+void dr::TextureMaterial::bind(Shader *shader, u32 slot)
 {
     DUST_PROFILE;
     m_boundSlot = slot;
@@ -47,7 +54,7 @@ void dr::TextureMaterial::bind(ShaderPtr shader, u32 slot)
     shader->setUniform(loc + ".albedo", (int)(slot * MAX_MATERIAL_TEXTURE_COUNT));
 }
 
-void dr::TextureMaterial::unbind(ShaderPtr shader)
+void dr::TextureMaterial::unbind(Shader *shader)
 {
     DUST_PROFILE;
     const std::string loc = shaderMaterialLoc(m_boundSlot);
@@ -66,7 +73,19 @@ emissivityTexture(Texture::GetNullTexture()),
 normalTexture(Texture::GetNullTexture())
 { }
 
-void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot) 
+void dr::PBRMaterial::setupUniforms(Shader *shader, u32 slot)
+{
+    // textures
+    const std::string bufAccess = std::format("[{}]", slot);
+    const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
+    static constexpr std::string baseUniform = "uMat";
+    shader->setUniform((baseUniform + std::string("Albedo")      + bufAccess), baseTextureBind + 0);
+    shader->setUniform((baseUniform + std::string("Emmissive")   + bufAccess), baseTextureBind + 1);
+    shader->setUniform((baseUniform + std::string("Reflectance") + bufAccess), baseTextureBind + 2);
+    shader->setUniform((baseUniform + std::string("Normal")      + bufAccess), baseTextureBind + 3);
+}
+
+void dr::PBRMaterial::bind(Shader *shader, u32 slot) 
 {
     DUST_PROFILE;
     m_boundSlot = slot;
@@ -82,23 +101,19 @@ void dr::PBRMaterial::bind(ShaderPtr shader, u32 slot)
     emissivityTexture->bind(baseTextureBind + 1);
     reflectanceTexture->bind(baseTextureBind + 2);
     normalTexture->bind(baseTextureBind + 3);
-    shader->setUniform((baseUniform + std::string("Albedo")      + bufAccess), baseTextureBind + 0);
-    shader->setUniform((baseUniform + std::string("Emmissive")   + bufAccess), baseTextureBind + 1);
-    shader->setUniform((baseUniform + std::string("Reflectance") + bufAccess), baseTextureBind + 2);
-    shader->setUniform((baseUniform + std::string("Normal")      + bufAccess), baseTextureBind + 3);
 
     // colors
     shader->setUniform(loc + ".albedo", albedo);
     shader->setUniform(loc + ".ior", ior);
     shader->setUniform(loc + ".roughness", roughness);
 }
-void dr::PBRMaterial::unbind(ShaderPtr shader) 
+void dr::PBRMaterial::unbind(Shader *shader) 
 {
     const std::string loc = shaderMaterialLoc(m_boundSlot);
     // unbind textures
-    // albedoTexture->unbind();
-    // reflectanceTexture->unbind();
-    // emissivityTexture->unbind();
-    // normalTexture->unbind();
+    albedoTexture->unbind();
+    reflectanceTexture->unbind();
+    emissivityTexture->unbind();
+    normalTexture->unbind();
     shader->setUniform(loc + ".exist", false);
 }

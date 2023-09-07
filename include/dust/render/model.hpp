@@ -33,7 +33,7 @@ public:
     void setPosition(glm::vec3 position);
     glm::vec3 getPosition() const;
 
-    void draw(ShaderPtr shader);    
+    void draw(Shader *shader);    
 };
 
 using ModelPtr  = Ref<Model>;

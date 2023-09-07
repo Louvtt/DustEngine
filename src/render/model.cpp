@@ -43,7 +43,7 @@ glm::vec3 dr::Model::getPosition() const
 }
 
 
-void dr::Model::draw(ShaderPtr shader)
+void dr::Model::draw(Shader* shader)
 {
     DUST_PROFILE_SECTION("Model::Draw");
     shader->setUniform("uModel", m_modelMat);
