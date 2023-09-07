@@ -46,18 +46,21 @@
     - [x] Custom Mesh attributes
     - [x] Mesh loading (assimp) 
     - [x] Optimized Mesh batching by Material
+        - [x] Mesh materials slots
     - [ ] Mesh Instancing
 - [x] Material
     - [x] TextureMaterial
-    - [~] PhongMaterial (Named PBRMaterial because will be upgraded to that) 
+    - [~] PBRMaterial 
 - [x] Shader
     - [x] Basic Shader
     - [x] Loading Shaders
-    - [x] Uniforms
+    - [x] Uniforms decoding and setting (avoid calling getUniformLocation each setUniform)
     - [x] Reloading (must be called explictly)
 - [x] Texture
     - [x] Texture loading (stb_image)
-    - Name + ID
+    - [x] Texture .dds loading
+    - [x] Static creation functions for different types (CubeMap, 2D, 2DMultisample)
+        - [] 2d Array and 3d to do.
 - [x] Skybox
 - [x] FrameBuffers
 - [ ] **Shadow mapping**
@@ -105,5 +108,4 @@
 ## FIXES
 
 - Flatten classes and structures and avoid nested
-- Model materials slots instead of one mat per mesh to be able to batch a lot.
 - Finish PBR Model

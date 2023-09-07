@@ -121,7 +121,12 @@ dust::Renderer::Renderer(const dust::Window& window)
         DUST_INFO("[OpengL] Set up debug message callback.");
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageCallback(glDebugCallback, nullptr);
+
+
     #endif
+    if(!GLAD_GL_ARB_geometry_shader4)
+        DUST_WARN("Nsight will output errors. (GL_ARB_geometry_shader4 not supported)");
+    
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
