@@ -67,6 +67,7 @@ dr::PBRMaterial::PBRMaterial()
 : albedo({1.f, 1.f, 1.f}),
 ior(0.f),
 roughness(0.f),
+metallic(0.f),
 albedoTexture(Texture::GetNullTexture()),
 reflectanceTexture(Texture::GetNullTexture()),
 emissivityTexture(Texture::GetNullTexture()),
@@ -101,6 +102,10 @@ void dr::PBRMaterial::bind(Shader *shader, u32 slot)
     emissivityTexture->bind(baseTextureBind + 1);
     reflectanceTexture->bind(baseTextureBind + 2);
     normalTexture->bind(baseTextureBind + 3);
+    shader->setUniform((baseUniform + std::string("Albedo")      + bufAccess), baseTextureBind + 0);
+    shader->setUniform((baseUniform + std::string("Emmissive")   + bufAccess), baseTextureBind + 1);
+    shader->setUniform((baseUniform + std::string("Reflectance") + bufAccess), baseTextureBind + 2);
+    shader->setUniform((baseUniform + std::string("Normal")      + bufAccess), baseTextureBind + 3);
 
     // colors
     shader->setUniform(loc + ".albedo", albedo);
