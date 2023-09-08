@@ -1,6 +1,7 @@
 #include "dust/core/application.hpp"
 #include "dust/core/layer.hpp"
 #include "dust/core/log.hpp"
+#include "dust/core/profiling.hpp"
 #include "dust/dust.hpp"
 #include "dust/io/assetsManager.hpp"
 #include "dust/io/inputManager.hpp"
@@ -9,13 +10,17 @@
 #include "dust/render/camera.hpp"
 #include "dust/render/framebuffer.hpp"
 #include "dust/render/light.hpp"
+#include "dust/render/material.hpp"
 #include "dust/render/shader.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"
 
 #include "dust/render/skybox.hpp"
 #include "glm/ext/quaternion_geometric.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <cstdlib>
+#include <format>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -160,6 +165,103 @@ public:
         }
     }
 
+
+    void editorRender()
+    {
+#ifndef EXAMPLE_REMOVE_EDITOR
+        DUST_PROFILE_SECTION("ImGui Editor");
+        if(ImGui::Begin("Inspector")){
+            ImGui::Text("FPS: %d", (u32)(1./getTime().delta));
+
+            ImGui::SeparatorText("Camera"); 
+            {
+                ImGui::InputMat4("Projection", m_camera->getProj());
+                ImGui::InputMat4("View", m_camera->getView());
+            }
+
+            ImGui::SeparatorText("Lighting"); 
+            {
+                glm::vec3 sunDir = m_sun.getDirection();
+                if(ImGui::InputFloat3("Sun Direction", glm::value_ptr(sunDir), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    if(sunDir.length() != 0) {
+                        m_sun.setDirection(sunDir);
+                        updateUniforms();
+                    }
+                }
+                glm::vec3 sunColor = m_sun.getColor();
+                if(ImGui::ColorEdit3("Sun color", glm::value_ptr(sunColor))) {
+                    m_sun.setColor(sunColor);
+                    updateUniforms();
+                }
+            }
+
+            ImGui::SeparatorText("Shaders");
+            {
+                if(ImGui::Checkbox("Wireframe", &m_wireframe)) {
+                    getRenderer()->setDrawWireframe(m_wireframe);
+                }
+                ImGui::Checkbox("Draw Sponza", &m_drawSponza);
+
+                if(ImGui::Button("Show Depth")) { 
+                    m_currentShader = m_depthShader; 
+                }
+                if(ImGui::Button("Show Render")) { 
+                    m_currentShader = m_shader; 
+                }
+
+                // reload shaders ?
+                if(ImGui::Button("Reload Shaders")) {
+                    m_shader->reload();
+                    m_depthShader->reload();
+
+                    updateUniforms();
+                }
+            }
+        }
+        ImGui::End();
+
+        if(ImGui::Begin("Model Data")){
+            u32 i = 0;
+            for(auto mesh : m_sponza.value()->getMeshes())
+            {
+                if(!mesh.get()) { ++i; continue; }
+                const auto meshName = std::format("Mesh{}", i);
+                if(ImGui::TreeNode(meshName.c_str()))
+                {
+                    if(ImGui::TreeNode("Materials")) {
+                        u32 j = 0;
+                        for(auto mat : mesh->getMaterials()) {
+                            if(!mat.get()) { j++; continue; }
+                            // Show material
+                            const auto matName = std::format("Mat{}", j);
+                            if(ImGui::TreeNode(matName.c_str())) {
+                                render::PBRMaterial *m = (render::PBRMaterial*)mat.get();
+                                ImGui::ColorEdit3("Albedo", glm::value_ptr(m->albedo));
+                                ImGui::ColorEdit3("IOR", glm::value_ptr(m->ior));
+                                ImGui::InputFloat("Roughness", &(m->roughness));
+                                ImGui::InputFloat("Metallic", &(m->metallic));
+                                if(ImGui::TreeNode("Textures")) {
+                                    ImGui::Image((void*)m->albedoTexture->getRenderID(), ImVec2{(float)m->albedoTexture->getWidth(), (float)m->albedoTexture->getHeight()});
+                                    ImGui::Image((void*)m->normalTexture->getRenderID(), ImVec2{(float)m->normalTexture->getWidth(), (float)m->normalTexture->getHeight()});
+                                    ImGui::Image((void*)m->emissivityTexture->getRenderID(), ImVec2{(float)m->emissivityTexture->getWidth(), (float)m->emissivityTexture->getHeight()});
+                                    ImGui::Image((void*)m->reflectanceTexture->getRenderID(), ImVec2{(float)m->reflectanceTexture->getWidth(), (float)m->reflectanceTexture->getHeight()});
+                                    ImGui::TreePop();
+                                }
+                                ImGui::TreePop();
+                            }
+                            j++;
+                        }
+                        ImGui::TreePop();
+                    }
+                    ImGui::TreePop();
+                }
+                i++;
+            }
+        }
+        ImGui::End();
+#endif
+    }
+
     void render() override
     {
         dust::Application::render();
@@ -167,6 +269,7 @@ public:
 
         // Main Rendering
         {
+            DUST_PROFILE_SECTION("Scene Render");
             if(ImGui::Begin("Scene")){
                 const auto size = ImGui::GetContentRegionAvail();
 
@@ -181,6 +284,7 @@ public:
                 
                 m_renderTarget->bind();
                 {
+                    DUST_PROFILE_GPU("Sponza render");
                     getRenderer()->clear();
                     // sponza
                     if(m_drawSponza && m_sponza.has_value()) {
@@ -202,58 +306,8 @@ public:
             }
             ImGui::End();
 
-            if(ImGui::Begin("Inspector")){
-                ImGui::Text("FPS: %d", (u32)(1./getTime().delta));
-
-                ImGui::SeparatorText("Camera"); 
-                {
-                    ImGui::InputMat4("Projection", m_camera->getProj());
-                    ImGui::InputMat4("View", m_camera->getView());
-                }
-
-                ImGui::SeparatorText("Lighting"); 
-                {
-                    glm::vec3 sunDir = m_sun.getDirection();
-                    if(ImGui::InputFloat3("Sun Direction", glm::value_ptr(sunDir), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        if(sunDir.length() != 0) {
-                            m_sun.setDirection(sunDir);
-                            updateUniforms();
-                        }
-                    }
-                    glm::vec3 sunColor = m_sun.getColor();
-                    if(ImGui::ColorEdit3("Sun color", glm::value_ptr(sunColor))) {
-                        m_sun.setColor(sunColor);
-                        updateUniforms();
-                    }
-                }
-
-                ImGui::SeparatorText("Shaders");
-                {
-                    if(ImGui::Checkbox("Wireframe", &m_wireframe)) {
-                        getRenderer()->setDrawWireframe(m_wireframe);
-                    }
-                    ImGui::Checkbox("Draw Sponza", &m_drawSponza);
-
-                    if(ImGui::Button("Show Depth")) { 
-                        m_currentShader = m_depthShader; 
-                    }
-                    if(ImGui::Button("Show Render")) { 
-                        m_currentShader = m_shader; 
-                    }
-
-                    // reload shaders ?
-                    if(ImGui::Button("Reload Shaders")) {
-                        m_shader->reload();
-                        m_depthShader->reload();
-
-                        updateUniforms();
-                    }
-                }
-            }
-            ImGui::End();
         }
-
-        // ImGui::ShowDemoWindow();
+        editorRender();
     }
 
 private:
