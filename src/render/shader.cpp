@@ -227,6 +227,7 @@ void dr::Shader::queryActiveUniforms(u32 program)
 {
     DUST_PROFILE_SECTION("Shader::queryActiveUniforms");
     DUST_PROFILE_GPU("glGetActiveUniform queries");
+    m_uniforms.clear(); // empty uniforms.
     int uniformCount;
     glUseProgram(program);
     glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniformCount);
