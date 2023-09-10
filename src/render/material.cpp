@@ -105,18 +105,17 @@ void dr::PBRMaterial::SetupMaterialShader(Shader *shader)
 {
     DUST_PROFILE;
     s_shader = shader;
-    static constexpr std::string albedoU      = "uMatAlbedo";
-    static constexpr std::string emissiveU    = "uMatEmissive";
-    static constexpr std::string reflectanceU = "uMatReflectance";
-    static constexpr std::string normalU      = "uMatNormal";
+    static constexpr const char* albedoU      = "uMaterials[{}].texAlbedo";
+    static constexpr const char* emissiveU    = "uMaterials[{}].texEmissive";
+    static constexpr const char* reflectanceU = "uMaterials[{}].texReflectance";
+    static constexpr const char* normalU      = "uMaterials[{}].texNormal";
     for(int slot = 0; slot < DUST_MATERIAL_SLOTS; ++slot) {
         // textures
-        const std::string bufAccess = std::format("[{}]", slot);
         const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
-        s_shader->setUniform((albedoU      + bufAccess), baseTextureBind + 0);
-        s_shader->setUniform((emissiveU    + bufAccess), baseTextureBind + 1);
-        s_shader->setUniform((reflectanceU + bufAccess), baseTextureBind + 2);
-        s_shader->setUniform((normalU      + bufAccess), baseTextureBind + 3);
+        s_shader->setUniform(std::format(albedoU     , slot), baseTextureBind + 0);
+        s_shader->setUniform(std::format(emissiveU   , slot), baseTextureBind + 1);
+        s_shader->setUniform(std::format(reflectanceU, slot), baseTextureBind + 2);
+        s_shader->setUniform(std::format(normalU     , slot), baseTextureBind + 3);
     }
 }
 

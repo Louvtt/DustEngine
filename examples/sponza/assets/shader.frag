@@ -15,11 +15,16 @@ struct material_t {
     float roughness;
     float metallic;
 
+    sampler2D texAlbedo;
+    sampler2D texReflectance;
+    sampler2D texEmissive;
+    sampler2D texNormal;
+
 };
-uniform sampler2D uMatAlbedo[MAT_COUNT];
-uniform sampler2D uMatReflectance[MAT_COUNT];
-uniform sampler2D uMatEmissive[MAT_COUNT];
-uniform sampler2D uMatNormal[MAT_COUNT];
+// uniform sampler2D uMatAlbedo[MAT_COUNT];
+// uniform sampler2D uMatReflectance[MAT_COUNT];
+// uniform sampler2D uMatEmissive[MAT_COUNT];
+// uniform sampler2D uMatNormal[MAT_COUNT];
 uniform material_t uMaterials[MAT_COUNT];
 
 /***********************************************/
@@ -61,7 +66,7 @@ in VS_OUT {
 
 vec3 calcBumpMapping()
 {
-    vec3 normal = texture(uMatNormal[int(fs_in.matID)], fs_in.texCoord).xyz;
+    vec3 normal = texture(uMaterials[int(fs_in.matID)].texNormal, fs_in.texCoord).xyz;
     normal = normal * 2.0 - 1.0;   
     return normalize(fs_in.TBN * normal); 
 }
@@ -118,14 +123,13 @@ vec3 lerp(vec3 a, vec3 b, float t)
 vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
 {
     // Mat param
-    material_t mat = uMaterials[int(fs_in.matID)];
-    vec4 color = texture(uMatAlbedo[int(fs_in.matID)], fs_in.texCoord);
-    float metallic = mat.metallic;
-    float alpha = mat.roughness;
-
+    vec4 color = texture(uMaterials[int(fs_in.matID)].texAlbedo, fs_in.texCoord) * vec4(uMaterials[int(fs_in.matID)].albedo, 1);
+    float metallic = uMaterials[int(fs_in.matID)].metallic;
+    float alpha    = uMaterials[int(fs_in.matID)].roughness;
+    vec3 ior       = uMaterials[int(fs_in.matID)].ior;
     // Calculate color at normal incidence
-    vec3 ior = mat.ior * Fresnel(V, N);
-    vec3 F0 = mat.albedo * Fresnel(V, N); //abs((1.0 - ior) / (1.0 + ior));
+    // vec3 ior = ior * Fresnel(V, N);
+    vec3 F0 = color.rgb * Fresnel(V, N); //abs((1.0 - ior) / (1.0 + ior));
     F0 = F0 * F0;
     F0 = lerp(F0, color.rgb, metallic);
 
@@ -152,13 +156,12 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
 
 void main() {
     // fallback
-    material_t mat = uMaterials[int(fs_in.matID)];
-    if(!mat.exist) {
+    if(!uMaterials[int(fs_in.matID)].exist) {
         fragColor = vec4(1, 0, 1, 1);
         return;
     }
-    fragColor = vec4(texture(uMatAlbedo[int(fs_in.matID)], fs_in.texCoord).rgb, 1);
-    return;
+    // fragColor = vec4(texture(uMaterials[int(fs_in.matID)].texAlbedo, fs_in.texCoord).rgb, 1);
+    // return;
 
     // inputs
     vec3 normal = calcBumpMapping();                          // Normal
@@ -167,6 +170,6 @@ void main() {
     vec3 lightDir = normalize(uLights[0].direction);       // Light vector
     vec3 halfView = normalize(viewDir + lightDir);                      // Half View vector
 
-    vec3 result = normal;//PBR(viewDir, normal, lightDir, halfView);
+    vec3 result = uMaterials[int(fs_in.matID)].albedo * Fresnel(viewDir, normal);//PBR(viewDir, normal, lightDir, halfView);
     fragColor = vec4(result, 1.0);
 }
