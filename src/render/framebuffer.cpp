@@ -171,13 +171,7 @@ void drf::createInternal()
         if(m_renderID != 0) {
             // delete previous framebuffer
             DUST_DEBUG("[OpenGL] Deleting previous framebuffer {} and its attachments.", m_renderID);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            for(auto attachment : m_attachments) {
-                if(attachment.isReadable) { glBindTexture(GL_TEXTURE_2D, 0);        glDeleteTextures(1, &attachment.id); }
-                else                      { glBindRenderbuffer(GL_RENDERBUFFER, 0); glDeleteRenderbuffers(1, &attachment.id); }
-            }
-            m_attachments.clear();
-            glDeleteFramebuffers(1, &m_renderID);
+            deleteInternal(m_renderID, m_attachments);
         }
         // Assign new framebuffer
         m_colorAttachmentCount = colorAttachmentCount;
@@ -185,28 +179,29 @@ void drf::createInternal()
         m_renderID             = renderID;
     } else {
         DUST_ERROR("[OpenGL] Error while creating framebuffer {}: {}", renderID, glGetError());
-        // delete everything
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        for(auto attachment : attachments) {
-            if(attachment.isReadable) { glBindTexture(GL_TEXTURE_2D, 0);        glDeleteTextures(1, &attachment.id); }
-            else                      { glBindRenderbuffer(GL_RENDERBUFFER, 0); glDeleteRenderbuffers(1, &attachment.id); }
-        }
-        attachments.clear();
-        glDeleteFramebuffers(1, &renderID);
+        deleteInternal(renderID, attachments);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-drf::~Framebuffer()
+void drf::deleteInternal(u32 renderID, const std::vector<Attachment> &attachments)
 {
     DUST_PROFILE;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    for(auto attachment : m_attachments) {
-        if(attachment.isReadable) { glBindTexture(GL_TEXTURE_2D, 0);        glDeleteTextures(1, &attachment.id); }
-        else                      { glBindRenderbuffer(GL_RENDERBUFFER, 0); glDeleteRenderbuffers(1, &attachment.id); }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    for(auto attachment : attachments) {
+        if(attachment.isReadable) { glDeleteTextures(1, &attachment.id); }
+        else                      { glDeleteRenderbuffers(1, &attachment.id); }
     }
-    glDeleteFramebuffers(1, &m_renderID);
+    glDeleteFramebuffers(1, &renderID);
+}
+
+drf::~Framebuffer()
+{
+    DUST_PROFILE;
+    deleteInternal(m_renderID, m_attachments);
 }
 
 void drf::resize(u32 width, u32 height, bool recreate)

@@ -65,6 +65,7 @@ public:
     Result<Attachment> getAttachment(AttachmentType attachment, u32 index = 0);
 
 private:
+    void deleteInternal(u32 renderID, const std::vector<Attachment> &attachments);
     void createInternal();
 };
 
