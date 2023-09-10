@@ -12,6 +12,7 @@
 #include "dust/render/light.hpp"
 #include "dust/render/material.hpp"
 #include "dust/render/shader.hpp"
+#include "dust/render/texture.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"
@@ -35,6 +36,13 @@ IMGUI_API bool InputMat4(const char* label, glm::mat4 value, const char* format 
     bool row3 = ImGui::InputFloat4("", glm::value_ptr(value[2]), format, flags);
     bool row4 = ImGui::InputFloat4("", glm::value_ptr(value[3]), format, flags);
     return row1 || row2 || row3 || row4;
+}
+
+IMGUI_API void TextureLabelled(const char* label, render::Texture* texture) {
+    ImGui::BeginGroup();
+    ImGui::Text("Texture: %s", label);
+    ImGui::Image((void*)texture->getRenderID(), ImVec2{100, 100.f*((float)texture->getHeight()/texture->getWidth())});
+    ImGui::EndGroup();
 }
 
 };
@@ -229,6 +237,7 @@ public:
                 const auto meshName = std::format("Mesh {}", i);
                 if(ImGui::TreeNode(meshName.c_str()))
                 {
+                    ImGui::TextWrapped("Name: %s", mesh->getName().c_str());
                     if(ImGui::TreeNode("Materials")) {
                         u32 j = 0;
                         for(auto mat : mesh->getMaterials()) {
@@ -242,10 +251,10 @@ public:
                                 ImGui::InputFloat("Roughness", &(m->roughness));
                                 ImGui::InputFloat("Metallic", &(m->metallic));
                                 if(ImGui::TreeNode("Textures")) {
-                                    ImGui::Image((void*)m->albedoTexture->getRenderID(), ImVec2{(float)m->albedoTexture->getWidth(), (float)m->albedoTexture->getHeight()});
-                                    ImGui::Image((void*)m->normalTexture->getRenderID(), ImVec2{(float)m->normalTexture->getWidth(), (float)m->normalTexture->getHeight()});
-                                    ImGui::Image((void*)m->emissivityTexture->getRenderID(), ImVec2{(float)m->emissivityTexture->getWidth(), (float)m->emissivityTexture->getHeight()});
-                                    ImGui::Image((void*)m->reflectanceTexture->getRenderID(), ImVec2{(float)m->reflectanceTexture->getWidth(), (float)m->reflectanceTexture->getHeight()});
+                                    ImGui::TextureLabelled("Albedo", m->albedoTexture.get());
+                                    ImGui::TextureLabelled("Normal", m->normalTexture.get());
+                                    ImGui::TextureLabelled("Emissive", m->emissivityTexture.get());
+                                    ImGui::TextureLabelled("Reflectivity", m->reflectanceTexture.get());
                                     ImGui::TreePop();
                                 }
                                 ImGui::TreePop();
