@@ -18,11 +18,15 @@ static std::string shaderMaterialLoc(u32 index) {
 /*********************************************************/
 
 dr::Material::Material()
-: m_boundSlot(0) {}
+: m_boundSlot(0), m_name("Material") {}
 
-void dr::Material::SetupMaterialShader(Shader* shader)
+void dr::Material::setName(const std::string &name)
 {
-    s_shader = shader;
+    m_name = name;
+}
+std::string dr::Material::getName() const
+{
+    return m_name;
 }
 
 /*********************************************************/
@@ -99,16 +103,20 @@ normalTexture(Texture::GetNullTexture())
 
 void dr::PBRMaterial::SetupMaterialShader(Shader *shader)
 {
+    DUST_PROFILE;
     s_shader = shader;
+    static constexpr std::string albedoU      = "uMatAlbedo";
+    static constexpr std::string emissiveU    = "uMatEmissive";
+    static constexpr std::string reflectanceU = "uMatReflectance";
+    static constexpr std::string normalU      = "uMatNormal";
     for(int slot = 0; slot < DUST_MATERIAL_SLOTS; ++slot) {
         // textures
         const std::string bufAccess = std::format("[{}]", slot);
         const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
-        static constexpr std::string baseUniform = "uMat";
-        s_shader->setUniform((baseUniform + std::string("Albedo")      + bufAccess), baseTextureBind + 0);
-        s_shader->setUniform((baseUniform + std::string("Emmissive")   + bufAccess), baseTextureBind + 1);
-        s_shader->setUniform((baseUniform + std::string("Reflectance") + bufAccess), baseTextureBind + 2);
-        s_shader->setUniform((baseUniform + std::string("Normal")      + bufAccess), baseTextureBind + 3);
+        s_shader->setUniform((albedoU      + bufAccess), baseTextureBind + 0);
+        s_shader->setUniform((emissiveU    + bufAccess), baseTextureBind + 1);
+        s_shader->setUniform((reflectanceU + bufAccess), baseTextureBind + 2);
+        s_shader->setUniform((normalU      + bufAccess), baseTextureBind + 3);
     }
 }
 
@@ -122,17 +130,12 @@ void dr::PBRMaterial::bind(u32 slot)
     const std::string loc = "uMaterials" + bufAccess;
     s_shader->setUniform(loc + ".exist", true);
 
-    // // textures
-    // const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
-    // static constexpr std::string baseUniform = "uMat";
-    // albedoTexture->bind(baseTextureBind + 0);
-    // emissivityTexture->bind(baseTextureBind + 1);
-    // reflectanceTexture->bind(baseTextureBind + 2);
-    // normalTexture->bind(baseTextureBind + 3);
-    // shader->setUniform((baseUniform + std::string("Albedo")      + bufAccess), baseTextureBind + 0);
-    // shader->setUniform((baseUniform + std::string("Emmissive")   + bufAccess), baseTextureBind + 1);
-    // shader->setUniform((baseUniform + std::string("Reflectance") + bufAccess), baseTextureBind + 2);
-    // shader->setUniform((baseUniform + std::string("Normal")      + bufAccess), baseTextureBind + 3);
+    // textures
+    const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
+    albedoTexture->bind(baseTextureBind + 0);
+    emissivityTexture->bind(baseTextureBind + 1);
+    reflectanceTexture->bind(baseTextureBind + 2);
+    normalTexture->bind(baseTextureBind + 3);
 
     // colors
     s_shader->setUniform(loc + ".albedo", albedo);

@@ -21,8 +21,9 @@ class Material
 {
 protected:
     u32 m_boundSlot;
+    std::string m_name;
     
-    inline static Shader* s_shader = nullptr;
+    inline static Shader *s_shader = nullptr;
 public:
     Material();
     virtual ~Material() = default;
@@ -30,7 +31,8 @@ public:
     virtual void bind(u32 slot = 0) = 0;
     virtual void unbind() = 0;
 
-    static void SetupMaterialShader(Shader* shader);
+    void setName(const std::string &name);
+    std::string getName() const;
 };
 using MaterialPtr  = Ref<Material>;
 using MaterialUPtr = Scope<Material>;
