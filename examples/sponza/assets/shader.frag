@@ -2,6 +2,7 @@
 out vec4 fragColor;
 
 #define PI 3.1415926535897932384626433832795
+#define ONE_OVER_PI 1 / PI
 
 /***********************************************/
 // Materials
@@ -62,8 +63,19 @@ in VS_OUT {
 } fs_in;
 
 /***********************************************/
-// Functions
+// Function
 
+vec3 lerp(vec3 a, vec3 b, float t)
+{
+    return ((1 - t) * a) + (b * t);
+}
+
+float lerp(float a, float b, float t)
+{
+    return ((1 - t) * a) + (b * t);
+}
+
+// Normal/Bump mapping
 vec3 calcBumpMapping()
 {
     vec3 normal = texture(uMaterials[int(fs_in.matID)].texNormal, fs_in.texCoord).xyz;
@@ -71,85 +83,126 @@ vec3 calcBumpMapping()
     return normalize(fs_in.TBN * normal); 
 }
 
+/***********************************************/
+// BRDF Functions
+// From : https://boksajak.github.io/files/CrashCourseBRDF.pdf
 
+// Distribution term
 // GGX/Trowbridge-Reitz Normal distribution function
 float D(float alpha, vec3 N, vec3 H) {
     float numerator = alpha * alpha;
 
     float NdotH  = max(dot(N, H), 0.0);
     float NdotH2 = NdotH * NdotH;
-    float denominator = NdotH2 * (numerator - 1.0) + 1.0;
+    float denominator = ((numerator - 1) * NdotH2) + 1;
     denominator = max(denominator * denominator, 0.000001);
 
     return numerator / (PI * denominator);
 }
 
-// GGX/Schlick-Beckmann Geometry Shadowing Function
-float Gi(float alpha, vec3 N, vec3 X)
+/** 
+ * GGX/Schlick-Beckmann Geometry Shadowing Function
+ *
+ * @param alpha
+ * @param N - microfacet normal
+ * @param S - either L or V
+ */
+float Gi(float alpha, vec3 N, vec3 S)
 {
-    float numerator = max(dot(N, X), 0.0);
-
-    float k = alpha * .5;
-    float denominator = numerator * (1.0 - k) + k;
-    denominator = max(denominator, 0.000001);
-
-    return numerator / denominator;
+    float alphaSquared = alpha * alpha;
+    float NdotSSquared = dot(N, S);
+    NdotSSquared *= NdotSSquared;
+    return 2.0f / (sqrt(((alphaSquared * (1.0f - NdotSSquared)) + NdotSSquared) / NdotSSquared) + 1.0f);
 }
 
-// Smith Model
+/**
+ * Geometric Attenuation Term
+ * Smith Model
+ * @param alpha
+ * @param N - normal
+ * @param V - view Dir
+ * @param L - light dir
+ */
 float G(float alpha, vec3 N, vec3 V, vec3 L)
 {
-    return Gi(alpha, N, V) * Gi(alpha, N, L);
+    return Gi(alpha, N, L) * Gi(alpha, N, V);
 }
 
-// Fresnel
-vec3 F(vec3 F0, vec3 V, vec3 H)
+/** 
+ * Fresnel (Schlick's approximation)
+ * @param F0  - Reflectance at normal incidence
+ * @param F90 - Reflectance at 90 incidence (equal to 1.0)
+ * @param V   - View direction
+ * @param N   - Normal
+ */
+vec3 F(vec3 F0, vec3 F90, vec3 V, vec3 N)
 {
-    return F0 + (vec3(1) - F0) * pow(1 - max(dot(V,H), 0.0), 5);
+    return F0 + (F90 - F0) * pow(1 - max(dot(V,N), 0), 5);
 }
 
-float Fresnel(vec3 normal, vec3 viewDir)
-{
-    float res = dot(normal, viewDir);
-    res = max(1 - res, 0.0);
-    return res;
+float luminance(vec3 rgb) {
+    return dot(rgb, vec3(0.2126, 0.7152, 0.0722));
 }
 
-vec3 lerp(vec3 a, vec3 b, float t)
+// Frostbite's version of Disney diffuse with energy normalization.
+// Source: "Moving Frostbite to Physically Based Rendering" by Lagarde & de Rousiers
+float frostbiteDisneyDiffuse(vec3 N, vec3 L, vec3 H, vec3 V) {
+    float LdotH = max(dot(L, H), 0);
+    float NdotL = max(dot(N, L), 0);
+    float NdotV = max(dot(N, V), 0);
+    float roughness = uMaterials[int(fs_in.matID)].roughness;
+
+	float energyBias = 0.5f * roughness;
+	float energyFactor = lerp(1, 1 / 1.51, roughness);
+
+	float FD90MinusOne = energyBias + 2.0 * LdotH * LdotH * roughness - 1.0f;
+
+	float FDL = 1.0f + (FD90MinusOne * pow(1.0f - NdotL, 5.0f));
+	float FDV = 1.0f + (FD90MinusOne * pow(1.0f - NdotV, 5.0f));
+
+	return FDL * FDV * energyFactor;
+}
+
+vec3 evalFrostbiteDisneyDiffuse(vec3 reflectance, vec3 N, vec3 L, vec3 H, vec3 V) {
+    float NdotL = max(dot(N, L), 0);
+	return reflectance * (frostbiteDisneyDiffuse(N, L, H, V) * ONE_OVER_PI * NdotL);
+}
+
+// Microfacet
+vec3 evalCookTorance(vec3 reflectance, float alpha, vec3 color, float metalness, vec3 L, vec3 N, vec3 H, vec3 V)
 {
-    return ((1 - t) * a) + (b * t);
+    // Calculate color at normal incidence
+    vec3 F0  = lerp((reflectance * reflectance * .16), color, metalness);
+    vec3 F90 = vec3(min(1.60, luminance(F0)));
+    // vec3 diffuse_reflectance = color.rgb * (1 - metalness);
+
+    // Cook torrance
+    float LdotN = max(dot(L, N), 0.0);
+    vec3 cookTorranceNum  = F(F0, F90, V, H) * G(alpha, N, V, L) * D(alpha, N, H);
+    float cookTorranceDen = 4. *  max(dot(V, N), 0.0) * LdotN;
+    cookTorranceDen = max(cookTorranceDen, 0.000001);
+    vec3 cookTorrance = (cookTorranceNum / cookTorranceDen) * LdotN;
+    return cookTorrance;
 }
 
 vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
 {
     // Mat param
-    vec4 color = texture(uMaterials[int(fs_in.matID)].texAlbedo, fs_in.texCoord) * vec4(uMaterials[int(fs_in.matID)].albedo, 1);
-    float metallic = uMaterials[int(fs_in.matID)].metallic;
-    float alpha    = uMaterials[int(fs_in.matID)].roughness;
-    vec3 ior       = uMaterials[int(fs_in.matID)].ior;
-    // Calculate color at normal incidence
-    // vec3 ior = ior * Fresnel(V, N);
-    vec3 F0 = color.rgb * Fresnel(V, N); //abs((1.0 - ior) / (1.0 + ior));
-    F0 = F0 * F0;
-    F0 = lerp(F0, color.rgb, metallic);
+    vec4  color     = texture(uMaterials[int(fs_in.matID)].texAlbedo, fs_in.texCoord) * vec4(uMaterials[int(fs_in.matID)].albedo, 1);
+    float metalness = uMaterials[int(fs_in.matID)].metallic;
+    float alpha     = uMaterials[int(fs_in.matID)].roughness * uMaterials[int(fs_in.matID)].roughness;
+    vec3  ior       = uMaterials[int(fs_in.matID)].ior;
+    vec3  reflectance = color.rgb * (1 - metalness);
 
-    // Power Conservation
-    vec3 Ks = F(F0, V, H);
-    vec3 Kd = (vec3(1) - Ks) * (1.0 - metallic);
+    vec3 specular = evalCookTorance(reflectance, alpha, color.rgb, metalness, L, N, H, V);
+    vec3 diffuse  = evalFrostbiteDisneyDiffuse(vec3(reflectance), N, L, H, V);
 
-    vec3 lambert = color.rgb / PI;
+    // Combine with Fresnel
+    vec3 F0 = lerp((reflectance * reflectance * .16), color.rgb, metalness);
+    vec3 F90 = vec3(min(1.60, luminance(F0)));
+    vec3 F  = F(F0, F90, V, N);
 
-    float LdotN = max(dot(L, N), 0.0);
-    vec3 cookTorranceNum  = D(alpha, N, H) * G(alpha, N, V, L) * F(F0, V, H);
-    float cookTorranceDen = 4. *  max(dot(V, N), 0.0) * LdotN;
-    cookTorranceDen = max(cookTorranceDen, 0.000001);
-    vec3 cookTorrance = cookTorranceNum / cookTorranceDen;
-
-    vec3 BRDF = Kd * lambert * cookTorrance;
-    vec3 emissivity = vec3(0); // texture(uMatEmissive[int(fs_in.matID)], fs_in.texCoord).rgb;
-    vec3 res = emissivity + BRDF * uLights[0].color * LdotN;
-
-    return res;
+    return (vec3(1) - F) * diffuse + specular;
 }
 
 /***********************************************/
@@ -164,12 +217,12 @@ void main() {
     // return;
 
     // inputs
-    vec3 normal = calcBumpMapping();                          // Normal
+    vec3 normal = calcBumpMapping();                      // Normal
     vec3 viewDir = normalize(uViewPos - fs_in.fragPos);   // View vector
     // Lights
-    vec3 lightDir = normalize(uLights[0].direction);       // Light vector
-    vec3 halfView = normalize(viewDir + lightDir);                      // Half View vector
+    vec3 lightDir = normalize(uLights[0].direction);      // Light vector
+    vec3 halfView = normalize(viewDir + lightDir);        // Half View vector
 
-    vec3 result = uMaterials[int(fs_in.matID)].albedo * Fresnel(viewDir, normal);//PBR(viewDir, normal, lightDir, halfView);
+    vec3 result = PBR(viewDir, normal, lightDir, halfView);
     fragColor = vec4(result, 1.0);
 }
