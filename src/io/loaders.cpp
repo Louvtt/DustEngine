@@ -234,11 +234,12 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
         numTotalIndices[batchIdx]  += scene->mMeshes[i]->mNumFaces * 3;
     }
     // allocate space for vertices
-    std::unordered_map<int, std::vector<dr::ModelVertex>> vertices(batchCount);
-    std::unordered_map<int,std::vector<u32>> indices(batchCount);
+    std::vector<std::vector<dr::ModelVertex>> vertices(batchCount);
+    std::vector<std::vector<u32>> indices(batchCount);
+    std::vector<std::string> batchMeshesName(batchCount, "");
     for(int i = 0; i < batchCount; ++i) {
-        vertices.insert({i, std::vector<dr::ModelVertex>(numTotalVertices[i])});
-        indices.insert({i, std::vector<u32>(numTotalIndices[i])});
+        vertices.push_back(std::vector<dr::ModelVertex>(numTotalVertices[i]));
+        indices.push_back(std::vector<u32>(numTotalIndices[i]));
     }
 
     // parse all meshes
@@ -249,7 +250,7 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
             const u32 matId = scene->mMeshes[i]->mMaterialIndex;
             const u32 batchIdx = std::floor((float)matId / (float)DUST_MATERIAL_SLOTS);
             const u32 previousVertexCount = vertices[batchIdx].size();
-
+            batchMeshesName.at(batchIdx) += std::string(mesh->mName.C_Str()) + " ";
             // process vertices
             for(int i = 0; i < mesh->mNumVertices; ++i) {
                 auto pos    = mesh->mVertices[i];
@@ -306,7 +307,8 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
                 mesh->setMaterial(m, materials.at(materialI));
                 materialI += 1;
             }
-            res.push_back(mesh);
+            mesh->setName(batchMeshesName.at(i));
+            res[i] = mesh;
         }
     }
     return res;
