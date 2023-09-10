@@ -90,13 +90,13 @@ dr::Mesh::~Mesh()
     glDeleteVertexArrays(1, &m_renderID);
 }
 
-void dr::Mesh::draw(Shader *shader)
+void dr::Mesh::draw(const Shader *shader)
 {
     DUST_PROFILE;
     u32 slot = 0;
     for(auto& material : m_materialSlots){
         if(material == nullptr) continue;
-        material->bind(shader, slot);
+        material->bind(slot);
         slot += 1;
     }
     
@@ -113,7 +113,7 @@ void dr::Mesh::draw(Shader *shader)
 
     for(auto& material : m_materialSlots){
         if(material == nullptr) continue;
-        material->unbind(shader);
+        material->unbind();
     }
 }
 

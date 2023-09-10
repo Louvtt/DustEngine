@@ -65,7 +65,7 @@ public:
 
     void setMaterial(u32 index, MaterialPtr material);
     MaterialPtr getMaterial(u32 index) const;
-    void draw(Shader *shader);
+    void draw(const Shader *shader);
 
     std::array<MaterialPtr, DUST_MATERIAL_SLOTS> getMaterials() const;
 

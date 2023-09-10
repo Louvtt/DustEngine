@@ -64,7 +64,7 @@ public:
     Shader(const std::string &vertexCode, const std::string &fragmentCode);
     ~Shader();
 
-    virtual void use();
+    virtual void use() const;
 
     virtual void setUniform(const std::string &name, int value);
     virtual void setUniform(const std::string &name, bool value);

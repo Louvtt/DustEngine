@@ -36,7 +36,7 @@ dr::Shader::~Shader()
     glDeleteProgram(m_renderID);
 }
 
-void dr::Shader::use() {
+void dr::Shader::use() const {
     DUST_PROFILE_GPU("UseProgram");
     glUseProgram(m_renderID);
 }

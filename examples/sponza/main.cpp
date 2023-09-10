@@ -90,6 +90,7 @@ public:
         m_currentShader = m_shader; 
         
         m_sponza = io::LoadModel("assets/sponza_pbr/sponza.obj");
+        render::PBRMaterial::SetupMaterialShader(m_shader.get());
 
         m_camera->setPosition(glm::vec3(0.f, 20.f, 0.f));
 
@@ -225,7 +226,7 @@ public:
             for(auto mesh : m_sponza.value()->getMeshes())
             {
                 if(!mesh.get()) { ++i; continue; }
-                const auto meshName = std::format("Mesh{}", i);
+                const auto meshName = std::format("Mesh {}", i);
                 if(ImGui::TreeNode(meshName.c_str()))
                 {
                     if(ImGui::TreeNode("Materials")) {
@@ -233,7 +234,7 @@ public:
                         for(auto mat : mesh->getMaterials()) {
                             if(!mat.get()) { j++; continue; }
                             // Show material
-                            const auto matName = std::format("Mat{}", j);
+                            const auto matName = std::format("PBR Material {}", j);
                             if(ImGui::TreeNode(matName.c_str())) {
                                 render::PBRMaterial *m = (render::PBRMaterial*)mat.get();
                                 ImGui::ColorEdit3("Albedo", glm::value_ptr(m->albedo));

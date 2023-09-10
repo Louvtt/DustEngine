@@ -21,14 +21,16 @@ class Material
 {
 protected:
     u32 m_boundSlot;
-
+    
+    inline static Shader* s_shader = nullptr;
 public:
     Material();
     virtual ~Material() = default;
 
-    virtual void setupUniforms(Shader *shader, u32 slot = 0) = 0;
-    virtual void bind(Shader *shader, u32 slot = 0) = 0;
-    virtual void unbind(Shader *shader) = 0;
+    virtual void bind(u32 slot = 0) = 0;
+    virtual void unbind() = 0;
+
+    static void SetupMaterialShader(Shader* shader);
 };
 using MaterialPtr  = Ref<Material>;
 using MaterialUPtr = Scope<Material>;
@@ -38,52 +40,44 @@ class ColorMaterial
 : public Material
 {
 public:
+    glm::vec3 color;
+
+public:
+    ColorMaterial();
     ColorMaterial(glm::vec3 color);
     ~ColorMaterial() = default;
 
-    void setupUniforms(Shader *shader, u32 slot = 0) override;
-    void bind(Shader *shader, u32 slot = 0) override;
-    void unbind(Shader *shader) override;
-
-    glm::vec3 color;
+    void bind(u32 slot = 0) override;
+    void unbind() override;
+    static void SetupMaterialShader(Shader* shader);
 };
 
 class TextureMaterial
 : public Material
 {
 public:
+    TexturePtr texture;
+
+public:
     TextureMaterial();
     ~TextureMaterial() = default;
 
-    void setupUniforms(Shader *shader, u32 slot = 0) override;
-    void bind(Shader *shader, u32 slot = 0) override;
-    void unbind(Shader *shader) override;
-
-    TexturePtr texture;
+    void bind(u32 slot = 0) override;
+    void unbind() override;
+    static void SetupMaterialShader(Shader* shader);
 };
 
 class PBRMaterial
 : public Material
 {
 public:
-    PBRMaterial();
-    ~PBRMaterial() = default;
-
-    void setupUniforms(Shader *shader, u32 slot = 0) override;
-    void bind(Shader *shader, u32 slot = 0) override;
-    void unbind(Shader *shader) override;
-
     // Data
-
-    /*
-    glm::vec3 albedo;
-    f32 roughness;
-
-    TexturePtr albedoTexture;
-    TexturePtr metallicTexture;
-    TexturePtr roughnessTexture;
-    TexturePtr normalTexture;
-    */
+    // glm::vec3 albedo;
+    // f32 roughness;
+    // TexturePtr albedoTexture;
+    // TexturePtr metallicTexture;
+    // TexturePtr roughnessTexture;
+    // TexturePtr normalTexture;
 
     glm::vec3 albedo;
     TexturePtr albedoTexture;
@@ -94,6 +88,14 @@ public:
     // TexturePtr roughnessTexture;
     glm::vec3 ior;
     TexturePtr reflectanceTexture;
+
+public:
+    PBRMaterial();
+    ~PBRMaterial() = default;
+
+    void bind(u32 slot = 0) override;
+    void unbind() override;
+    static void SetupMaterialShader(Shader* shader);
 };
 
 }

@@ -138,7 +138,7 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
     vec3 cookTorrance = cookTorranceNum / cookTorranceDen;
 
     vec3 BRDF = Kd * lambert * cookTorrance;
-    vec3 emissivity = texture(uMatEmissive[int(fs_in.matID)], fs_in.texCoord).rgb;
+    vec3 emissivity = vec3(0); // texture(uMatEmissive[int(fs_in.matID)], fs_in.texCoord).rgb;
     vec3 res = emissivity + BRDF * uLights[0].color * LdotN;
 
     return res;
