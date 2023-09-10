@@ -8,7 +8,7 @@
 
 namespace dr = dust::render;
 
-/* ===================== */
+/**********************************************************/
 // Attribute
 
 dr::Attribute::Attribute(u32 count, u32 size, u32 glType)
@@ -27,12 +27,13 @@ dr::Attribute dr::Attribute::Pos2D     {Float2};
 dr::Attribute dr::Attribute::Pos3D     {Float3};
 dr::Attribute dr::Attribute::Color     {Float4};
 
-/* ==================== */
+/**********************************************************/
 
-dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
+dr::Mesh::Mesh(void *vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
 : m_indexCount(indices.size()),
 m_vertexCount(vertexCount),
-m_materialSlots()
+m_materialSlots(),
+m_name()
 {
     DUST_PROFILE;
     m_materialSlots.fill(nullptr);
@@ -76,9 +77,9 @@ m_materialSlots()
     DUST_DEBUG("[OpenGL] Created Mesh {}", m_renderID);
     glBindVertexArray(0);
 }
-dr::Mesh::Mesh(std::vector<float> vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
-: dr::Mesh::Mesh(&vertexData.front(), vertexDataSize, vertexCount, {}, attribute) {}
-dr::Mesh::Mesh(void* vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
+dr::Mesh::Mesh(const std::vector<float> &vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
+: dr::Mesh::Mesh((void*)&vertexData.front(), vertexDataSize, vertexCount, {}, attribute) {}
+dr::Mesh::Mesh(void *vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attribute)
 : dr::Mesh::Mesh(vertexData, vertexDataSize, vertexCount, {}, attribute) {}
 
 dr::Mesh::~Mesh()
@@ -141,6 +142,15 @@ void dr::Mesh::bindAttributes(const std::vector<Attribute> &attributes)
         offset += attrib.getSize();
         ++index;
     }
+}
+
+void dr::Mesh::setName(const std::string &name)
+{
+    m_name = name;
+}
+std::string dr::Mesh::getName() const
+{
+    return m_name;
 }
 
 void dr::Mesh::setMaterial(u32 index, MaterialPtr material)
