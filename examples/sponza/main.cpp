@@ -243,7 +243,7 @@ public:
                         for(auto mat : mesh->getMaterials()) {
                             if(!mat.get()) { j++; continue; }
                             // Show material
-                            const auto matName = std::format("PBR Material {}", j);
+                            const auto matName = std::format("PBR Material {} - {}", j, mat->getName());
                             if(ImGui::TreeNode(matName.c_str())) {
                                 render::PBRMaterial *m = (render::PBRMaterial*)mat.get();
                                 ImGui::ColorEdit3("Albedo", glm::value_ptr(m->albedo));
