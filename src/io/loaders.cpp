@@ -239,25 +239,24 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
             batchMeshesName.at(batchIdx) += std::string(mesh->mName.C_Str()) + " ";
             // process vertices
             for(int i = 0; i < mesh->mNumVertices; ++i) {
-                auto pos    = mesh->mVertices[i];
-                auto color  = mesh->mColors[i];
+                const auto pos    = mesh->mVertices[i];
 
                 dr::ModelVertex vertex = {{ pos.x, pos.y, pos.z }};
                 if(mesh->HasTextureCoords(0)) { 
-                    auto tex   = mesh->mTextureCoords[0][i];
+                    const auto tex   = mesh->mTextureCoords[0][i];
                     vertex.tex = { tex.x, tex.y }; 
                 }
                 if(mesh->HasNormals()) { 
-                    auto normal = mesh->mNormals[i];
+                    const auto normal = mesh->mNormals[i];
                     vertex.normal = { normal.x, normal.y, normal.z};
                 }
                 if(mesh->HasTangentsAndBitangents()) {
-                    auto tangent = mesh->mTangents[i];
+                    const auto tangent = mesh->mTangents[i];
                     vertex.tangent = { tangent.x, tangent.y, tangent.z };
                 }
                 if(mesh->HasVertexColors(i)) {
-                    auto color = mesh->mColors[i];
-                    vertex.color = { color->r, color->g, color->b, color->a };
+                    const auto color = mesh->mColors[0][i];
+                    vertex.color = { color.r, color.g, color.b, color.a };
                 }
                 vertex.materialID = (float)(matId % DUST_MATERIAL_SLOTS); // matId in batch 
 
