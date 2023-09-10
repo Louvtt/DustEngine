@@ -222,7 +222,7 @@ public:
                 if(ImGui::Button("Reload Shaders")) {
                     m_shader->reload();
                     m_depthShader->reload();
-
+                    render::PBRMaterial::SetupMaterialShader(m_shader.get());
                     updateUniforms();
                 }
             }
