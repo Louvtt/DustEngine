@@ -231,16 +231,18 @@ public:
 
         if(ImGui::Begin("Model Data")){
             u32 i = 0;
-            for(auto mesh : m_sponza.value()->getMeshes())
+            for(auto& mesh : m_sponza.value()->getMeshes())
             {
                 if(!mesh.get()) { ++i; continue; }
                 const auto meshName = std::format("Mesh {}", i);
                 if(ImGui::TreeNode(meshName.c_str()))
                 {
                     ImGui::TextWrapped("Name: %s", mesh->getName().c_str());
+                    bool hidden = mesh->isHidden();
+                    if(ImGui::Checkbox("Hidden", &hidden)) mesh->setHidden(hidden);
                     if(ImGui::TreeNode("Materials")) {
                         u32 j = 0;
-                        for(auto mat : mesh->getMaterials()) {
+                        for(auto& mat : mesh->getMaterials()) {
                             if(!mat.get()) { j++; continue; }
                             // Show material
                             const auto matName = std::format("PBR Material {} - {}", j, mat->getName());

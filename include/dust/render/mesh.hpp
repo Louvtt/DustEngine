@@ -57,6 +57,8 @@ protected:
 
     std::array<MaterialPtr, DUST_MATERIAL_SLOTS> m_materialSlots;
     std::string m_name;
+
+    bool m_hidden;
 public:
     Mesh(const std::vector<float> &vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attributes);
     Mesh(void *vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<Attribute> attributes);
@@ -65,6 +67,9 @@ public:
 
     void setName(const std::string &name);
     std::string getName() const;
+
+    void setHidden(bool hide);
+    bool isHidden() const;
 
     void setMaterial(u32 index, MaterialPtr material);
     MaterialPtr getMaterial(u32 index) const;

@@ -33,7 +33,8 @@ dr::Mesh::Mesh(void *vertexData, u32 vertexDataSize, u32 vertexCount, std::vecto
 : m_indexCount(indices.size()),
 m_vertexCount(vertexCount),
 m_materialSlots(),
-m_name()
+m_name(),
+m_hidden(false)
 {
     DUST_PROFILE;
     m_materialSlots.fill(nullptr);
@@ -94,6 +95,8 @@ dr::Mesh::~Mesh()
 void dr::Mesh::draw(const Shader *shader)
 {
     DUST_PROFILE;
+    if(m_hidden) return;
+    
     u32 slot = 0;
     for(auto& material : m_materialSlots){
         if(material == nullptr) { slot++; continue; }
@@ -151,6 +154,16 @@ void dr::Mesh::setName(const std::string &name)
 std::string dr::Mesh::getName() const
 {
     return m_name;
+}
+
+
+void dr::Mesh::setHidden(bool hide)
+{
+    m_hidden = hide;
+}
+bool dr::Mesh::isHidden() const
+{
+    return m_hidden;
 }
 
 void dr::Mesh::setMaterial(u32 index, MaterialPtr material)
