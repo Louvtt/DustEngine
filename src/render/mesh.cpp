@@ -96,9 +96,9 @@ void dr::Mesh::draw(const Shader *shader)
     DUST_PROFILE;
     u32 slot = 0;
     for(auto& material : m_materialSlots){
-        if(material == nullptr) continue;
+        if(material == nullptr) { slot++; continue; }
         material->bind(slot);
-        slot += 1;
+        slot++;
     }
     
     shader->use();    
