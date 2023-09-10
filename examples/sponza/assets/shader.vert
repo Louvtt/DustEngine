@@ -15,6 +15,7 @@ out VS_OUT {
     vec3 fragPos;
     vec3 tangent;
     vec3 lightFragPos;
+    mat3 TBN;
 } vs_out;
 
 uniform mat4 uView;
@@ -26,11 +27,14 @@ void main() {
     vs_out.fragPos = (uModel * vec4(aPos, 1)).xyz;
     gl_Position = uProj * uView * vec4(vs_out.fragPos, 1.f);
     
-    vs_out.normal   = (uModel * vec4(aNormal, 0)).xyz;
-    vs_out.tangent  = (uModel * vec4(aTangent, 0)).xyz;
+    vs_out.normal   = normalize((uModel * vec4(aNormal, 0)).xyz);
+    vs_out.tangent  = normalize((uModel * vec4(aTangent, 0)).xyz);
     vs_out.color    = aColor;
     vs_out.texCoord = aTexCoord;
     vs_out.matID    = aMatID;
     vs_out.lightFragPos = (uLightViewProj * vec4(vs_out.fragPos, 1)).xyz;
 
+    vec3 tangent = normalize(vs_out.tangent - dot(vs_out.tangent, vs_out.normal) * vs_out.normal);
+    vec3 biTangent = cross(vs_out.normal, tangent);
+    vs_out.TBN = transpose(mat3(tangent, biTangent, vs_out.normal));
 }

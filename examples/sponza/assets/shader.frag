@@ -53,22 +53,19 @@ in VS_OUT {
     vec3 fragPos;
     vec3 tangent;
     vec3 lightFragPos;
+    mat3 TBN;
 } fs_in;
 
 /***********************************************/
 // Functions
 
-vec3 CalcNormal()
+vec3 calcBumpMapping()
 {
-    vec3 normal = normalize(fs_in.normal);
-    vec3 tangent = normalize(fs_in.tangent);
-    tangent = normalize(tangent - dot(tangent, normal) * normal);
-    vec3 biTangent = cross(tangent, normal);
-    vec3 bumpMapNormal = texture(uMatNormal[int(fs_in.matID)], fs_in.texCoord).xyz;
-    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1);
-    mat3 TBN = mat3(tangent, biTangent, normal);
-    return normalize(TBN * bumpMapNormal);
+    vec3 normal = texture(uMatNormal[int(fs_in.matID)], fs_in.texCoord).xyz;
+    normal = normal * 2.0 - 1.0;   
+    return normalize(fs_in.TBN * normal); 
 }
+
 
 // GGX/Trowbridge-Reitz Normal distribution function
 float D(float alpha, vec3 N, vec3 H) {
@@ -106,6 +103,13 @@ vec3 F(vec3 F0, vec3 V, vec3 H)
     return F0 + (vec3(1) - F0) * pow(1 - max(dot(V,H), 0.0), 5);
 }
 
+float Fresnel(vec3 normal, vec3 viewDir)
+{
+    float res = dot(normal, viewDir);
+    res = max(1 - res, 0.0);
+    return res;
+}
+
 vec3 lerp(vec3 a, vec3 b, float t)
 {
     return ((1 - t) * a) + (b * t);
@@ -120,8 +124,8 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
     float alpha = mat.roughness;
 
     // Calculate color at normal incidence
-    vec3 ior = mat.ior;
-    vec3 F0 = abs((1.0 - ior) / (1.0 + ior));
+    vec3 ior = mat.ior * Fresnel(V, N);
+    vec3 F0 = mat.albedo * Fresnel(V, N); //abs((1.0 - ior) / (1.0 + ior));
     F0 = F0 * F0;
     F0 = lerp(F0, color.rgb, metallic);
 
@@ -130,7 +134,7 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
     vec3 Kd = (vec3(1) - Ks) * (1.0 - metallic);
 
     vec3 lambert = color.rgb / PI;
-    
+
     float LdotN = max(dot(L, N), 0.0);
     vec3 cookTorranceNum  = D(alpha, N, H) * G(alpha, N, V, L) * F(F0, V, H);
     float cookTorranceDen = 4. *  max(dot(V, N), 0.0) * LdotN;
@@ -153,15 +157,16 @@ void main() {
         fragColor = vec4(1, 0, 1, 1);
         return;
     }
+    fragColor = vec4(texture(uMatAlbedo[int(fs_in.matID)], fs_in.texCoord).rgb, 1);
+    return;
 
     // inputs
-    vec3 N = CalcNormal();                          // Normal
-    vec3 V = normalize(uViewPos - fs_in.fragPos);   // View vector
+    vec3 normal = calcBumpMapping();                          // Normal
+    vec3 viewDir = normalize(uViewPos - fs_in.fragPos);   // View vector
     // Lights
-    vec3 L = normalize(uLights[0].direction);       // Light vector
-    vec3 H = normalize(V + L);                      // Half View vector
+    vec3 lightDir = normalize(uLights[0].direction);       // Light vector
+    vec3 halfView = normalize(viewDir + lightDir);                      // Half View vector
 
-    // ambient
-    vec3 result = PBR(V, N, L, H);
+    vec3 result = normal;//PBR(viewDir, normal, lightDir, halfView);
     fragColor = vec4(result, 1.0);
 }
