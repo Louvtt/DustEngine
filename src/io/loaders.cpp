@@ -169,6 +169,10 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
             }
         }
 
+        if(material->Get(AI_MATKEY_NAME, filePath) == AI_SUCCESS) {
+            mat->setName(filePath.C_Str());
+        }
+
         // Clearcoat
         /*
         if(material->GetTexture(aiTextureType_CLEARCOAT, 0, &filePath) == AI_SUCCESS) {
@@ -177,24 +181,6 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
             // if(texture.has_value()) {
             //     // mat->clearCoatTexture = texture.value();
             // }
-        }
-        // Emissive
-        if(material->GetTexture(aiTextureType_EMISSIVE, 0, &filePath) == AI_SUCCESS) {
-            // const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-            // const auto texture = dio::LoadTexture2D(texPath);
-            // if(texture.has_value()) {
-            //     // mat->clearCoatTexture = texture.value();
-            // }
-        }
-        if(material->GetTexture(aiTextureType_EMISSION_COLOR, 0, &filePath) == AI_SUCCESS) {
-            // const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-            // const auto texture = dio::LoadTexture2D(texPath);
-            // if(texture.has_value()) {
-            //     // mat->clearCoatTexture = texture.value();
-            // }
-        }
-        if(aiGetMaterialFloat(material, AI_MATKEY_EMISSIVE_INTENSITY, &factor) == aiReturn_SUCCESS) {
-            mat->metallic = factor;
         }
         // Transmission
         // if(material->GetTexture(aiTextureType_TRANSMISSION, 0, &filePath) == AI_SUCCESS) {
