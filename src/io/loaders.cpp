@@ -313,7 +313,8 @@ dio::LoadModel(const dio::Path &_path)
     const aiScene* scene = importer.ReadFile(path,
         aiProcess_Triangulate               | 
         aiProcess_RemoveRedundantMaterials  |
-        aiProcess_CalcTangentSpace
+        aiProcess_CalcTangentSpace          |
+        aiProcess_FlipUVs
     );
 
     fs::path modelPathDir = fs::path(path).parent_path();

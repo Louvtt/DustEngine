@@ -34,7 +34,11 @@ void main() {
     vs_out.matID    = aMatID;
     vs_out.lightFragPos = (uLightViewProj * vec4(vs_out.fragPos, 1)).xyz;
 
+    // Normal mapping matrix
     vec3 tangent = normalize(vs_out.tangent - dot(vs_out.tangent, vs_out.normal) * vs_out.normal);
     vec3 biTangent = cross(vs_out.normal, tangent);
+    // Ensure right-handed matrix
+    // if (dot(cross(vs_out.normal, tangent), biTangent) < 0)
+    //     tangent *= -1;
     vs_out.TBN = transpose(mat3(tangent, biTangent, vs_out.normal));
 }
