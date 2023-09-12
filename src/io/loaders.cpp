@@ -253,7 +253,16 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
                 if(mesh->HasTangentsAndBitangents()) {
                     const auto tangent = mesh->mTangents[i];
                     vertex.tangent = { tangent.x, tangent.y, tangent.z };
+
+                    // orthonormalize tangent
+                    vertex.tangent = glm::normalize(vertex.tangent - glm::dot(vertex.normal, vertex.tangent) * vertex.normal);
+                    const auto bitangent_ = mesh->mBitangents[i];
+                    const auto bitangent  = glm::vec3{bitangent_.x, bitangent_.y, bitangent_.z};
+                    // for right-handed tbn
+                    if(glm::dot(glm::cross(vertex.normal, vertex.tangent), bitangent) < 0.f)
+                        vertex.tangent *= -1;
                 }
+
                 if(mesh->HasVertexColors(i)) {
                     const auto color = mesh->mColors[0][i];
                     vertex.color = { color.r, color.g, color.b, color.a };
@@ -309,12 +318,14 @@ dio::LoadModel(const dio::Path &_path)
         return nullptr;
     }
 
-    Assimp::Importer importer;
+    Assimp::Importer importer {};
     const aiScene* scene = importer.ReadFile(path,
         aiProcess_Triangulate               | 
         aiProcess_RemoveRedundantMaterials  |
+        aiProcess_GenNormals                |
         aiProcess_CalcTangentSpace          |
-        aiProcess_FlipUVs
+        aiProcess_OptimizeMeshes            |
+        aiProcess_OptimizeGraph             
     );
 
     fs::path modelPathDir = fs::path(path).parent_path();

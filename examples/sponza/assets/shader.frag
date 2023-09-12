@@ -112,7 +112,7 @@ float Gi(float alpha, vec3 N, vec3 S)
     float alphaSquared = alpha * alpha;
     float NdotSSquared = dot(N, S);
     NdotSSquared *= NdotSSquared;
-    return 2.0f / (sqrt(((alphaSquared * (1.0f - NdotSSquared)) + NdotSSquared) / NdotSSquared) + 1.0f);
+    return 2 / (sqrt(((alphaSquared * (1 - NdotSSquared)) + NdotSSquared) / NdotSSquared) + 1);
 }
 
 /**
@@ -155,10 +155,10 @@ float frostbiteDisneyDiffuse(vec3 N, vec3 L, vec3 H, vec3 V) {
 	float energyBias = 0.5f * roughness;
 	float energyFactor = lerp(1, 1 / 1.51, roughness);
 
-	float FD90MinusOne = energyBias + 2.0 * LdotH * LdotH * roughness - 1.0f;
+	float FD90MinusOne = energyBias + 2.0 * LdotH * LdotH * roughness - 1.0;
 
-	float FDL = 1.0f + (FD90MinusOne * pow(1.0f - NdotL, 5.0f));
-	float FDV = 1.0f + (FD90MinusOne * pow(1.0f - NdotV, 5.0f));
+	float FDL = 1.0 + (FD90MinusOne * pow(1.0 - NdotL, 5.0));
+	float FDV = 1.0 + (FD90MinusOne * pow(1.0 - NdotV, 5.0));
 
 	return FDL * FDV * energyFactor;
 }
@@ -202,7 +202,7 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
     vec3 F90 = vec3(min(1.60, luminance(F0)));
     vec3 F  = F(F0, F90, V, N);
 
-    return (vec3(1) - F) * diffuse + specular;
+    return ((vec3(1) - F) * diffuse + specular);
 }
 
 /***********************************************/
