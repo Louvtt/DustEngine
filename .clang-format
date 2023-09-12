@@ -1,0 +1,31 @@
+# Base config
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 100
+
+AlignTrailingComments: true
+AllowShortFunctionsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: true
+  PadOperators: true
+
+AlignOperands: AlignAfterOperator
+
+# Preprocessor
+SortIncludes: true
+IncludeBlocks: Regroup
+IndentPPDirectives: AfterHash
+
+# Classes
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+
+# Namespaces
+NamespaceIndentation: None
