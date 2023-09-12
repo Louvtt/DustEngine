@@ -8,14 +8,12 @@
 namespace dust {
 namespace render {
 
-class CascadeShadowMap
-{
+class CascadeShadowMap {
 protected:
     Camera3DPtr m_camera;
 };
 
-}
-}
-
+} // namespace render
+} // namespace dust
 
 #endif //_DUST_RENDER_CASCADESHADOWMAP_HPP_s

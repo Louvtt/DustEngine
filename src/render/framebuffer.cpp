@@ -32,6 +32,7 @@ inline static u32 getGLAttachment(const drf::AttachmentType& type)
         case drf::AttachmentType::COLOR:
         case drf::AttachmentType::COLOR_RGBA:
         case drf::AttachmentType::COLOR_SRGB:
+        case drf::AttachmentType::COLOR_HDR:
         default:
             return GL_COLOR_ATTACHMENT0;
     }
@@ -51,6 +52,7 @@ inline static u32 getGLFormat(const drf::AttachmentType& type)
         case drf::AttachmentType::COLOR:        return GL_RGB;
         case drf::AttachmentType::COLOR_RGBA:   return GL_RGBA;
         case drf::AttachmentType::COLOR_SRGB:   return GL_SRGB;
+        case drf::AttachmentType::COLOR_HDR:    return GL_RGB16F;
     }
 } 
 
@@ -68,6 +70,7 @@ inline static u32 getGLType(const drf::AttachmentType& type)
         case drf::AttachmentType::COLOR:        return GL_UNSIGNED_BYTE;
         case drf::AttachmentType::COLOR_RGBA:   return GL_UNSIGNED_BYTE;
         case drf::AttachmentType::COLOR_SRGB:   return GL_UNSIGNED_BYTE;
+        case drf::AttachmentType::COLOR_HDR:    return GL_FLOAT;
     }
 } 
 
@@ -108,9 +111,7 @@ void drf::createInternal()
     for(const auto& attachment : m_attachments)
     {
         Attachment newAttachment{0, attachment.type, 0, attachment.isReadable};
-        if(attachment.type == drf::AttachmentType::COLOR
-        || attachment.type == drf::AttachmentType::COLOR_RGBA
-        || attachment.type == drf::AttachmentType::COLOR_SRGB) {
+        if(getGLAttachment(attachment.type) == GL_COLOR_ATTACHMENT0) {
             newAttachment.index = colorAttachmentCount++;
         }
 

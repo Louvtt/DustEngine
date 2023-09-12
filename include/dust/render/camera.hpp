@@ -11,9 +11,7 @@
 namespace dust {
 namespace render {
 
-
-struct CameraFrustrum
-{
+struct CameraFrustrum {
     // near plane
     glm::vec4 nearTopRight;
     glm::vec4 nearTopLeft;
@@ -27,8 +25,7 @@ struct CameraFrustrum
     glm::vec4 farBottomLeft;
 };
 
-class Camera
-{
+class Camera {
 protected:
     glm::mat4 m_view;
     glm::mat4 m_proj;
@@ -36,7 +33,8 @@ protected:
     f32 m_near;
     f32 m_far;
 
-    inline static Camera* s_activeCamera;
+    inline static Camera *s_activeCamera;
+
 protected:
     Camera();
     ~Camera() = default;
@@ -47,11 +45,10 @@ public:
     virtual void move(glm::vec2 translation) = 0;
     virtual void move(glm::vec3 translation) = 0;
 
-    [[nodiscard]]
-    virtual CameraFrustrum getFrustrum() const;
+    [[nodiscard]] virtual CameraFrustrum getFrustrum() const;
 
     void makeActive();
-    static Camera* GetActive();
+    static Camera *GetActive();
 
     void setView(glm::mat4 view);
     glm::mat4 getView() const;
@@ -59,16 +56,13 @@ public:
     void setProj(glm::mat4 proj);
     glm::mat4 getProj() const;
 
-
 protected:
     virtual void updateViewMatrix() = 0;
 };
-using CameraPtr  = Ref<Camera>;
+using CameraPtr = Ref<Camera>;
 using CameraUPtr = Scope<Camera>;
 
-class Camera2D
-: public Camera
-{
+class Camera2D : public Camera {
 protected:
     glm::vec2 m_position;
     glm::vec2 m_size;
@@ -92,23 +86,20 @@ public:
 private:
     void updateViewMatrix() override;
 };
-using Camera2DPtr  = Ref<Camera2D>;
+using Camera2DPtr = Ref<Camera2D>;
 using Camera2DUPtr = Scope<Camera2D>;
 
-
-class Camera3D
-: public Camera
-{
+class Camera3D : public Camera {
 protected:
     glm::vec3 m_position;
     glm::vec3 m_rotation;
-
 
     glm::vec3 m_forward;
     glm::vec3 m_up;
 
     f32 m_aspectRatio;
     f32 m_fov;
+
 public:
     Camera3D(u32 width, u32 height, f32 fov, f32 far = 1000, f32 near = .1f);
     ~Camera3D() = default;
@@ -124,17 +115,18 @@ public:
     void rotate(glm::vec3 angle);
     void setRotation(glm::vec3 rotation);
 
-    void lookAt(glm::vec3 position, glm::vec3 target, glm::vec3 up = glm::vec3{0.f, 1.f, 0.f});
+    void lookAt(glm::vec3 position, glm::vec3 target,
+                glm::vec3 up = glm::vec3{0.f, 1.f, 0.f});
 
     glm::vec3 forward() const;
 
 private:
     void updateViewMatrix() override;
 };
-using Camera3DPtr  = Ref<Camera3D>;
+using Camera3DPtr = Ref<Camera3D>;
 using Camera3DUPtr = Scope<Camera3D>;
 
-}
-}
+} // namespace render
+} // namespace dust
 
 #endif //_DUST_RENDER_CAMERA_HPP_

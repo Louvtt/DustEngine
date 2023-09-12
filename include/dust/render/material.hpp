@@ -2,10 +2,10 @@
 #define _DUST_RENDER_MATERIAL_HPP_
 
 #include "../core/types.hpp"
-#include "shader.hpp"
-#include "texture.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
 
 namespace dust {
 
@@ -17,19 +17,19 @@ constexpr u32 MAX_MATERIAL_TEXTURE_COUNT = 4;
 /**
  * @brief Base Material Class
  */
-class Material
-{
+class Material {
 protected:
     u32 m_boundSlot;
     std::string m_name;
-    
+
     inline static Shader *s_shader = nullptr;
+
 public:
     Material();
     virtual ~Material() = default;
 
     virtual void bind(u32 slot = 0) = 0;
-    virtual void unbind() = 0;
+    virtual void unbind()           = 0;
 
     void setName(const std::string &name);
     std::string getName() const;
@@ -37,10 +37,7 @@ public:
 using MaterialPtr  = Ref<Material>;
 using MaterialUPtr = Scope<Material>;
 
-
-class ColorMaterial
-: public Material
-{
+class ColorMaterial : public Material {
 public:
     glm::vec3 color;
 
@@ -51,12 +48,10 @@ public:
 
     void bind(u32 slot = 0) override;
     void unbind() override;
-    static void SetupMaterialShader(Shader* shader);
+    static void SetupMaterialShader(Shader *shader);
 };
 
-class TextureMaterial
-: public Material
-{
+class TextureMaterial : public Material {
 public:
     TexturePtr texture;
 
@@ -66,12 +61,10 @@ public:
 
     void bind(u32 slot = 0) override;
     void unbind() override;
-    static void SetupMaterialShader(Shader* shader);
+    static void SetupMaterialShader(Shader *shader);
 };
 
-class PBRMaterial
-: public Material
-{
+class PBRMaterial : public Material {
 public:
     // Data
     // glm::vec3 albedo;
@@ -97,10 +90,10 @@ public:
 
     void bind(u32 slot = 0) override;
     void unbind() override;
-    static void SetupMaterialShader(Shader* shader);
+    static void SetupMaterialShader(Shader *shader);
 };
 
-}
-}
+}  // namespace render
+}  // namespace dust
 
-#endif //_DUST_RENDER_MATERIAL_HPP_
+#endif  //_DUST_RENDER_MATERIAL_HPP_

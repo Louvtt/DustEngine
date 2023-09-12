@@ -14,7 +14,7 @@ class Framebuffer
 public:
     enum class AttachmentType : u16 {
         /// Color attachment
-        COLOR, COLOR_RGBA, COLOR_SRGB,
+        COLOR, COLOR_RGBA, COLOR_SRGB, COLOR_HDR,
         /// Depth attachment
         DEPTH, DEPTH32, 
         /// Stencil attachment

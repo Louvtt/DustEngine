@@ -11,12 +11,12 @@
 
 #pragma region "OpenGL Utils"
 
-#define GLCASETOSTR(name) case name: return #name;
+#define GLCASETOSTR(name)                                                      \
+    case name:                                                                 \
+        return #name;
 
-const char* getGLSourceStr(GLenum _source)
-{
-    switch(_source)
-    {
+const char *getGLSourceStr(GLenum _source) {
+    switch (_source) {
         GLCASETOSTR(GL_DEBUG_SOURCE_API)
         GLCASETOSTR(GL_DEBUG_SOURCE_APPLICATION)
         GLCASETOSTR(GL_DEBUG_SOURCE_OTHER)
@@ -27,10 +27,8 @@ const char* getGLSourceStr(GLenum _source)
     return "GL_DEBUG_SOURCE_UNKNOWN";
 }
 
-const char* getGLTypeStr(GLenum _type)
-{
-    switch(_type)
-    {
+const char *getGLTypeStr(GLenum _type) {
+    switch (_type) {
         GLCASETOSTR(GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)
         GLCASETOSTR(GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
         GLCASETOSTR(GL_DEBUG_TYPE_ERROR)
@@ -44,10 +42,8 @@ const char* getGLTypeStr(GLenum _type)
     return "GL_DEBUG_TYPE_UNKNOWN";
 }
 
-const char* getGLSeverityStr(GLenum _severity) 
-{
-    switch(_severity)
-    {
+const char *getGLSeverityStr(GLenum _severity) {
+    switch (_severity) {
         GLCASETOSTR(GL_DEBUG_SEVERITY_LOW)
         GLCASETOSTR(GL_DEBUG_SEVERITY_MEDIUM)
         GLCASETOSTR(GL_DEBUG_SEVERITY_HIGH)
@@ -57,10 +53,8 @@ const char* getGLSeverityStr(GLenum _severity)
     return "GL_SEVERITY_UNKNOWN";
 }
 
-const char* getGLIDStr(GLuint _id)
-{
-    switch(_id)
-    {
+const char *getGLIDStr(GLuint _id) {
+    switch (_id) {
         GLCASETOSTR(GL_INVALID_ENUM)
         GLCASETOSTR(GL_INVALID_FRAMEBUFFER_OPERATION)
         GLCASETOSTR(GL_INVALID_INDEX)
@@ -72,40 +66,33 @@ const char* getGLIDStr(GLuint _id)
 
 #undef GLCASETOSTR
 
-static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id, GLenum _severity, GLsizei _length, const GLchar* _message, const void* _userParam)
-{
-    if(_severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
-        DUST_INFO("[OpenGL] [{} | {}]({}): {}", 
-            getGLTypeStr(_type),
-            getGLSourceStr(_source),
-            getGLIDStr(_id), 
-            _message);
+static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id,
+                            GLenum _severity, GLsizei _length,
+                            const GLchar *_message, const void *_userParam) {
+    if (_severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+        DUST_INFO("[OpenGL] [{} | {}]({}): {}", getGLTypeStr(_type),
+                  getGLSourceStr(_source), getGLIDStr(_id), _message);
         return;
     }
-    
-    DUST_ERROR(
-        "[OpenGL] [{} | {} | {}]({}): {}",
-        getGLSeverityStr(_severity),
-        getGLTypeStr(_type),
-        getGLSourceStr(_source),
-        getGLIDStr(_id),
-        _message
-    );
+
+    DUST_ERROR("[OpenGL] [{} | {} | {}]({}): {}", getGLSeverityStr(_severity),
+               getGLTypeStr(_type), getGLSourceStr(_source), getGLIDStr(_id),
+               _message);
 }
 #pragma endregion
 
-dust::Renderer::Renderer(const dust::Window& window)
-{
+dust::Renderer::Renderer(const dust::Window &window) {
     DUST_PROFILE_SECTION("Renderer::Constructor");
     // init glad
-    if(!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
+    if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         DUST_ERROR("[Glad] Failed to load OpenGL");
         return;
     }
-    m_initialized      = true;
-    m_renderApiName    = (const char*)glGetString(GL_RENDERER);
-    m_renderApiVersion = (const char*)glGetString(GL_VERSION);
-    DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion, m_renderApiName);
+    m_initialized = true;
+    m_renderApiName = (const char *)glGetString(GL_RENDERER);
+    m_renderApiVersion = (const char *)glGetString(GL_VERSION);
+    DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion,
+              m_renderApiName);
     DUST_PROFILE_GPU_SETUP;
 
     // avoid skipping pixels
@@ -117,16 +104,15 @@ dust::Renderer::Renderer(const dust::Window& window)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    #ifdef _DEBUG
-        DUST_INFO("[OpengL] Set up debug message callback.");
-        glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback(glDebugCallback, nullptr);
+#ifdef _DEBUG
+    DUST_INFO("[OpengL] Set up debug message callback.");
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(glDebugCallback, nullptr);
 
-
-    #endif
-    if(!GLAD_GL_ARB_geometry_shader4)
-        DUST_WARN("Nsight will output errors. (GL_ARB_geometry_shader4 not supported)");
-    
+#endif
+    if (!GLAD_GL_ARB_geometry_shader4)
+        DUST_WARN("Nsight will output errors. (GL_ARB_geometry_shader4 not "
+                  "supported)");
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -137,108 +123,91 @@ dust::Renderer::Renderer(const dust::Window& window)
 
     // Query device driver informations
 
-    // const char* shading_version = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-    // DUST_DEBUG("[OpenGL] Shading Language version : {}", shading_version);
-    if(!ImGui_ImplOpenGL3_Init("#version 460 core")) {
+    // const char* shading_version = (const
+    // char*)glGetString(GL_SHADING_LANGUAGE_VERSION); DUST_DEBUG("[OpenGL]
+    // Shading Language version : {}", shading_version);
+    if (!ImGui_ImplOpenGL3_Init("#version 460 core")) {
         DUST_ERROR("[OpenGL][ImGui] Failed to load ImGui for OpenGL.");
     } else {
         DUST_INFO("[OpenGL][ImGui] Loaded ImGui for OpenGL.");
     }
 }
-dust::Renderer::~Renderer()
-{
+
+dust::Renderer::~Renderer() {
     DUST_PROFILE;
     ImGui_ImplOpenGL3_Shutdown();
     DUST_INFO("[Glad] Unloading OpenGL");
 }
 
-void dust::Renderer::newFrame()
-{
+void dust::Renderer::newFrame() {
     DUST_PROFILE_GPU("renderer new frame");
     clear();
     ImGui_ImplOpenGL3_NewFrame();
 }
 
-void dust::Renderer::clear(bool clearColor)
-{
+void dust::Renderer::clear(bool clearColor) {
     DUST_PROFILE_GPU("renderer clear");
     int clearBits = GL_STENCIL_BUFFER_BIT;
 
-    if(m_depthEnabled) {
+    if (m_depthEnabled) {
         clearBits |= GL_DEPTH_BUFFER_BIT;
     }
 
-    if(clearColor) {
+    if (clearColor) {
         clearBits |= GL_COLOR_BUFFER_BIT;
     }
 
     glClear(clearBits);
 }
 
-void dust::Renderer::endFrame()
-{
+void dust::Renderer::endFrame() {
     DUST_PROFILE_GPU("end frame");
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void dust::Renderer::setCulling(bool culling)
-{
+void dust::Renderer::setCulling(bool culling) {
     DUST_PROFILE_GPU("renderer set culling");
-    if(culling) {
-        glEnable(GL_CULL_FACE);   
+    if (culling) {
+        glEnable(GL_CULL_FACE);
     } else {
         glDisable(GL_CULL_FACE);
     }
 }
-void dust::Renderer::setCullFaces(bool back, bool front)
-{
+void dust::Renderer::setCullFaces(bool back, bool front) {
     DUST_PROFILE_GPU("renderer set cull face");
-    glCullFace(
-        back ?
-            (front ?
-                GL_FRONT_AND_BACK
-                : GL_BACK)
-            : (front ? 
-                GL_FRONT 
-                : GL_BACK)
-    );
+    glCullFace(back ? (front ? GL_FRONT_AND_BACK : GL_BACK)
+                    : (front ? GL_FRONT : GL_BACK));
 }
 
-void dust::Renderer::setClearColor(float r, float g, float b, float a)
-{
+void dust::Renderer::setClearColor(float r, float g, float b, float a) {
     DUST_PROFILE_GPU("renderer set clear color");
     glClearColor(r, g, b, a);
 }
-void dust::Renderer::setClearColor(glm::vec4 color)
-{
+void dust::Renderer::setClearColor(glm::vec4 color) {
     setClearColor(color.x, color.y, color.z, color.w);
 }
 
-void dust::Renderer::setDepthWrite(bool write)
-{
+void dust::Renderer::setDepthWrite(bool write) {
     DUST_PROFILE_GPU("renderer set depth write");
     glDepthMask(write);
 }
-void dust::Renderer::setDepthTest(bool test)
-{
+void dust::Renderer::setDepthTest(bool test) {
     DUST_PROFILE_GPU("renderer set depth test");
-    if(test) {
+    if (test) {
         glEnable(GL_DEPTH_TEST);
     } else {
         glDisable(GL_DEPTH_TEST);
     }
 }
 
-void dust::Renderer::resize(u32 width, u32 height)
-{
+void dust::Renderer::resize(u32 width, u32 height) {
     DUST_PROFILE_GPU("renderer resize");
     glViewport(0, 0, width, height);
 }
 
-void dust::Renderer::setDrawWireframe(bool wireframe)
-{
+void dust::Renderer::setDrawWireframe(bool wireframe) {
     DUST_PROFILE_GPU("renderer set wireframe");
-    if(wireframe) {
+    if (wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
