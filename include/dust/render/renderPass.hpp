@@ -28,10 +28,12 @@ public:
     Shader *getShader() const;
     Framebuffer *getFramebuffer() const;
 };
+using RenderPassPtr  = Ref<RenderPass>;
+using RenderPassUPtr = Scope<RenderPass>;
 
 class PostProcessPass : public RenderPass {
 private:
-    static const MeshPtr s_screenQuad;
+    static MeshPtr s_screenQuad;
 
 public:
     PostProcessPass(const RenderPassDesc &desc);
@@ -40,7 +42,9 @@ public:
     virtual void preRender() override;
     virtual void postRender() override;
 };
+using PostProcessPassPtr  = Ref<PostProcessPass>;
+using PostProcessPassUPtr = Scope<PostProcessPass>;
 
-} // namespace dust::render
+}  // namespace dust::render
 
-#endif //_DUST_RENDER_RENDERPASS_HPP_
+#endif  //_DUST_RENDER_RENDERPASS_HPP_

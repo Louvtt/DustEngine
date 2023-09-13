@@ -22,11 +22,13 @@ Framebuffer *RenderPass::getFramebuffer() const {
 }
 
 /********************************************************/
-const MeshPtr PostProcessPass::s_screenQuad =
-    Mesh::createPlane(glm::vec2{1.f}, true);
+MeshPtr PostProcessPass::s_screenQuad = nullptr;
 
 PostProcessPass::PostProcessPass(const RenderPassDesc &desc)
     : RenderPass(desc) {
+        if(s_screenQuad == nullptr) {
+            s_screenQuad = Mesh::createPlane(glm::vec2{1.f}, true);
+        }
 }
 
 void PostProcessPass::preRender() {

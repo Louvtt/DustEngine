@@ -31,6 +31,7 @@ dr::Attribute dr::Attribute::Color     {Float4};
 
 dr::Mesh::Mesh(void *vertexData, u32 vertexDataSize, u32 vertexCount, std::vector<u32> indices, std::vector<Attribute> attributes)
 : m_indexCount(indices.size()),
+m_renderID(0),
 m_vertexCount(vertexCount),
 m_materialSlots(),
 m_name(),
