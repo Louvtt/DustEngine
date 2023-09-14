@@ -89,7 +89,7 @@ public:
         getWindow()->setVSync(false);
 
         const auto shader =
-            render::Shader::LoadFromFile("assets/shader.vert", "assets/shader.frag");
+            render::PackedShader::LoadFromFile("assets/pbr.glsl");
         if (!shader.has_value()) {
             DUST_ERROR("Exiting ... PBR Shader missing");
             exit(EXIT_FAILURE);
@@ -260,15 +260,15 @@ public:
                             if (ImGui::TreeNode(matName.c_str())) {
                                 render::PBRMaterial *m = (render::PBRMaterial *)mat.get();
                                 ImGui::ColorEdit3("Albedo", glm::value_ptr(m->albedo));
-                                ImGui::ColorEdit3("IOR", glm::value_ptr(m->ior));
                                 ImGui::SliderFloat("Roughness", &(m->roughness), 0.0f, 1.0f);
                                 ImGui::SliderFloat("Metallic", &(m->metallic), 0.0f, 1.0f);
+                                ImGui::SliderFloat("AO", &(m->ao), 0.0f, 1.0f);
                                 if (ImGui::TreeNode("Textures")) {
                                     ImGui::TextureLabelled("Albedo", m->albedoTexture.get());
                                     ImGui::TextureLabelled("Normal", m->normalTexture.get());
-                                    ImGui::TextureLabelled("Emissive", m->emissivityTexture.get());
-                                    ImGui::TextureLabelled("Reflectivity",
-                                                           m->reflectanceTexture.get());
+                                    ImGui::TextureLabelled("Metalness", m->metallicTexture.get());
+                                    ImGui::TextureLabelled("Roughness", m->roughnessTexture.get());
+                                    ImGui::TextureLabelled("AO", m->aoTexture.get());
                                     ImGui::TreePop();
                                 }
                                 ImGui::TreePop();

@@ -47,6 +47,7 @@ uniform light_t uLights[10];
 
 uniform sampler2D uEnvironnmentMap;
 uniform vec3 uViewPos;
+uniform float uExposure;
 
 /***********************************************/
 // Input
@@ -202,7 +203,8 @@ vec3 PBR(vec3 V, vec3 N, vec3 L, vec3 H)
     vec3 F90 = vec3(min(1.60, luminance(F0)));
     vec3 F  = F(F0, F90, V, N);
 
-    return ((vec3(1) - F) * diffuse + specular);
+    vec3 emissive = vec3(0.0); //texture(uMaterials[int(fs_in.matID)].texEmissive, fs_in.texCoord);
+    return ((vec3(1) - F) * diffuse + specular) + emissive;
 }
 
 /***********************************************/
@@ -225,4 +227,15 @@ void main() {
 
     vec3 result = PBR(viewDir, normal, lightDir, halfView);
     fragColor = vec4(result, 1.0);
+
+    // tonemapping
+    const float gamma = 2.2;
+    vec3 hdrColor = fragColor.xyz;
+  
+    // exposure tone mapping
+    vec3 mapped = vec3(1.0) - exp(-hdrColor * uExposure);
+    // gamma correction 
+    mapped = pow(mapped, vec3(1.0 / gamma));
+    // output
+    fragColor = vec4(mapped, fragColor.a);
 }

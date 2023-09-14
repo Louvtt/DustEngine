@@ -12,7 +12,7 @@ namespace dust {
 namespace render {
 
 /** @brief Max number of textures a material bind */
-constexpr u32 MAX_MATERIAL_TEXTURE_COUNT = 4;
+constexpr u32 MAX_MATERIAL_TEXTURE_COUNT = 5;
 
 /**
  * @brief Base Material Class
@@ -70,19 +70,18 @@ public:
     // glm::vec3 albedo;
     // f32 roughness;
     // TexturePtr albedoTexture;
-    // TexturePtr metallicTexture;
-    // TexturePtr roughnessTexture;
     // TexturePtr normalTexture;
 
     glm::vec3 albedo;
-    TexturePtr albedoTexture;
-    TexturePtr emissivityTexture;
-    TexturePtr normalTexture;
     f32 metallic;
     f32 roughness;
-    // TexturePtr roughnessTexture;
-    glm::vec3 ior;
-    TexturePtr reflectanceTexture;
+    f32 ao;
+
+    TexturePtr albedoTexture;
+    TexturePtr normalTexture;
+    TexturePtr metallicTexture;
+    TexturePtr roughnessTexture;
+    TexturePtr aoTexture;
 
 public:
     PBRMaterial();

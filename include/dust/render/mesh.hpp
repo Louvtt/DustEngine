@@ -14,7 +14,7 @@
 /**
  * @brief Number of materials slots per mesh
  */
-#define DUST_MATERIAL_SLOTS 8
+#define DUST_MATERIAL_SLOTS 6
 #endif
 
 namespace dust {

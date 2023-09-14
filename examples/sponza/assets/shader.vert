@@ -37,5 +37,5 @@ void main() {
     // Normal mapping matrix (TBN)
     vec3 biTangent = cross(vs_out.normal, vs_out.tangent);
     // TBN [Tangent Bitangent Normal] matrix
-    vs_out.TBN = transpose(mat3(vs_out.tangent, biTangent, vs_out.normal));
+    vs_out.TBN = mat3(vs_out.tangent, biTangent, vs_out.normal);
 }
