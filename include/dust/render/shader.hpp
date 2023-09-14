@@ -211,6 +211,7 @@ using ShaderUPtr = Scope<Shader>;
 class PackedShader : public Shader {
 private:
     std::string m_filePath;
+    PackedShader();
 public:
     /**
      * @brief Construct a new Packed Shader Program
@@ -224,7 +225,7 @@ public:
 
     /**
      * @brief Load a shader from one file, fragment and shader must be declared with 
-     * `#shader <type>` with `type` either "fragment" or "vertex".
+     * `#pragma shader <type>` with `type` either "fragment" or "vertex".
      * 
      * @param path path of the file
      * @return Result<Ref<Shader>> The loaded shader from path (if found)

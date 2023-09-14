@@ -261,10 +261,13 @@ void dr::Shader::queryActiveUniforms(u32 program) {
 /*************************************/
 // Packed Shader
 
-#define _DUST_PACKED_SHADER_TYPE_SYMBOL_ "#shader"
-#define _DUST_PACKED_SHADER_VERSION_SYMBOL_ "#version"
+#define _DUST_PACKED_SHADER_PRAGMA_SYMBOL_         "#pragma"
+#define _DUST_PACKED_SHADER_VERTEX_TYPE_SYMBOL_    "vertex_shader"
+#define _DUST_PACKED_SHADER_FRAGMENT_TYPE_SYMBOL_  "fragment_shader"
+#define _DUST_PACKED_SHADER_VERSION_SYMBOL_        "#version"
 
-dr::PackedShader::PackedShader(const std::string &code) : Shader() { reload(); }
+dr::PackedShader::PackedShader() : Shader() { }
+dr::PackedShader::PackedShader(const std::string &code) : PackedShader() { reload(); }
 
 void dr::PackedShader::reload() {
     DUST_PROFILE_SECTION("PackedShader::reload");
@@ -272,7 +275,7 @@ void dr::PackedShader::reload() {
     if (result.has_value()) {
         auto [vertCode, fragCode] = processCode(result.value());
         u32 reloadedShaderID = internalCreate(vertCode, fragCode);
-        if (reloadedShaderID != 0 && m_renderID == 0) {
+        if (reloadedShaderID != 0) {
             glUseProgram(0);
             glDeleteProgram(m_renderID);
             m_renderID = reloadedShaderID;
@@ -285,8 +288,9 @@ dust::Result<Ref<dr::PackedShader>> dr::PackedShader::LoadFromFile(const std::st
     // read file
     const auto &result = dust::io::LoadFile(path);
     if (result.has_value()) {
-        auto res        = createRef<dr::PackedShader>(result.value());
+        auto res        = Ref<dr::PackedShader>(new dr::PackedShader());
         res->m_filePath = path;
+        res->reload();
         return res;
     }
     return {};
@@ -295,51 +299,67 @@ dust::Result<Ref<dr::PackedShader>> dr::PackedShader::LoadFromFile(const std::st
 std::tuple<std::string, std::string>
 dr::PackedShader::processCode(const std::string &code)
 {
+    if(code.size() == 0) {
+        DUST_ERROR("[PackedShader] {} is an empty file.", m_filePath);
+        return {};
+    }
+
     std::string versionString,
                 vertCode,
                 fragCode;
     bool isVertexCode = false, write = false;
 
-    std::size_t previousPos = 0;
-    std::size_t pos;
+    std::istringstream iss(code);
     std::string line;
-    while((pos = code.find_first_of('\n', pos)) != std::string::npos) {
-        line = code.substr(previousPos, pos - previousPos);
-        previousPos = pos;
-
+    while (std::getline(iss, line, '\n')) {
+        if(line.empty()) continue;
         // parse line
         switch(line.at(0)) {
             case '#':
             {
                 const auto processor = line.substr(0,line.find_first_of(' '));
-                if(processor == _DUST_PACKED_SHADER_TYPE_SYMBOL_) {
-                    std::size_t valueBegin = line.find_first_of(' ');
-                    const auto shaderType = line.substr(valueBegin, line.find_first_of(' ', valueBegin));
-                    if(shaderType == "fragment") {
-                        write = true;
-                        isVertexCode = false;
-                    } else if(shaderType == "vertex") {
+                // #pragma
+                if(processor == _DUST_PACKED_SHADER_PRAGMA_SYMBOL_) {
+                    std::size_t pragmaTypeBegin = line.find_first_of(' ') + 1;
+                    const auto pragmaType = line.substr(pragmaTypeBegin);
+                    DUST_DEBUG("[PackedShader] Found #pragma symbol with value {}", pragmaType);
+                    if(pragmaType == _DUST_PACKED_SHADER_VERTEX_TYPE_SYMBOL_) {
                         write = true;
                         isVertexCode = true;
-                    } else {
-                        DUST_ERROR("[PackedShader] Unknown type for #shader.");
-                        write = false;
+                        DUST_DEBUG("[PackedShader] Found vertex string");
+                    } else if(pragmaType == _DUST_PACKED_SHADER_FRAGMENT_TYPE_SYMBOL_) {
+                        write = true;
+                        isVertexCode = false;
+                        DUST_DEBUG("[PackedShader] Found fragment string");
                     }
-                } else if(processor == _DUST_PACKED_SHADER_VERSION_SYMBOL_) {
-                    versionString = line;
+                }
+                // #version 
+                else if(processor == _DUST_PACKED_SHADER_VERSION_SYMBOL_) {
+                    versionString = line + '\n';
+                    DUST_DEBUG("[PackedShader] Found version string: {}.", versionString);
+                }
+                // #define and everything else
+                else {
+                    if(write) {
+                        if(isVertexCode) {
+                            vertCode += line + '\n';
+                        } else {
+                            fragCode += line + '\n';
+                        }
+                    } 
                 }
                 break;
             }
             default:
                 if(write) {
                     if(isVertexCode) {
-                        vertCode += line;
+                        vertCode += line + '\n';
                     } else {
-                        fragCode += line;
+                        fragCode += line + '\n';
                     }
                 }
                 break;
-        }
+        } 
     }
 
     // Check if well formed packed shader
