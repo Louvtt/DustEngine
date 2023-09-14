@@ -1,88 +1,87 @@
 #include "dust/render/renderer.hpp"
+
 #include "dust/core/log.hpp"
 #include "dust/core/profiling.hpp"
 #include "dust/render/renderAPI.hpp"
 
-#include "GLFW/glfw3.h"
-#include "backends/imgui_impl_opengl3.h"
-
-#include "tracy/Tracy.hpp"
-#include "tracy/TracyOpenGL.hpp"
+#include <GLFW/glfw3.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <tracy/Tracy.hpp>
+#include <tracy/TracyOpenGL.hpp>
 
 #pragma region "OpenGL Utils"
 
 const char *getGLSourceStr(GLenum _source) {
     switch (_source) {
-        case GL_DEBUG_SOURCE_API:             return "[API]";
-        case GL_DEBUG_SOURCE_APPLICATION:     return "[Application]";
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: return "[ShaderCompiler]";
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     return "[ThirdParty]";
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   return "[WindowSystem]";
-        case GL_DEBUG_SOURCE_OTHER:           return "[Other]";
+    case GL_DEBUG_SOURCE_API: return "[API]";
+    case GL_DEBUG_SOURCE_APPLICATION: return "[Application]";
+    case GL_DEBUG_SOURCE_SHADER_COMPILER: return "[ShaderCompiler]";
+    case GL_DEBUG_SOURCE_THIRD_PARTY: return "[ThirdParty]";
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "[WindowSystem]";
+    case GL_DEBUG_SOURCE_OTHER: return "[Other]";
     }
     return "[Unknown]";
 }
 
 const char *getGLTypeStr(GLenum _type) {
     switch (_type) {
-        case GL_DEBUG_TYPE_ERROR:               return "Error";
-        case GL_DEBUG_TYPE_MARKER:              return "Marker";
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "Undefined Behavior";
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated Behavior";
-        case GL_DEBUG_TYPE_PERFORMANCE:         return "Performance";
-        case GL_DEBUG_TYPE_PUSH_GROUP:          return "Push Group";
-        case GL_DEBUG_TYPE_POP_GROUP:           return "Pop Group";
-        case GL_DEBUG_TYPE_PORTABILITY:         return "Portability";
-        case GL_DEBUG_TYPE_OTHER:               return "Other";
+    case GL_DEBUG_TYPE_ERROR: return "Error";
+    case GL_DEBUG_TYPE_MARKER: return "Marker";
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "Undefined Behavior";
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated Behavior";
+    case GL_DEBUG_TYPE_PERFORMANCE: return "Performance";
+    case GL_DEBUG_TYPE_PUSH_GROUP: return "Push Group";
+    case GL_DEBUG_TYPE_POP_GROUP: return "Pop Group";
+    case GL_DEBUG_TYPE_PORTABILITY: return "Portability";
+    case GL_DEBUG_TYPE_OTHER: return "Other";
     }
     return "Unknown";
 }
 
 const char *getGLSeverityStr(GLenum _severity) {
     switch (_severity) {
-        case GL_DEBUG_SEVERITY_LOW:            return "(Low)";
-        case GL_DEBUG_SEVERITY_MEDIUM:         return "(Medium)";
-        case GL_DEBUG_SEVERITY_HIGH:           return "(High)";
-        case GL_DEBUG_SEVERITY_NOTIFICATION:   return "(Notification)";
+    case GL_DEBUG_SEVERITY_LOW: return "(Low)";
+    case GL_DEBUG_SEVERITY_MEDIUM: return "(Medium)";
+    case GL_DEBUG_SEVERITY_HIGH: return "(High)";
+    case GL_DEBUG_SEVERITY_NOTIFICATION: return "(Notification)";
     }
     return "(Unknown)";
 }
 
 const char *getGLIDStr(GLuint _id) {
     switch (_id) {
-        case GL_INVALID_ENUM:                   return "Invalid Enum";
-        case GL_INVALID_FRAMEBUFFER_OPERATION:  return "Invalid Framebuffer Operation";
-        case GL_INVALID_INDEX:                  return "Invalid Index";
-        case GL_INVALID_OPERATION:              return "Invalid Operation";
-        case GL_INVALID_VALUE:                  return "Invalid Value";
+    case GL_INVALID_ENUM: return "Invalid Enum";
+    case GL_INVALID_FRAMEBUFFER_OPERATION: return "Invalid Framebuffer Operation";
+    case GL_INVALID_INDEX: return "Invalid Index";
+    case GL_INVALID_OPERATION: return "Invalid Operation";
+    case GL_INVALID_VALUE: return "Invalid Value";
     }
     return "Unknown";
 }
 
 #define GL_CALLBACK_MESSAGE_FORMAT "[OpenGL]{} received {} with {}: {}"
-static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id,
-                            GLenum _severity, GLsizei _length,
-                            const GLchar *_message, const void *_userParam) {
+static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id, GLenum _severity,
+                            GLsizei _length, const GLchar *_message, const void *_userParam) {
     // ignore some callbacks (drivers specifics)
-    if(_id == 131169 || _id == 131185 || _id == 131218 || _id == 131204) return; 
+    if (_id == 131169 || _id == 131185 || _id == 131218 || _id == 131204) return;
 
-    switch(_severity) {
-        case GL_DEBUG_SEVERITY_NOTIFICATION: 
-            DUST_DEBUG(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
-                getGLTypeStr(_type),  getGLIDStr(_id), _message);
-            break;
-        case GL_DEBUG_SEVERITY_LOW:
-            DUST_INFO(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
-                getGLTypeStr(_type),  getGLIDStr(_id), _message);
-            break;
-        case GL_DEBUG_SEVERITY_MEDIUM:
-            DUST_WARN(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
-                getGLTypeStr(_type),  getGLIDStr(_id), _message);
-            break;
-        case GL_DEBUG_SEVERITY_HIGH:
-            DUST_ERROR(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
-                getGLTypeStr(_type),  getGLIDStr(_id), _message);
-            break;
+    switch (_severity) {
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        DUST_DEBUG(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source), getGLTypeStr(_type),
+                   getGLIDStr(_id), _message);
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        DUST_INFO(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source), getGLTypeStr(_type),
+                  getGLIDStr(_id), _message);
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        DUST_WARN(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source), getGLTypeStr(_type),
+                  getGLIDStr(_id), _message);
+        break;
+    case GL_DEBUG_SEVERITY_HIGH:
+        DUST_ERROR(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source), getGLTypeStr(_type),
+                   getGLIDStr(_id), _message);
+        break;
     }
 }
 #pragma endregion
@@ -94,11 +93,10 @@ dust::Renderer::Renderer(const dust::Window &window) {
         DUST_ERROR("[Glad] Failed to load OpenGL");
         return;
     }
-    m_initialized = true;
-    m_renderApiName = (const char *)glGetString(GL_RENDERER);
+    m_initialized      = true;
+    m_renderApiName    = (const char *)glGetString(GL_RENDERER);
     m_renderApiVersion = (const char *)glGetString(GL_VERSION);
-    DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion,
-              m_renderApiName);
+    DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion, m_renderApiName);
     DUST_PROFILE_GPU_SETUP;
 
     // avoid skipping pixels
@@ -186,8 +184,7 @@ void dust::Renderer::setCulling(bool culling) {
 }
 void dust::Renderer::setCullFaces(bool back, bool front) {
     DUST_PROFILE_GPU("renderer set cull face");
-    glCullFace(back ? (front ? GL_FRONT_AND_BACK : GL_BACK)
-                    : (front ? GL_FRONT : GL_BACK));
+    glCullFace(back ? (front ? GL_FRONT_AND_BACK : GL_BACK) : (front ? GL_FRONT : GL_BACK));
 }
 
 void dust::Renderer::setClearColor(float r, float g, float b, float a) {

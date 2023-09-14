@@ -8,6 +8,8 @@ AllowShortFunctionsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 
+# Operators
+
 AlignArrayOfStructures: None
 AlignConsecutiveAssignments:
   Enabled: true
@@ -15,21 +17,37 @@ AlignConsecutiveAssignments:
   AcrossComments: false
   AlignCompound: true
   PadOperators: true
-
+BreakBeforeTernaryOperators: true
 AlignOperands: AlignAfterOperator
+
+# Switch / Case
+
+AllowShortCaseLabelsOnASingleLine: true
+# clang 17
+# AlignConsecutiveShortCaseStatements:
+#   Enabled: true
+#   AlignCaseColons: false
+#   AcrossComments: true
+#   AcrossEmptyLines: true
+
+# Brackets
 
 AlignAfterOpenBracket: true
 Cpp11BracedListStyle: true
 ObjCBreakBeforeNestedBlockParam: true
+BreakArrays: false
+
 
 # Preprocessor
 SortIncludes: true
 IncludeBlocks: Regroup
 IndentPPDirectives: AfterHash
+AlignEscapedNewlines: true
 
 # Classes
 AccessModifierOffset: -4
 IndentAccessModifiers: false
+EmptyLineBeforeAccessModifier: LogicalBlock
 
 # Namespaces
 NamespaceIndentation: None
