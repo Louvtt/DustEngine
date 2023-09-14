@@ -117,7 +117,7 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
         ai_real factor;
         aiColor4D color;
 
-        // ALBEDO
+        // albedo
         if(material->GetTexture(aiTextureType_DIFFUSE, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
             const auto texture = dio::LoadTexture2D(texPath);
@@ -129,37 +129,6 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
             mat->albedo = {color.r, color.g, color.b};
         }
 
-        // ?
-        if(material->GetTexture(aiTextureType_REFLECTION, 0, &filePath) == AI_SUCCESS) {
-            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-             const auto texture = dio::LoadTexture2D(texPath);
-            if(texture.has_value()) {
-                mat->reflectanceTexture = texture.value();
-            }
-        }
-        // IOR
-        if(material->Get(AI_MATKEY_COLOR_REFLECTIVE, color) == aiReturn_SUCCESS) {
-            mat->ior = {color.r, color.g, color.b};
-        }
-
-        // Emission
-        if(material->GetTexture(aiTextureType_EMISSIVE, 0, &filePath) == AI_SUCCESS) {
-            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-            const auto texture = dio::LoadTexture2D(texPath);
-            if(texture.has_value()) {
-                mat->emissivityTexture = texture.value();
-            }
-        }
-        // Roughness
-        if(material->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == aiReturn_SUCCESS) {
-            mat->roughness = factor;
-        }
-
-        // Metallic
-        if(material->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS) {
-            mat->metallic = factor;
-        }
-
         // Normals
         if(material->GetTexture(aiTextureType_HEIGHT, 0, &filePath) == AI_SUCCESS) {
             const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
@@ -169,25 +138,44 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
             }
         }
 
+        // Roughness
+        if(material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &filePath) == AI_SUCCESS) {
+            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            const auto texture = dio::LoadTexture2D(texPath);
+            if(texture.has_value()) {
+                mat->roughnessTexture = texture.value();
+            }
+        }
+        if(material->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == aiReturn_SUCCESS) {
+            mat->roughness = factor;
+        }
+
+        // Metallic
+        if(material->GetTexture(aiTextureType_METALNESS, 0, &filePath) == AI_SUCCESS) {
+            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            const auto texture = dio::LoadTexture2D(texPath);
+            if(texture.has_value()) {
+                mat->metallicTexture = texture.value();
+            }
+        }
+        if(material->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS) {
+            mat->metallic = factor;
+        }
+
+        // AO
+        if(material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &filePath) == AI_SUCCESS) {
+            const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
+            const auto texture = dio::LoadTexture2D(texPath);
+            if(texture.has_value()) {
+                mat->aoTexture = texture.value();
+            }
+        }
+        mat->ao = 1.f;
+
+        // Name
         if(material->Get(AI_MATKEY_NAME, filePath) == AI_SUCCESS) {
             mat->setName(filePath.C_Str());
         }
-
-        // Clearcoat
-        /*
-        if(material->GetTexture(aiTextureType_CLEARCOAT, 0, &filePath) == AI_SUCCESS) {
-            // const dio::Path texPath = basePath / dio::Path(filePath.C_Str());
-            // const auto texture = dio::LoadTexture2D(texPath);
-            // if(texture.has_value()) {
-            //     // mat->clearCoatTexture = texture.value();
-            // }
-        }
-        // Transmission
-        // if(material->GetTexture(aiTextureType_TRANSMISSION, 0, &filePath) == AI_SUCCESS) {
-        // AO
-        // if(material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &filePath) == AI_SUCCESS) {
-        // ...
-        */
 
         materials.push_back(mat);
     }

@@ -92,13 +92,14 @@ void dr::TextureMaterial::unbind()
 
 dr::PBRMaterial::PBRMaterial()
 : albedo({1.f, 1.f, 1.f}),
-ior(0.f),
 roughness(0.f),
 metallic(0.f),
+ao(0.0),
 albedoTexture(Texture::GetNullTexture()),
-reflectanceTexture(Texture::GetNullTexture()),
-emissivityTexture(Texture::GetNullTexture()),
-normalTexture(Texture::GetNullTexture())
+normalTexture(Texture::GetNullTexture()),
+metallicTexture(Texture::GetNullTexture()),
+roughnessTexture(Texture::GetNullTexture()),
+aoTexture(Texture::GetNullTexture())
 {  }
 
 void dr::PBRMaterial::SetupMaterialShader(Shader *shader)
@@ -106,16 +107,18 @@ void dr::PBRMaterial::SetupMaterialShader(Shader *shader)
     DUST_PROFILE;
     s_shader = shader;
     static constexpr const char* albedoU      = "uMaterials[{}].texAlbedo";
-    static constexpr const char* emissiveU    = "uMaterials[{}].texEmissive";
-    static constexpr const char* reflectanceU = "uMaterials[{}].texReflectance";
     static constexpr const char* normalU      = "uMaterials[{}].texNormal";
+    static constexpr const char* metallicU    = "uMaterials[{}].texMetallic";
+    static constexpr const char* roughnessU   = "uMaterials[{}].texRoughness";
+    static constexpr const char* aoU          = "uMaterials[{}].texAO";
     for(int slot = 0; slot < DUST_MATERIAL_SLOTS; ++slot) {
         // textures
         const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
         s_shader->setUniform(std::format(albedoU     , slot), baseTextureBind + 0);
-        s_shader->setUniform(std::format(emissiveU   , slot), baseTextureBind + 1);
-        s_shader->setUniform(std::format(reflectanceU, slot), baseTextureBind + 2);
-        s_shader->setUniform(std::format(normalU     , slot), baseTextureBind + 3);
+        s_shader->setUniform(std::format(normalU     , slot), baseTextureBind + 1);
+        s_shader->setUniform(std::format(metallicU   , slot), baseTextureBind + 2);
+        s_shader->setUniform(std::format(roughnessU  , slot), baseTextureBind + 3);
+        s_shader->setUniform(std::format(aoU         , slot), baseTextureBind + 4);
     }
 }
 
@@ -132,22 +135,25 @@ void dr::PBRMaterial::bind(u32 slot)
     // textures
     const int baseTextureBind = slot * MAX_MATERIAL_TEXTURE_COUNT;
     albedoTexture->bind(baseTextureBind + 0);
-    emissivityTexture->bind(baseTextureBind + 1);
-    reflectanceTexture->bind(baseTextureBind + 2);
-    normalTexture->bind(baseTextureBind + 3);
+    normalTexture->bind(baseTextureBind + 1);
+    metallicTexture->bind(baseTextureBind + 2);
+    roughnessTexture->bind(baseTextureBind + 3);
+    aoTexture->bind(baseTextureBind + 4);
 
     // colors
     s_shader->setUniform(loc + ".albedo", albedo);
-    s_shader->setUniform(loc + ".ior", ior);
+    s_shader->setUniform(loc + ".metallic", metallic);
     s_shader->setUniform(loc + ".roughness", roughness);
+    s_shader->setUniform(loc + ".ao", ao);
 }
 void dr::PBRMaterial::unbind() 
 {
     const std::string loc = shaderMaterialLoc(m_boundSlot);
     // unbind textures
     albedoTexture->unbind();
-    reflectanceTexture->unbind();
-    emissivityTexture->unbind();
     normalTexture->unbind();
+    metallicTexture->unbind();
+    roughnessTexture->unbind();
+    aoTexture->unbind();
     s_shader->setUniform(loc + ".exist", false);
 }
