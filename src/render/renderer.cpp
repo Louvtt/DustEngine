@@ -11,66 +11,63 @@
 
 #pragma region "OpenGL Utils"
 
-#define GLCASETOSTR(name)                                                      \
-    case name:                                                                 \
-        return #name;
-
 const char *getGLSourceStr(GLenum _source) {
     switch (_source) {
-        GLCASETOSTR(GL_DEBUG_SOURCE_API)
-        GLCASETOSTR(GL_DEBUG_SOURCE_APPLICATION)
-        GLCASETOSTR(GL_DEBUG_SOURCE_OTHER)
-        GLCASETOSTR(GL_DEBUG_SOURCE_SHADER_COMPILER)
-        GLCASETOSTR(GL_DEBUG_SOURCE_THIRD_PARTY)
-        GLCASETOSTR(GL_DEBUG_SOURCE_WINDOW_SYSTEM)
+        case GL_DEBUG_SOURCE_API:             return "[API]";
+        case GL_DEBUG_SOURCE_APPLICATION:     return "[Application]";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: return "[ShaderCompiler]";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     return "[ThirdParty]";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   return "[WindowSystem]";
+        case GL_DEBUG_SOURCE_OTHER:           return "[Other]";
     }
-    return "GL_DEBUG_SOURCE_UNKNOWN";
+    return "[Unknown]";
 }
 
 const char *getGLTypeStr(GLenum _type) {
     switch (_type) {
-        GLCASETOSTR(GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)
-        GLCASETOSTR(GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
-        GLCASETOSTR(GL_DEBUG_TYPE_ERROR)
-        GLCASETOSTR(GL_DEBUG_TYPE_MARKER)
-        GLCASETOSTR(GL_DEBUG_TYPE_OTHER)
-        GLCASETOSTR(GL_DEBUG_TYPE_PERFORMANCE)
-        GLCASETOSTR(GL_DEBUG_TYPE_POP_GROUP)
-        GLCASETOSTR(GL_DEBUG_TYPE_PORTABILITY)
-        GLCASETOSTR(GL_DEBUG_TYPE_PUSH_GROUP)
+        case GL_DEBUG_TYPE_ERROR:               return "Error";
+        case GL_DEBUG_TYPE_MARKER:              return "Marker";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "Undefined Behavior";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated Behavior";
+        case GL_DEBUG_TYPE_PERFORMANCE:         return "Performance";
+        case GL_DEBUG_TYPE_PUSH_GROUP:          return "Push Group";
+        case GL_DEBUG_TYPE_POP_GROUP:           return "Pop Group";
+        case GL_DEBUG_TYPE_PORTABILITY:         return "Portability";
+        case GL_DEBUG_TYPE_OTHER:               return "Other";
     }
-    return "GL_DEBUG_TYPE_UNKNOWN";
+    return "Unknown";
 }
 
 const char *getGLSeverityStr(GLenum _severity) {
     switch (_severity) {
-        GLCASETOSTR(GL_DEBUG_SEVERITY_LOW)
-        GLCASETOSTR(GL_DEBUG_SEVERITY_MEDIUM)
-        GLCASETOSTR(GL_DEBUG_SEVERITY_HIGH)
-        GLCASETOSTR(GL_DEBUG_SEVERITY_NOTIFICATION)
-        GLCASETOSTR(GL_DONT_CARE)
+        case GL_DEBUG_SEVERITY_LOW:            return "(Low)";
+        case GL_DEBUG_SEVERITY_MEDIUM:         return "(Medium)";
+        case GL_DEBUG_SEVERITY_HIGH:           return "(High)";
+        case GL_DEBUG_SEVERITY_NOTIFICATION:   return "(Notification)";
     }
-    return "GL_SEVERITY_UNKNOWN";
+    return "(Unknown)";
 }
 
 const char *getGLIDStr(GLuint _id) {
     switch (_id) {
-        GLCASETOSTR(GL_INVALID_ENUM)
-        GLCASETOSTR(GL_INVALID_FRAMEBUFFER_OPERATION)
-        GLCASETOSTR(GL_INVALID_INDEX)
-        GLCASETOSTR(GL_INVALID_OPERATION)
-        GLCASETOSTR(GL_INVALID_VALUE)
+        case GL_INVALID_ENUM:
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+        case GL_INVALID_INDEX:
+        case GL_INVALID_OPERATION:
+        case GL_INVALID_VALUE:
     }
     return "GL_UNKNOWN";
 }
 
-#undef GLCASETOSTR
-
 static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id,
                             GLenum _severity, GLsizei _length,
                             const GLchar *_message, const void *_userParam) {
+
+    // ignore
+    if(_id == 131169 || _id == 131185 || _id == 131218 || _id == 131204) return; 
+
     if (_severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
-        DUST_INFO("[OpenGL] [{} | {}]({}): {}", getGLTypeStr(_type),
+        DUST_DEBUG("[OpenGL] [{} | {}]({}): {}", getGLTypeStr(_type),
                   getGLSourceStr(_source), getGLIDStr(_id), _message);
         return;
     }
@@ -104,15 +101,20 @@ dust::Renderer::Renderer(const dust::Window &window) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#ifdef _DEBUG
     DUST_INFO("[OpengL] Set up debug message callback.");
     glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(glDebugCallback, nullptr);
-
-#endif
+#ifdef _DEBUG
+    // show everything
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     if (!GLAD_GL_ARB_geometry_shader4)
         DUST_WARN("Nsight will output errors. (GL_ARB_geometry_shader4 not "
                   "supported)");
+#else
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DEBUG_SEVERITY_HIGH, 0,
+                          nullptr, GL_TRUE);
+#endif
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
