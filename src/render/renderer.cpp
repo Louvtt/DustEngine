@@ -50,31 +50,40 @@ const char *getGLSeverityStr(GLenum _severity) {
 
 const char *getGLIDStr(GLuint _id) {
     switch (_id) {
-        case GL_INVALID_ENUM:
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-        case GL_INVALID_INDEX:
-        case GL_INVALID_OPERATION:
-        case GL_INVALID_VALUE:
+        case GL_INVALID_ENUM:                   return "Invalid Enum";
+        case GL_INVALID_FRAMEBUFFER_OPERATION:  return "Invalid Framebuffer Operation";
+        case GL_INVALID_INDEX:                  return "Invalid Index";
+        case GL_INVALID_OPERATION:              return "Invalid Operation";
+        case GL_INVALID_VALUE:                  return "Invalid Value";
     }
-    return "GL_UNKNOWN";
+    return "Unknown";
 }
 
+#define GL_CALLBACK_MESSAGE_FORMAT "[OpenGL]{} received {} with {}: {}"
 static void glDebugCallback(GLenum _source, GLenum _type, GLuint _id,
                             GLenum _severity, GLsizei _length,
                             const GLchar *_message, const void *_userParam) {
-
-    // ignore
+    // ignore some callbacks (drivers specifics)
     if(_id == 131169 || _id == 131185 || _id == 131218 || _id == 131204) return; 
 
-    if (_severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
-        DUST_DEBUG("[OpenGL] [{} | {}]({}): {}", getGLTypeStr(_type),
-                  getGLSourceStr(_source), getGLIDStr(_id), _message);
-        return;
+    switch(_severity) {
+        case GL_DEBUG_SEVERITY_NOTIFICATION: 
+            DUST_DEBUG(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
+                getGLTypeStr(_type),  getGLIDStr(_id), _message);
+            break;
+        case GL_DEBUG_SEVERITY_LOW:
+            DUST_INFO(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
+                getGLTypeStr(_type),  getGLIDStr(_id), _message);
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            DUST_WARN(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
+                getGLTypeStr(_type),  getGLIDStr(_id), _message);
+            break;
+        case GL_DEBUG_SEVERITY_HIGH:
+            DUST_ERROR(GL_CALLBACK_MESSAGE_FORMAT, getGLSourceStr(_source),
+                getGLTypeStr(_type),  getGLIDStr(_id), _message);
+            break;
     }
-
-    DUST_ERROR("[OpenGL] [{} | {} | {}]({}): {}", getGLSeverityStr(_severity),
-               getGLTypeStr(_type), getGLSourceStr(_source), getGLIDStr(_id),
-               _message);
 }
 #pragma endregion
 

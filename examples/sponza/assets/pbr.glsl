@@ -187,6 +187,7 @@ void main() {
     albedo = pow(albedo, vec3(gamma)); // HDR
     float metallic  = texture(uMaterials[int(fs_in.matID)].texMetallic,  fs_in.texCoord).r   * uMaterials[int(fs_in.matID)].metallic  ;
     float roughness = texture(uMaterials[int(fs_in.matID)].texRoughness, fs_in.texCoord).r   * uMaterials[int(fs_in.matID)].roughness ;
+    roughness *= roughness;
     float ao        = texture(uMaterials[int(fs_in.matID)].texAO,        fs_in.texCoord).r   * uMaterials[int(fs_in.matID)].ao        ;
 
     // Calculate lights
