@@ -85,11 +85,11 @@ public:
         m_sun.updateRenderPos();
         getWindow()->setVSync(false);
 
-        const auto sceneShader = render::Shader::loadFromFile("assets/shader.vert", "assets/shader.frag");
+        const auto sceneShader = render::Shader::LoadFromFile("assets/shader.vert", "assets/shader.frag");
         if(!sceneShader.has_value()) exit(EXIT_FAILURE);
         m_sceneShader = sceneShader.value();
 
-        const auto shadowShader = render::Shader::loadFromFile("assets/depth.vert", "assets/depth.frag");
+        const auto shadowShader = render::Shader::LoadFromFile("assets/depth.vert", "assets/depth.frag");
         if(!shadowShader.has_value()) exit(EXIT_FAILURE);
         m_shadowShader = shadowShader.value();
 
