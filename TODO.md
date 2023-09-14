@@ -48,14 +48,16 @@
     - [x] Optimized Mesh batching by Material
         - [x] Mesh materials slots
     - [ ] Mesh Instancing
+    - [ ] More mesh batching using `glMultiDrawArrays`
 - [x] Material
     - [x] TextureMaterial
-    - [~] PBRMaterial 
+    - [x] PBRMaterial + PBR Shader
 - [x] Shader
     - [x] Basic Shader
     - [x] Loading Shaders
     - [x] Uniforms decoding and setting (avoid calling getUniformLocation each setUniform)
     - [x] Reloading (must be called explictly)
+    - [x] PackedShader (one file shader)
 - [x] Texture
     - [x] Texture loading (stb_image)
     - [x] Texture .dds loading
