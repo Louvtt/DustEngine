@@ -42,7 +42,7 @@ m_height(height)
     {
         DUST_PROFILE_SECTION("Window::GLFWwindow Creation");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         #ifndef __MACOSX__
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // render doc need it
         #endif

@@ -1,16 +1,20 @@
 #version 460 core
 out vec4 fragColor;
 
-struct uMaterial_t {
-    sampler2D diffuseTexture;
+/***********************************************/
+// Materials
+
+struct material_t {
+    bool exist;
+    vec4 ambient;
+
     bool hasDiffuse;
     vec4 diffuse;
-    vec4 ambient;
     vec4 specular;
-    float shininess;
 };
-uniform bool uHasMaterial;
-uniform uMaterial_t uMaterial;
+uniform material_t uMaterials[1];
+
+/***********************************************/
 
 in VS_OUT {
     vec3 fragPos;
@@ -43,7 +47,8 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 }
 
 void main() {
-    if(!uHasMaterial) {
+    material_t uMaterial = uMaterials[0];
+    if(!uMaterial.exist) {
         fragColor = vec4(1, 0, 1, 1);
         return;
     }
@@ -54,11 +59,11 @@ void main() {
     vec3 lightDir = uLightDir;
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = uLightColor.rgb * (diff * uMaterial.diffuse.rgb);
-    if(uMaterial.hasDiffuse) {
-        vec4 col = texture(uMaterial.diffuseTexture, fs_in.texCoord);
-        if(col.a < 0.5) discard;
-        diffuse *= col.rgb;
-    }
+    // if(uMaterial.hasDiffuse) {
+    //     vec4 col = texture(uMaterial.diffuseTexture, fs_in.texCoord);
+    //     if(col.a < 0.5) discard;
+    //     diffuse *= col.rgb;
+    // }
     
     // specular
     vec3 viewDir = normalize(uViewPos - fs_in.fragPos);

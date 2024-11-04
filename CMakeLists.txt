@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 project(DustEngine
     VERSION 0.0.1
     DESCRIPTION "A c++ opengl engine"
-    LANGUAGES CXX C    
+    LANGUAGES CXX C
 )
 
 option(DustEngine_BUILD_EXAMPLES "Build the engine examples" ON)

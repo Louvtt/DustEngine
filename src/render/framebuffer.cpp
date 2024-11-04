@@ -65,15 +65,13 @@ inline constexpr static u32 getGLFormat(const drf::AttachmentType &type) {
 inline constexpr static u32 getGLInternalFormat(const drf::AttachmentType &type) {
     switch (type) {
     case drf::AttachmentType::DEPTH:
-        return GL_DEPTH_COMPONENT;
+        return GL_DEPTH_COMPONENT24;
     case drf::AttachmentType::DEPTH32:
         return GL_DEPTH_COMPONENT32F;
 
     case drf::AttachmentType::STENCIL:
-        return GL_DEPTH_STENCIL;
-
     case drf::AttachmentType::DEPTH_STENCIL:
-        return GL_DEPTH_STENCIL;
+        return GL_DEPTH24_STENCIL8;
     case drf::AttachmentType::DEPTH32_STENCIL:
         return GL_DEPTH32F_STENCIL8;
 
@@ -90,27 +88,29 @@ inline constexpr static u32 getGLInternalFormat(const drf::AttachmentType &type)
 
 inline constexpr static u32 getGLType(const drf::AttachmentType &type) {
     switch (type) {
-    case drf::AttachmentType::DEPTH:
-        return GL_FLOAT;
-    case drf::AttachmentType::DEPTH32:
-        return GL_DOUBLE;
+        case drf::AttachmentType::DEPTH:
+            return GL_FLOAT;
+        case drf::AttachmentType::DEPTH32:
+            return GL_DOUBLE;
 
-    case drf::AttachmentType::STENCIL:
-        return GL_UNSIGNED_BYTE;
+        case drf::AttachmentType::STENCIL:
+            return GL_UNSIGNED_BYTE;
 
-    case drf::AttachmentType::DEPTH_STENCIL:
-        return GL_FLOAT;
-    case drf::AttachmentType::DEPTH32_STENCIL:
-        return GL_DOUBLE;
+        case drf::AttachmentType::DEPTH_STENCIL:
+            return GL_FLOAT;
+        case drf::AttachmentType::DEPTH32_STENCIL:
+            return GL_DOUBLE;
 
-    case drf::AttachmentType::COLOR:
-        return GL_UNSIGNED_BYTE;
-    case drf::AttachmentType::COLOR_RGBA:
-        return GL_UNSIGNED_BYTE;
-    case drf::AttachmentType::COLOR_SRGB:
-        return GL_UNSIGNED_BYTE;
-    case drf::AttachmentType::COLOR_HDR:
-        return GL_FLOAT;
+        case drf::AttachmentType::COLOR:
+            return GL_UNSIGNED_BYTE;
+        case drf::AttachmentType::COLOR_RGBA:
+            return GL_UNSIGNED_BYTE;
+        case drf::AttachmentType::COLOR_SRGB:
+            return GL_UNSIGNED_BYTE;
+        case drf::AttachmentType::COLOR_HDR:
+            return GL_FLOAT;
+        default:
+            return GL_INT;
     }
 }
 

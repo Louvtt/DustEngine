@@ -49,6 +49,8 @@ void dr::ColorMaterial::bind(u32 slot)
     const std::string loc = shaderMaterialLoc(slot);
     s_shader->setUniform(loc + ".exist", true);
     s_shader->setUniform(loc + ".diffuse", glm::vec4{color, 1.f});
+    s_shader->setUniform(loc + ".specular", glm::vec4{color, 1.f});
+    s_shader->setUniform(loc + ".ambient", glm::vec4{color, 1.f});
 }
 void dr::ColorMaterial::unbind() 
 {

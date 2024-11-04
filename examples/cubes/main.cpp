@@ -106,7 +106,7 @@ public:
                     true
                 },
                 {
-                    render::Framebuffer::AttachmentType::DEPTH_STENCIL,
+                    render::Framebuffer::AttachmentType::DEPTH32_STENCIL,
                     false
                 }
             },
@@ -138,7 +138,7 @@ public:
             m_cubes.push_back(cubeModel);
         }
         auto plane = render::Mesh::createPlane({20.f, 20.f});
-        plane->setMaterial(0, createRef<render::ColorMaterial>(glm::vec3{1.f, 1.f, 1.f}));
+        plane->setMaterial(0, createRef<render::ColorMaterial>(glm::vec3{.1f, 1.f, 1.f}));
         m_plane = createRef<render::Model>(plane);
         render::ColorMaterial::SetupMaterialShader(m_sceneShader.get());
         
@@ -367,7 +367,11 @@ public:
 
 private:
     void updateUniforms() {
-        m_sun.bind(m_sceneShader);
+        // m_sun.bind(m_sceneShader);
+        {
+            m_sceneShader->setUniform("uLightColor", m_sun.getColor());
+            m_sceneShader->setUniform("uLightDir", m_sun.getDirection());
+        }
         m_camera->bind(m_sceneShader.get());
         m_sceneShader->setUniform("uShadowMap", 10);
         m_sceneShader->setUniform("uAmbient", m_ambientColor);
