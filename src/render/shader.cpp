@@ -25,7 +25,7 @@ inline static char infoLog[INFO_LOG_SIZE];
 dr::Shader::Shader(const std::string &vertexCode, const std::string &fragmentCode) : Shader() {
     m_renderID = internalCreate(vertexCode, fragmentCode);
 }
-dr::Shader::Shader() : m_renderID(0), m_uniforms() {}
+dr::Shader::Shader() : dust::io::ResourceFile(""), m_renderID(0), m_uniforms() {}
 dr::Shader::~Shader() {
     DUST_PROFILE;
     glUseProgram(0);
@@ -78,7 +78,7 @@ void dr::Shader::setUniform(const std::string &name, glm::mat4 value) {
     glProgramUniformMatrix4fv(m_renderID, loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void dr::Shader::reload() {
+void dr::Shader::reload(bool _firstLoad) {
     DUST_PROFILE_SECTION("Shader::reload");
     const auto &resultVert = dust::io::LoadFile(m_vertexFilePath);
     const auto &resultFrag = dust::io::LoadFile(m_fragmentFilePath);
@@ -102,6 +102,7 @@ dust::Result<dr::ShaderPtr> dr::Shader::LoadFromFile(const std::string &vertexPa
         auto res                = dust::createRef<Shader>(resultVert.value(), resultFrag.value());
         res->m_vertexFilePath   = vertexPath;
         res->m_fragmentFilePath = fragmentPath;
+        res->filepath = vertexPath + ":" + fragmentPath;
         return res;
     }
     return {};
@@ -267,9 +268,9 @@ void dr::Shader::queryActiveUniforms(u32 program) {
 #define _DUST_PACKED_SHADER_VERSION_SYMBOL_        "#version"
 
 dr::PackedShader::PackedShader() : Shader() { }
-dr::PackedShader::PackedShader(const std::string &code) : PackedShader() { reload(); }
+dr::PackedShader::PackedShader(const std::string &code) : PackedShader() { reload(true); }
 
-void dr::PackedShader::reload() {
+void dr::PackedShader::reload(bool _firstLoad) {
     DUST_PROFILE_SECTION("PackedShader::reload");
     const auto &result = dust::io::LoadFile(m_filePath);
     if (result.has_value()) {
@@ -289,8 +290,9 @@ dust::Result<Ref<dr::PackedShader>> dr::PackedShader::LoadFromFile(const std::st
     const auto &result = dust::io::LoadFile(path);
     if (result.has_value()) {
         auto res        = Ref<dr::PackedShader>(new dr::PackedShader());
+        res->filepath   = path;
         res->m_filePath = path;
-        res->reload();
+        res->reload(true);
         return res;
     }
     return {};
@@ -299,7 +301,7 @@ dust::Result<Ref<dr::PackedShader>> dr::PackedShader::LoadFromFile(const std::st
 std::tuple<std::string, std::string>
 dr::PackedShader::processCode(const std::string &code)
 {
-    if(code.size() == 0) {
+    if(code.empty()) {
         DUST_ERROR("[PackedShader] {} is an empty file.", m_filePath);
         return {};
     }

@@ -59,6 +59,7 @@ inline constexpr static u32 getGLFormat(const drf::AttachmentType &type) {
     case drf::AttachmentType::COLOR_HDR:
         return GL_RGBA;
     }
+    return 0;
 }
 
 
@@ -84,6 +85,7 @@ inline constexpr static u32 getGLInternalFormat(const drf::AttachmentType &type)
     case drf::AttachmentType::COLOR_HDR:
         return GL_RGB16F;
     }
+    return 0;
 }
 
 inline constexpr static u32 getGLType(const drf::AttachmentType &type) {

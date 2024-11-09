@@ -1,16 +1,23 @@
 #ifndef _DUST_CORE_APPLICATION_HPP_
 #define _DUST_CORE_APPLICATION_HPP_
 
-#include "dust/io/inputManager.hpp"
+
 #include "types.hpp"
 #include "time.hpp"
 #include "window.hpp"
 #include "layer.hpp"
-#include "../render/renderer.hpp"
+
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+#include "dust/render/renderer.hpp"
+
+#include "dust/io/inputManager.hpp"
+#include "dust/io/resourceManager.hpp"
+
+#include "dust/scripting/scriptingManager.hpp"
 
 extern int main(int argc, char** argv);
 
@@ -24,6 +31,8 @@ private:
     Scope<Window> m_window;
     Scope<Renderer> m_renderer;
     Scope<InputManager> m_inputManager;
+    Scope<io::ResourceManager> m_resourceManager;
+    Scope<ScriptingManager> m_scriptingManager;
 
     std::unordered_map<std::string, Layer*> m_layers;
 
@@ -38,6 +47,9 @@ public:
     Window* getWindow() const;
     Renderer* getRenderer() const;
     InputManager* getInputManager() const;
+    io::ResourceManager* getResourceManager() const;
+    ScriptingManager* getScriptingManager() const;
+
     std::filesystem::path getProgramPath() const;
 
     Time getTime() const;

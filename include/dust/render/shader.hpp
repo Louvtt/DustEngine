@@ -1,11 +1,14 @@
 #ifndef _DUST_RENDER_SHADER_HPP_
 #define _DUST_RENDER_SHADER_HPP_
 
-#include "../core/types.hpp"
+#include "dust/core/types.hpp"
+#include "dust/io/resourceFile.hpp"
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+
 #include <tuple>
 #include <unordered_map>
 
@@ -49,7 +52,7 @@ struct Uniform {
 /**
  * @brief Represent a OpenGL Shader
  */
-class Shader
+class Shader : public io::ResourceFile
 {
 protected:
     /// OpenGL Shader program ID
@@ -135,7 +138,7 @@ public:
      * 
      * In case it has an error on loading, it will not refresh the attachment 
      */
-    virtual void reload();
+    void reload(bool firstLoad) override;
     
     /**
      * @brief Load a shader from vertex and fragment files
@@ -237,7 +240,7 @@ public:
      * 
      * In case it has an error on loading, it will not refresh the attachment 
      */
-    void reload() override;
+    void reload(bool firstLoad) override;
 
 private:
     std::tuple<std::string, std::string> processCode(const std::string &code);

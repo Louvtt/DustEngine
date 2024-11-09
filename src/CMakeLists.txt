@@ -24,6 +24,14 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/io/loaders.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/io/assetsManager.hpp"
     "${DustEngine_SOURCE_DIR}/include/dust/io/inputManager.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/io/resource.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/io/resourceFile.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/io/resourceManager.hpp"
+
+    "${DustEngine_SOURCE_DIR}/include/dust/scripting/scriptingManager.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/scripting/script.hpp"
+
+    "${DustEngine_SOURCE_DIR}/include/dust/utils/string_utils.hpp"
 )
 
 add_library(dustlib
@@ -49,6 +57,14 @@ add_library(dustlib
     io/loaders.cpp
     io/assetsManager.cpp
     io/inputManager.cpp
+    io/resource.cpp
+    io/resourceFile.cpp
+    io/resourceManager.cpp
+
+    scripting/script.cpp
+    scripting/scriptingManager.cpp
+
+    utils/string_utils.cpp
 )
 
 target_include_directories(dustlib PUBLIC "${DustEngine_SOURCE_DIR}/include")
@@ -61,8 +77,10 @@ PUBLIC
     glm
     stdc++fs
     imgui
+    sol2::sol2
 
 PRIVATE
+    lua_library
     nv_dds
     stb
     glad

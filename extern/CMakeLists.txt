@@ -32,6 +32,10 @@ add_subdirectory(assimp)
 ## == nvidia ==
 add_subdirectory(nvidia)
 
+## == sol2 ==
+add_subdirectory(lua)
+add_subdirectory(sol2)
+
 ## == tracy ==
 if(DustEngine_PROFILING)
     option( TRACY_ENABLE "" ON)

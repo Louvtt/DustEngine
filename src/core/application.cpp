@@ -43,6 +43,7 @@ m_layers()
     m_window = dust::createScope<dust::Window>(name, width, height);
     m_inputManager = dust::createScope<dust::InputManager>(*m_window);
     m_renderer = dust::createScope<dust::Renderer>(*m_window);
+    m_resourceManager = dust::createScope<dust::io::ResourceManager>();
 
     s_instance = this;
 
@@ -91,6 +92,7 @@ void dust::Application::run()
         update();
         for(auto [_, layer] : m_layers) { layer->update(); }
         m_inputManager->updateState();
+        m_resourceManager->update();
 
         m_renderer->newFrame();
         ImGui::NewFrame();
@@ -125,6 +127,17 @@ dust::InputManager*
 dust::Application::getInputManager() const
 {
     return m_inputManager.get();
+}
+
+dust::io::ResourceManager*
+dust::Application::getResourceManager() const 
+{
+    return m_resourceManager.get();
+}
+
+dust::ScriptingManager*
+dust::Application::getScriptingManager() const {
+    return m_scriptingManager.get();
 }
 
 dust::Application*

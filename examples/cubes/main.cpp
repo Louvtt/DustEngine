@@ -339,8 +339,8 @@ public:
 
                     // reload shaders ?
                     if(ImGui::Button("Reload Shaders")) {
-                        m_sceneShader->reload();
-                        m_shadowShader->reload();
+                        m_sceneShader->reload(true);
+                        m_shadowShader->reload(true);
 
                         updateUniforms();
                     }

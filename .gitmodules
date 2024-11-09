@@ -23,3 +23,9 @@
 [submodule "extern/tracy"]
 	path = extern/tracy
 	url = https://github.com/wolfpld/tracy
+[submodule "extern/sol2"]
+	path = extern/sol2
+	url = https://github.com/ThePhD/sol2.git
+[submodule "extern/lua"]
+	path = extern/lua
+	url = https://gitlab.com/codelibre/lua/lua-cmake.git
