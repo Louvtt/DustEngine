@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/assimp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/glfw" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/imgui/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/lua" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/sol2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/spdlog" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/tracy" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/yaml" vcs="Git" />
+  </component>
+</project>

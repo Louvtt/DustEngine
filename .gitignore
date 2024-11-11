@@ -85,3 +85,4 @@ imgui.ini
 # Valgrind
 
 vgcore*
+/cmake-build-*/
