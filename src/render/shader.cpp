@@ -102,7 +102,7 @@ dust::Result<dr::ShaderPtr> dr::Shader::LoadFromFile(const std::string &vertexPa
         auto res                = dust::createRef<Shader>(resultVert.value(), resultFrag.value());
         res->m_vertexFilePath   = vertexPath;
         res->m_fragmentFilePath = fragmentPath;
-        res->filepath = vertexPath + ":" + fragmentPath;
+        // res->filepath = vertexPath + ":" + fragmentPath;
         return res;
     }
     return {};
@@ -323,7 +323,7 @@ dr::PackedShader::processCode(const std::string &code)
                 // #pragma
                 if(processor == _DUST_PACKED_SHADER_PRAGMA_SYMBOL_) {
                     std::size_t pragmaTypeBegin = line.find_first_of(' ') + 1;
-                    const auto pragmaType = line.substr(pragmaTypeBegin);
+                    const auto pragmaType = line.substr(pragmaTypeBegin, line.length() - pragmaTypeBegin - 1);
                     DUST_DEBUG("[PackedShader] Found #pragma symbol with value {}", pragmaType);
                     if(pragmaType == _DUST_PACKED_SHADER_VERTEX_TYPE_SYMBOL_) {
                         write = true;

@@ -75,13 +75,11 @@ PUBLIC
     spdlog
     yaml-cpp
     glm
-    stdc++fs
     imgui
+    lua_library
     sol2::sol2
 
 PRIVATE
-    lua_library
-    nv_dds
     stb
     glad
     OpenGL::GL

@@ -38,9 +38,14 @@ m_name(),
 m_hidden(false)
 {
     DUST_PROFILE;
+    if(vertexData == nullptr && vertexCount > 0) {
+        DUST_ERROR("No vertices but should have {} vertices", vertexCount);
+    }
+
     m_materialSlots.fill(nullptr);
     DUST_PROFILE_GPU("CreateVertexArrays");
-    glCreateVertexArrays(1, &m_renderID);
+    unsigned int test = 0;
+    glGenVertexArrays(1, &m_renderID);
     if(m_renderID == 0) {
         DUST_ERROR("[OpenGL][Mesh] Failed to create VAO");
         return;

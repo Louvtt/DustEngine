@@ -62,7 +62,7 @@ m_shader(dust::createRef<Shader>(vCode, fCode))
     for(auto path : skyboxTexturePaths)
     {
         io::Path imagePath = assetsDirPath / path;
-        u8 *data = stbi_load(imagePath.c_str(), &width, &height, &nrChannels, 0);
+        u8 *data = stbi_load(imagePath.string().c_str(), &width, &height, &nrChannels, 0);
         if (data != nullptr) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 
                          0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data

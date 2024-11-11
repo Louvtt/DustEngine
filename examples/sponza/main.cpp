@@ -1,19 +1,4 @@
-#include "dust/core/application.hpp"
-#include "dust/core/layer.hpp"
-#include "dust/core/log.hpp"
-#include "dust/core/profiling.hpp"
 #include "dust/dust.hpp"
-#include "dust/io/assetsManager.hpp"
-#include "dust/io/inputManager.hpp"
-#include "dust/io/keycodes.hpp"
-#include "dust/io/loaders.hpp"
-#include "dust/render/camera.hpp"
-#include "dust/render/framebuffer.hpp"
-#include "dust/render/light.hpp"
-#include "dust/render/material.hpp"
-#include "dust/render/renderPass.hpp"
-#include "dust/render/shader.hpp"
-#include "dust/render/texture.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"
@@ -105,7 +90,7 @@ public:
         m_depthShader   = depthShader.value();
         m_currentShader = m_shader;
 
-        m_sponza = io::LoadModel("assets/sponza_pbr/sponza.obj");
+        m_sponza = io::LoadModel("assets/sponza_gltf/sponza.gltf");
         render::PBRMaterial::SetupMaterialShader(m_shader.get());
 
         m_camera->setPosition(glm::vec3(0.f, 20.f, 0.f));
@@ -133,6 +118,8 @@ public:
         // sky color until skybox is created
         m_previousSize = ImVec2{(f32)getWindow()->getWidth(), (f32)getWindow()->getHeight()};
         // getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
+
+        DUST_INFO("== Example Sponza loaded! ==");
     }
 
     ~SponzaApp() {

@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <thread>
 #include <vector>
+#include <unordered_map>
+#include <functional>
 
 #ifndef ASSETS_MANAGER_THREADS_COUNT
 #   define ASSETS_MANAGER_THREADS_COUNT 20
@@ -36,18 +38,6 @@ public:
 
 }
 }
-
-//////////////////////////
-/// MACROS
-
-#define DUST_ADD_LOADER(ResultType, Name)       \
-dust::Result<ResultType>              \
-Load##Name(const dust::io::Path &path)
-
-#define DUST_ADD_LOADER_ASYNC(ResultType, Name) \
-void Load##Name##Async(const dust::io::Path &path, dust::ResultPtr<ResultType> result)
-
-//////////////////////////
 
 
 

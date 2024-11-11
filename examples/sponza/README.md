@@ -8,4 +8,6 @@ Show sponza with PBR materials using DustEngine
 
 ## Links
 
-- SponzaPBR found on [andrejnau's github](https://github.com/andrejnau/SponzaPbr/)
+- Model Updated from https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Sponza
+
+--SponzaPBR found on [andrejnau's github](https://github.com/andrejnau/SponzaPbr/)--

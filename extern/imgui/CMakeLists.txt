@@ -71,7 +71,7 @@ if((DearImGui_RENDER_BACKEND STREQUAL "opengl2") OR (DearImGui_RENDER_BACKEND ST
         PUBLIC
             "imgui/backends/imgui_impl_${DearImGui_RENDER_BACKEND}.cpp"
         )
-        target_link_libraries(imgui PRIVATE OpenGL::OpenGL)
+        target_link_libraries(imgui PRIVATE OpenGL::GL)
     endif()
 elseif(DearImGui_RENDER_BACKEND STREQUAL "vulkan")
     find_package(Vulkan REQUIRED)

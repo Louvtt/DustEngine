@@ -27,13 +27,16 @@ add_subdirectory(glm)
 add_subdirectory(stb)
 
 ## == assimp ==
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(assimp)
-
-## == nvidia ==
-add_subdirectory(nvidia)
 
 ## == sol2 ==
 add_subdirectory(lua)
+set(SOL2_BUILD_LUA OFF CACHE BOOL "Always build Lua, do not search for it in the system")
 add_subdirectory(sol2)
 
 ## == tracy ==

@@ -15,7 +15,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # include(CMakeDependentOption)
 if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
     set(CMAKE_CXX_STANDARD 20) # default c++ standard
-    set(CMAKE_CXX_EXTENSIONS OFF) # disable std=g++ and use std=c++
+    set(CMAKE_CXX_EXTENSIONS ON) # disable std=g++ and use std=c++
     set(CMAKE_CXX_STANDARD_REQUIRE ON) # enable stdc++fs
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

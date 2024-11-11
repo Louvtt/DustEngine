@@ -17,10 +17,13 @@ namespace fs = std::filesystem;
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <nv_dds.h>
+
+#ifdef LOADER_NVDDS
+#   include <nv_dds.h>
+#endif
 
 dust::Result<dr::TexturePtr> 
-dio::LoadTexture2D(const dio::Path &_path) 
+dio::_load_texture_general(const dio::Path &_path)
 {
     DUST_PROFILE_SECTION("io::LoadTexture2D");
     auto path = AssetsManager::FromAssetsDir(_path);
@@ -31,6 +34,7 @@ dio::LoadTexture2D(const dio::Path &_path)
     DUST_DEBUG("[Texture] Loading {}", path.string());
 
     // NVIDIA DDS
+#ifdef LOADER_NVDDS
     if(path.extension() == ".dds") {
         DUST_PROFILE_SECTION("io::LoadTexture2D nv_dds");
         nv_dds::CDDSImage image{};
@@ -61,12 +65,14 @@ dio::LoadTexture2D(const dio::Path &_path)
             return res;
         }
     }
-    // STB_IMAGE 
-    else { 
+    else
+#endif //LOADER_NVDDS
+    // STB_IMAGE
+    {
         DUST_PROFILE_SECTION("io::LoadTexture2D stb_image");
         int width, height, nrChannels;
         stbi_set_flip_vertically_on_load(true);
-        u8* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+        u8* data = stbi_load(path.string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
         if(data == nullptr) {
             DUST_ERROR("[Texture][StbImage] Failed to load image : {}", stbi_failure_reason());
             return {};
@@ -90,6 +96,8 @@ dio::LoadTexture2D(const dio::Path &_path)
     return {};
 }
 
+DUST_DEFINE_LOADER(dr::TexturePtr, Texture2D);
+
 //////////////////////////
 
 #include "assimp/Importer.hpp"
@@ -111,7 +119,6 @@ processMaterials(const aiScene *scene, const std::filesystem::path& basePath)
     for(int i = 0; i < scene->mNumMaterials; ++i) {
         const auto material = scene->mMaterials[i];
         Ref<render::PBRMaterial> mat = createRef<render::PBRMaterial>();
-
 
         aiString filePath;
         ai_real factor;
@@ -296,78 +303,153 @@ processMeshes(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
     return res;
 }
 
-dust::Result<dr::ModelPtr> 
-dio::LoadModel(const dio::Path &_path)
-{
-    DUST_PROFILE_SECTION("io::LoadModel");
-    auto path = AssetsManager::FromAssetsDir(_path);
-    if(!fs::exists(path)) {
-        DUST_ERROR("[Model] {} doesn't exists.", path.string());
-        return nullptr;
-    }
 
+static std::vector<dr::MeshPtr>
+processMeshesNoBatch(const aiScene *scene, std::vector<dr::MaterialPtr> materials)
+{
+    DUST_PROFILE_SECTION("io::LoadModel processMeshes");
+    // Attributes
+    std::vector<dr::Attribute> attributes {
+        dr::Attribute::Pos3D,
+        dr::Attribute::TexCoords,
+        dr::Attribute::Pos3D,     // normals
+        dr::Attribute::Pos3D,     // tangents
+        dr::Attribute::Color,
+        dr::Attribute::Float      // matID
+    };
+
+    std::vector<dr::MeshPtr> results{};
+    results.reserve(scene->mNumMeshes);
+    // parse all meshes
+    {
+        DUST_PROFILE_SECTION("io::LoadModel parse meshes");
+        for (int mesh_i = 0; mesh_i < scene->mNumMeshes; ++mesh_i) {
+            auto mesh = scene->mMeshes[mesh_i];
+            std::vector<dr::ModelVertex> vertices;
+            std::vector<unsigned int> indices;
+            vertices.reserve(mesh->mNumVertices);
+            indices.reserve(mesh->mNumVertices * 3);
+            // process vertices
+            for(int i = 0; i < mesh->mNumVertices; ++i) {
+                const auto pos    = mesh->mVertices[i];
+
+                dr::ModelVertex vertex = {{ pos.x, pos.y, pos.z }};
+                if(mesh->HasTextureCoords(0)) {
+                    const auto tex   = mesh->mTextureCoords[0][i];
+                    vertex.tex = { tex.x, tex.y };
+                }
+                if(mesh->HasNormals()) {
+                    const auto normal = mesh->mNormals[i];
+                    vertex.normal = { normal.x, normal.y, normal.z};
+                }
+                if(mesh->HasTangentsAndBitangents()) {
+                    const auto tangent = mesh->mTangents[i];
+                    vertex.tangent = { tangent.x, tangent.y, tangent.z };
+
+                    // orthonormalize tangent
+                    vertex.tangent = glm::normalize(vertex.tangent - glm::dot(vertex.normal, vertex.tangent) * vertex.normal);
+                    const auto bitangent_ = mesh->mBitangents[i];
+                    const auto bitangent  = glm::vec3{bitangent_.x, bitangent_.y, bitangent_.z};
+                    // for right-handed tbn
+                    if(glm::dot(glm::cross(vertex.normal, vertex.tangent), bitangent) < 0.f)
+                        vertex.tangent *= -1;
+                }
+
+                if(mesh->HasVertexColors(i)) {
+                    const auto color = mesh->mColors[0][i];
+                    vertex.color = { color.r, color.g, color.b, color.a };
+                }
+                vertex.materialID = 0;
+
+                vertices.push_back(vertex);
+            }
+            // parses mesh indices and offset it by the previous number of vertices
+            for(int i = 0; i < mesh->mNumFaces; ++i) {
+                auto face = mesh->mFaces[i];
+                // only manage triangles
+                if(face.mNumIndices != 3) continue;
+                indices.push_back(face.mIndices[0]);
+                indices.push_back(face.mIndices[1]);
+                indices.push_back(face.mIndices[2]);
+            }
+
+            auto created_mesh = createRef<render::Mesh>(
+                &vertices.front(),
+                sizeof(dr::ModelVertex),
+                vertices.size(),
+                indices,
+                attributes
+            );
+            created_mesh->setMaterial(0, materials.at(mesh_i));
+            created_mesh->setName(std::string(mesh->mName.C_Str()));
+            results.push_back(created_mesh);
+        }
+    }
+    return results;
+}
+
+dust::Result<dr::ModelPtr>
+dio::_load_model_gltf(const dust::io::Path &path) {
     Assimp::Importer importer {};
-    const aiScene* scene = importer.ReadFile(path,
-        aiProcess_Triangulate               | 
-        aiProcess_RemoveRedundantMaterials  |
-        aiProcess_GenNormals                |
-        aiProcess_CalcTangentSpace          |
-        aiProcess_OptimizeMeshes            |
-        aiProcess_OptimizeGraph             
+    DUST_INFO("Loading GLTF model {}...", path.filename().string());
+    const aiScene* scene = importer.ReadFile(path.string(),
+                                             aiProcess_Triangulate               |
+                                                 aiProcess_RemoveRedundantMaterials  |
+                                                 aiProcess_GenNormals                |
+                                                 aiProcess_CalcTangentSpace          |
+                                                 aiProcess_OptimizeMeshes            |
+                                                 aiProcess_OptimizeGraph
     );
+    if (scene == nullptr) return {};
 
     fs::path modelPathDir = fs::path(path).parent_path();
+    DUST_INFO("Importing GLTF model {}...", path.filename().string());
     auto materials = processMaterials(scene, modelPathDir);
-    auto processedMeshes = processMeshes(scene, materials);
-
-    // importer.FreeScene();
-
+    auto processedMeshes = processMeshesNoBatch(scene, materials);
     return dust::createRef<dr::Model>(processedMeshes);
 }
-//////////////////////////////
 
-void                                      \
-dio::LoadModelAsync(const Path &path, ResultPtr<render::ModelPtr> result)
-{   
-    DUST_WARN("[AssetsManager] Async Model Loader isn't working yet.");
-    return;
-    // std::thread& loadThread = m_threadPool.at(m_usedThreads);
-    // loadThread = std::thread([result, path]() {
-    //     DUST_DEBUG("Loading {}...", path.string());
-    //     const auto &res = dio::AssetsManager::LoadSync<Ref<render::Model>>(path);
-    //     if(res.has_value()) {
-    //         DUST_DEBUG("Loaded {}", path.string());
-    //         *result = res.value();
-    //     }
-    //     AssetsManager::m_usedThreads--;
-    // });
+dust::Result<dr::ModelPtr>
+dio::_load_model_general(const dust::io::Path &path) {
+    Assimp::Importer importer {};
+    DUST_INFO("Loading model {}...", path.filename().string());
+    const aiScene* scene = importer.ReadFile(path.string(),
+                                             aiProcess_Triangulate               |
+                                                 aiProcess_RemoveRedundantMaterials  |
+                                                 aiProcess_GenNormals                |
+                                                 aiProcess_CalcTangentSpace          |
+                                                 aiProcess_OptimizeMeshes            |
+                                                 aiProcess_OptimizeGraph
+    );
+    if (scene == nullptr) return {};
+
+    fs::path modelPathDir = fs::path(path).parent_path();
+
+    DUST_INFO("Importing model {}...", path.filename().string());
+    auto materials = processMaterials(scene, modelPathDir);
+    auto processedMeshes = processMeshes(scene, materials);
+    return dust::createRef<dr::Model>(processedMeshes);
 }
+
+DUST_DEFINE_LOADER(dr::ModelPtr, Model);
+
 
 //////////////////////////
 
-dust::Result<std::string> 
-dio::LoadFile(const dio::Path &_path) 
-{
-    DUST_PROFILE_SECTION("io::LoadFile");
-    auto path = AssetsManager::FromAssetsDir(_path);
-    std::error_code error{};
-    if(!fs::exists(path, error)) {
-        DUST_ERROR("[File] {} doesn't exists (error {} : {})", path.string(), error.value(), error.message());
-        return {};
-    }
-
-    std::ifstream in(path, std::ios::in);
+dust::Result<std::string> dio::_load_file_text(const dust::io::Path &path) {
+    std::ifstream in(path, std::ios::in | std::ifstream::binary | std::ios::ate);
     in.exceptions(std::ios::badbit | std::ios::failbit);
     if (in)
     {
-        DUST_PROFILE_SECTION("io::LoadFile read content");
-        std::string contents;
-        in.seekg(0, std::ios::end);
-        contents.resize(in.tellg());
+        std::ifstream::pos_type fileSize = in.tellg();
         in.seekg(0, std::ios::beg);
-        in.read(&contents[0], contents.size());
-        in.close();
-        return contents;
+
+        std::vector<char> bytes(fileSize);
+        in.read(bytes.data(), fileSize);
+
+        return std::string(bytes.data(), fileSize);
     }
     return {};
 }
+
+DUST_DEFINE_LOADER(std::string, File);
