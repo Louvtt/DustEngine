@@ -6,6 +6,7 @@
 #include "dust/io/inputManager.hpp"
 #include "dust/render/renderer.hpp"
 #include "dust/core/profiling.hpp"
+#include "dust/editor/editor.hpp"
 
 #include "imgui.h"
 
@@ -31,19 +32,11 @@ m_layers()
     spdlog::set_level(spdlog::level::debug);
     #endif
 
-    // ImGui init
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    ImGui::StyleColorsDark();
-
     m_window = dust::createScope<dust::Window>(name, width, height);
     m_inputManager = dust::createScope<dust::InputManager>(*m_window);
     m_renderer = dust::createScope<dust::Renderer>(*m_window);
     m_resourceManager = dust::createScope<dust::io::ResourceManager>();
+    m_editor = dust::createScope<dust::Editor>(m_window.get());
 
     s_instance = this;
 
@@ -52,10 +45,7 @@ m_layers()
         m_window->flush();
         m_renderer->setClearColor(0.1f, 0.1f, 0.1f, 1.f);
         m_renderer->newFrame();
-        ImGui::NewFrame();
-        ImGui::Text("Loading...");
-        ImGui::GetForegroundDrawList()->AddText(ImVec2(0, 0), IM_COL32(255, 255, 255, 255), "Loading...");
-        ImGui::Render();
+        m_editor->display_loading_frame();
         m_renderer->endFrame();
         m_window->swapBuffers();
     }
@@ -63,6 +53,8 @@ m_layers()
 
 dust::Application::~Application()
 {
+    m_resourceManager.reset();
+    m_editor.reset();
     m_inputManager.reset();
     m_renderer.reset();
     m_window.reset();
@@ -95,14 +87,14 @@ void dust::Application::run()
         m_resourceManager->update();
 
         m_renderer->newFrame();
-        ImGui::NewFrame();
+        m_editor->new_frame();
         for(auto [_, layer] : m_layers) { layer->preRender(); }
         {
             render();
             for(auto [_, layer] : m_layers) { layer->render(); }
         }
         for(auto [_, layer] : m_layers) { layer->postRender(); }
-        ImGui::Render();
+        m_editor->render_ui();
         m_renderer->endFrame();
     }
     DUST_INFO("Exitting app main loop.");
@@ -173,3 +165,4 @@ void dust::Application::popLayer(std::string name)
     auto deletedLayer = m_layers.erase(found);
     delete deletedLayer->second;
 }
+dust::Editor *dust::Application::getEditor() const { return m_editor.get(); }

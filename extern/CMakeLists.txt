@@ -39,6 +39,10 @@ add_subdirectory(lua)
 set(SOL2_BUILD_LUA OFF CACHE BOOL "Always build Lua, do not search for it in the system")
 add_subdirectory(sol2)
 
+## == Awesome Icon fonts cpp headers ==
+add_library(IconFontCppHeaders INTERFACE)
+target_include_directories(IconFontCppHeaders INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/IconFontCppHeaders")
+
 ## == tracy ==
 if(DustEngine_PROFILING)
     option( TRACY_ENABLE "" ON)

@@ -91,7 +91,7 @@ dust::Renderer::Renderer(const dust::Window &window) {
     m_initialized = true;
     m_renderApiName = (const char *)glGetString(GL_RENDERER);
     m_renderApiVersion = (const char *)glGetString(GL_VERSION);
-    DUST_INFO("[OpenGL] Loaded OpenGL {} using {}", m_renderApiVersion,
+    DUST_INFO("[Glad] Loaded OpenGL {} using {}", m_renderApiVersion,
               m_renderApiName);
     DUST_PROFILE_GPU_SETUP;
 
@@ -105,14 +105,13 @@ dust::Renderer::Renderer(const dust::Window &window) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef _DEBUG
-    DUST_INFO("[OpengL] Set up debug message callback.");
+    DUST_INFO("[OpenGL] Set up debug message callback.");
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(glDebugCallback, nullptr);
 
 #endif
     if (!GLAD_GL_ARB_geometry_shader4)
-        DUST_WARN("Nsight will output errors. (GL_ARB_geometry_shader4 not "
-                  "supported)");
+        DUST_WARN("Nsight will output errors. (GL_ARB_geometry_shader4 not supported)");
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -120,22 +119,10 @@ dust::Renderer::Renderer(const dust::Window &window) {
 
     setClearColor(.1f, .1f, .1f);
     resize(window.getWidth(), window.getHeight());
-
-    // Query device driver informations
-
-    // const char* shading_version = (const
-    // char*)glGetString(GL_SHADING_LANGUAGE_VERSION); DUST_DEBUG("[OpenGL]
-    // Shading Language version : {}", shading_version);
-    if (!ImGui_ImplOpenGL3_Init("#version 460 core")) {
-        DUST_ERROR("[OpenGL][ImGui] Failed to load ImGui for OpenGL.");
-    } else {
-        DUST_INFO("[OpenGL][ImGui] Loaded ImGui for OpenGL.");
-    }
 }
 
 dust::Renderer::~Renderer() {
     DUST_PROFILE;
-    ImGui_ImplOpenGL3_Shutdown();
     DUST_INFO("[Glad] Unloading OpenGL");
 }
 

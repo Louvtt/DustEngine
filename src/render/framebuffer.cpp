@@ -62,7 +62,6 @@ inline constexpr static u32 getGLFormat(const drf::AttachmentType &type) {
     return 0;
 }
 
-
 inline constexpr static u32 getGLInternalFormat(const drf::AttachmentType &type) {
     switch (type) {
     case drf::AttachmentType::DEPTH:
@@ -90,31 +89,49 @@ inline constexpr static u32 getGLInternalFormat(const drf::AttachmentType &type)
 
 inline constexpr static u32 getGLType(const drf::AttachmentType &type) {
     switch (type) {
-        case drf::AttachmentType::DEPTH:
-            return GL_FLOAT;
-        case drf::AttachmentType::DEPTH32:
-            return GL_DOUBLE;
+    case drf::AttachmentType::DEPTH:
+        return GL_FLOAT;
+    case drf::AttachmentType::DEPTH32:
+        return GL_DOUBLE;
 
-        case drf::AttachmentType::STENCIL:
-            return GL_UNSIGNED_BYTE;
+    case drf::AttachmentType::STENCIL:
+        return GL_UNSIGNED_BYTE;
 
-        case drf::AttachmentType::DEPTH_STENCIL:
-            return GL_FLOAT;
-        case drf::AttachmentType::DEPTH32_STENCIL:
-            return GL_DOUBLE;
+    case drf::AttachmentType::DEPTH_STENCIL:
+        return GL_FLOAT;
+    case drf::AttachmentType::DEPTH32_STENCIL:
+        return GL_DOUBLE;
 
-        case drf::AttachmentType::COLOR:
-            return GL_UNSIGNED_BYTE;
-        case drf::AttachmentType::COLOR_RGBA:
-            return GL_UNSIGNED_BYTE;
-        case drf::AttachmentType::COLOR_SRGB:
-            return GL_UNSIGNED_BYTE;
-        case drf::AttachmentType::COLOR_HDR:
-            return GL_FLOAT;
-        default:
-            return GL_INT;
+    case drf::AttachmentType::COLOR:
+    case drf::AttachmentType::COLOR_RGBA:
+    case drf::AttachmentType::COLOR_SRGB:
+        return GL_UNSIGNED_BYTE;
+    case drf::AttachmentType::COLOR_HDR:
+        return GL_FLOAT;
+    default:
+        return GL_INT;
     }
 }
+
+#define ERROR_CASE(GL_ERROR)                                                                       \
+    case GL_ERROR:                                                                                 \
+        return #GL_ERROR
+
+inline constexpr static const char *getGLErrorType(const int glError) {
+    switch (glError) {
+        ERROR_CASE(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT);
+        ERROR_CASE(GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER);
+        ERROR_CASE(GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT_ARB);
+        ERROR_CASE(GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS);
+        ERROR_CASE(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT);
+        ERROR_CASE(GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE);
+        ERROR_CASE(GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER);
+    default:
+        break;
+    };
+    return "GL_UNKNOWN";
+}
+#undef ERROR_CASE
 
 //////////////////////////////////////////
 /// Framebuffer
@@ -205,7 +222,7 @@ void drf::createInternal() {
     // Check state
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
         DUST_DEBUG("[OpenGL] Created framebuffer {}.", renderID);
-        // check if they was a previous framebuffer generated
+        // check if there was a previous framebuffer generated
         if (m_renderID != 0) {
             // delete previous framebuffer
             DUST_DEBUG("[OpenGL] Deleting previous framebuffer {} and its attachments.",
@@ -217,7 +234,7 @@ void drf::createInternal() {
         m_attachments          = attachments;
         m_renderID             = renderID;
     } else {
-        DUST_ERROR("[OpenGL] Error while creating framebuffer {}: {}", renderID, glGetError());
+        DUST_ERROR("[OpenGL] Error while creating framebuffer {}: {}", renderID, getGLErrorType(glGetError()));
         deleteInternal(renderID, attachments);
     }
 

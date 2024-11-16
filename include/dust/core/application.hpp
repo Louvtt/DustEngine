@@ -17,6 +17,8 @@
 #include "dust/io/inputManager.hpp"
 #include "dust/io/resourceManager.hpp"
 
+#include "dust/editor/editor.hpp"
+
 #include "dust/scripting/scriptingManager.hpp"
 
 extern int main(int argc, char** argv);
@@ -33,6 +35,7 @@ private:
     Scope<InputManager> m_inputManager;
     Scope<io::ResourceManager> m_resourceManager;
     Scope<ScriptingManager> m_scriptingManager;
+    Scope<Editor> m_editor;
 
     std::unordered_map<std::string, Layer*> m_layers;
 
@@ -41,18 +44,19 @@ private:
     std::filesystem::path m_programPath;
 
 public:
-    Application(const std::string& name, u32 width = 800u, u32 height = 600u);
+    explicit Application(const std::string& name, u32 width = 800u, u32 height = 600u);
     ~Application();
 
-    Window* getWindow() const;
-    Renderer* getRenderer() const;
-    InputManager* getInputManager() const;
-    io::ResourceManager* getResourceManager() const;
-    ScriptingManager* getScriptingManager() const;
+    [[nodiscard]] Window* getWindow() const;
+    [[nodiscard]] Renderer* getRenderer() const;
+    [[nodiscard]] InputManager* getInputManager() const;
+    [[nodiscard]] io::ResourceManager* getResourceManager() const;
+    [[nodiscard]] ScriptingManager* getScriptingManager() const;
+    [[nodiscard]] Editor* getEditor() const;
 
-    std::filesystem::path getProgramPath() const;
+    [[nodiscard]] std::filesystem::path getProgramPath() const;
 
-    Time getTime() const;
+    [[nodiscard]] Time getTime() const;
 
     static Application* Get();
 

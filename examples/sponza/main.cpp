@@ -3,50 +3,28 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"
 
+#include "dust/editor/editor_scene_view.hpp"
+#include "dust/editor/imgui_extensions.hpp"
+#include "dust/editor/model_tool.hpp"
 #include "dust/render/skybox.hpp"
-#include "glm/ext/quaternion_geometric.hpp"
-#include "glm/gtc/type_ptr.hpp"
+
+#include "general_inspector.hpp"
 
 #include <cstdlib>
 #include <format>
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui.h"
-
-namespace ImGui {
-
-IMGUI_API bool InputMat4(const char *label, glm::mat4 value, const char *format = "%.3f",
-                         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None) {
-    ImGui::SeparatorText(label);
-    bool row1 = ImGui::InputFloat4("", glm::value_ptr(value[0]), format, flags);
-    bool row2 = ImGui::InputFloat4("", glm::value_ptr(value[1]), format, flags);
-    bool row3 = ImGui::InputFloat4("", glm::value_ptr(value[2]), format, flags);
-    bool row4 = ImGui::InputFloat4("", glm::value_ptr(value[3]), format, flags);
-    return row1 || row2 || row3 || row4;
-}
-
-IMGUI_API void TextureLabelled(const char *label, render::Texture *texture) {
-    ImGui::BeginGroup();
-    ImGui::Text("Texture: %s", label);
-    ImGui::Image((void *)texture->getRenderID(),
-                 ImVec2{100, 100.f * ((float)texture->getHeight() / texture->getWidth())});
-    ImGui::EndGroup();
-}
-
-}; // namespace ImGui
 
 using namespace dust;
 
 constexpr f32 CAMERA_SPEED        = 100.f;
 constexpr f32 CAMERA_ROTATE_SPEED = 50.f;
 
+////////////////////////////////////////////////
+
 class SponzaApp : public Application {
 private:
     render::ShaderPtr m_shader;
     render::ShaderPtr m_depthShader;
     render::ShaderPtr m_currentShader;
-
-    ImVec2 m_previousSize;
 
     Result<render::ModelPtr> m_sponza;
     render::Camera3DPtr m_camera;
@@ -61,20 +39,20 @@ private:
     bool m_drawSponza;
     float m_exposure;
 
+    friend class GeneralInspector;
+
 public:
-    SponzaApp()
+    explicit SponzaApp()
         : Application("Sponza Demo", 1920u, 1080u), m_shader(nullptr), m_sponza(),
           m_camera(createRef<render::Camera3D>(getWindow()->getWidth(), getWindow()->getHeight(),
                                                90, 2000)),
-          m_sun(glm::normalize(glm::vec3(-2.0f, 4.0f, -1.0f)),
-                {25 / 255.f, 108 / 255.f, 225 / 255.f}),
+          m_sun(glm::normalize(glm::vec3(-2.0f, 4.0f, -1.0f)), {1.f, 1.f, 1.f}),
           m_drawSponza(true), m_wireframe(false), m_simplePass(nullptr),
-          m_postprocessPass(nullptr),
-          m_exposure(1.) {
+          m_postprocessPass(nullptr), m_exposure(1.)
+    {
         getWindow()->setVSync(false);
 
-        const auto shader =
-            render::PackedShader::LoadFromFile("assets/pbr.glsl");
+        const auto shader= render::PackedShader::LoadFromFile("assets/pbr.glsl");
         if (!shader.has_value()) {
             DUST_ERROR("Exiting ... PBR Shader missing");
             exit(EXIT_FAILURE);
@@ -116,8 +94,14 @@ public:
         updateUniforms();
 
         // sky color until skybox is created
-        m_previousSize = ImVec2{(f32)getWindow()->getWidth(), (f32)getWindow()->getHeight()};
         // getRenderer()->setClearColor(0/255.f, 179/255.f, 255/255.f);
+
+        auto resultBuffer = m_simplePass->getFramebuffer();
+        getEditor()->add_tool(new EditorSceneView(resultBuffer));
+        auto modelTool = new ModelTool();
+        modelTool->set_inspected_model(m_sponza.value().get());
+        getEditor()->add_tool(modelTool);
+        getEditor()->add_tool(new GeneralInspector());
 
         DUST_INFO("== Example Sponza loaded! ==");
     }
@@ -165,160 +149,40 @@ public:
         }
     }
 
-    void editorRender() {
-#ifndef EXAMPLE_REMOVE_EDITOR
-        DUST_PROFILE_SECTION("ImGui Editor");
-        if (ImGui::Begin("Inspector")) {
-            ImGui::Text("FPS: %d", (u32)(1. / getTime().delta));
-
-            ImGui::SeparatorText("Camera");
-            {
-                ImGui::InputMat4("Projection", m_camera->getProj());
-                ImGui::InputMat4("View", m_camera->getView());
-            }
-
-            ImGui::SeparatorText("Lighting");
-            {
-
-                ImGui::SliderFloat("Exposure", &m_exposure, .1, 5., "%.2f");
-
-                glm::vec3 sunDir = m_sun.getDirection();
-                if (ImGui::InputFloat3("Sun Direction", glm::value_ptr(sunDir), "%.3f",
-                                       ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    if (sunDir.length() != 0) {
-                        m_sun.setDirection(sunDir);
-                        updateUniforms();
-                    }
-                }
-                glm::vec3 sunColor = m_sun.getColor();
-                if (ImGui::ColorEdit3("Sun color", glm::value_ptr(sunColor))) {
-                    m_sun.setColor(sunColor);
-                    updateUniforms();
-                }
-            }
-
-            ImGui::SeparatorText("Shaders");
-            {
-                if (ImGui::Checkbox("Wireframe", &m_wireframe)) {
-                    getRenderer()->setDrawWireframe(m_wireframe);
-                }
-                ImGui::Checkbox("Draw Sponza", &m_drawSponza);
-
-                if (ImGui::Button("Show Depth")) {
-                    m_currentShader = m_depthShader;
-                }
-                if (ImGui::Button("Show Render")) {
-                    m_currentShader = m_shader;
-                }
-
-                // reload shaders ?
-                if (ImGui::Button("Reload Shaders")) {
-                    m_shader->reload(false);
-                    m_depthShader->reload(false);
-                    render::PBRMaterial::SetupMaterialShader(m_shader.get());
-                    updateUniforms();
-                }
-            }
-        }
-        ImGui::End();
-
-        if (ImGui::Begin("Model Data")) {
-            u32 i = 0;
-            for (auto &mesh : m_sponza.value()->getMeshes()) {
-                if (!mesh.get()) {
-                    ++i;
-                    continue;
-                }
-                const auto meshName = std::format("Mesh {}", i);
-                if (ImGui::TreeNode(meshName.c_str())) {
-                    ImGui::TextWrapped("Name: %s", mesh->getName().c_str());
-                    bool hidden = mesh->isHidden();
-                    if (ImGui::Checkbox("Hidden", &hidden)) mesh->setHidden(hidden);
-                    if (ImGui::TreeNode("Materials")) {
-                        u32 j = 0;
-                        for (auto &mat : mesh->getMaterials()) {
-                            if (!mat.get()) {
-                                j++;
-                                continue;
-                            }
-                            // Show material
-                            const auto matName =
-                                std::format("PBR Material {} - {}", j, mat->getName());
-                            if (ImGui::TreeNode(matName.c_str())) {
-                                render::PBRMaterial *m = (render::PBRMaterial *)mat.get();
-                                ImGui::ColorEdit3("Albedo", glm::value_ptr(m->albedo));
-                                ImGui::SliderFloat("Roughness", &(m->roughness), 0.0f, 1.0f);
-                                ImGui::SliderFloat("Metallic", &(m->metallic), 0.0f, 1.0f);
-                                ImGui::SliderFloat("AO", &(m->ao), 0.0f, 1.0f);
-                                if (ImGui::TreeNode("Textures")) {
-                                    ImGui::TextureLabelled("Albedo", m->albedoTexture.get());
-                                    ImGui::TextureLabelled("Normal", m->normalTexture.get());
-                                    ImGui::TextureLabelled("Metalness", m->metallicTexture.get());
-                                    ImGui::TextureLabelled("Roughness", m->roughnessTexture.get());
-                                    ImGui::TextureLabelled("AO", m->aoTexture.get());
-                                    ImGui::TreePop();
-                                }
-                                ImGui::TreePop();
-                            }
-                            j++;
-                        }
-                        ImGui::TreePop();
-                    }
-                    ImGui::TreePop();
-                }
-                i++;
-            }
-        }
-        ImGui::End();
-#endif
-    }
-
     void render() override {
         dust::Application::render();
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         // Main Rendering
         {
             DUST_PROFILE_SECTION("Scene Render");
-            if (ImGui::Begin("Scene")) {
-                const auto size = ImGui::GetContentRegionAvail();
 
-                if (m_previousSize.x != size.x || m_previousSize.y != size.y) {
-                    m_previousSize = size;
+            // Scene incrustation inside editor
+            const auto scene_view = getEditor()->get_tool("Scene");
+            if(scene_view.has_value()) {
+                auto editor_scene_view = (EditorSceneView *)scene_view.value();
+                if (editor_scene_view->was_resized()) {
+                    auto size = editor_scene_view->get_size();
                     getRenderer()->resize(size.x, size.y);
                     m_simplePass->getFramebuffer()->resize(size.x, size.y);
                     m_camera->resize(size.x, size.y);
                     m_camera->bind(m_currentShader.get()); // update
                 }
-
-                m_simplePass->preRender();
-                {
-                    DUST_PROFILE_GPU("Sponza render");
-                    getRenderer()->clear();
-                    // sponza
-                    if (m_drawSponza && m_sponza.has_value()) {
-                        m_sponza.value()->draw(m_currentShader.get());
-                    }
-
-                    // skybox
-                    m_skybox->draw(m_camera.get());
-                }
-                m_simplePass->postRender();
-
-                // render to screen
-                const auto renderTexture = m_simplePass->getFramebuffer()->getAttachment(
-                    render::Framebuffer::AttachmentType::COLOR_HDR);
-                if (renderTexture.has_value()) {
-                    ImGui::Image((void *)(u64)(renderTexture->id), size, ImVec2(0, 1),
-                                 ImVec2(1, 0));
-                } else {
-                    ImGui::TextColored(ImVec4{1.f, 0.f, 0.f, 1.f},
-                                       "Missing render target texture.");
-                }
             }
-            ImGui::End();
+
+            m_simplePass->preRender();
+            {
+                DUST_PROFILE_GPU("Sponza render");
+                getRenderer()->clear();
+                // sponza
+                if (m_drawSponza && m_sponza.has_value()) {
+                    m_sponza.value()->draw(m_currentShader.get());
+                }
+
+                // skybox
+                m_skybox->draw(m_camera.get());
+            }
+            m_simplePass->postRender();
         }
-        editorRender();
     }
 
 private:
@@ -331,3 +195,65 @@ private:
 };
 
 DUST_SIMPLE_ENTRY(SponzaApp)
+
+///////////////////////////////////////////////////
+
+GeneralInspector::GeneralInspector() : EditorTool("Inspector") {}
+
+bool GeneralInspector::is_panel_tool() const { return true; }
+
+void GeneralInspector::render_ui() {
+    auto a = (SponzaApp*)Application::Get();
+    DUST_PROFILE_SECTION("ImGui Editor");
+    {
+        ImGui::Text("FPS: %d", (u32)(1. / a->getTime().delta));
+
+        ImGui::SeparatorText("Camera");
+        {
+            ImGui::InputMat4("Projection", a->m_camera->getProj());
+            ImGui::InputMat4("View", a->m_camera->getView());
+        }
+
+        ImGui::SeparatorText("Lighting");
+        {
+
+            ImGui::SliderFloat("Exposure", &a->m_exposure, .1, 5., "%.2f");
+
+            glm::vec3 sunDir = a->m_sun.getDirection();
+            if (ImGui::InputFloat3("Sun Direction", glm::value_ptr(sunDir), "%.3f",
+                                   ImGuiInputTextFlags_EnterReturnsTrue)) {
+                sunDir = glm::normalize(sunDir);
+                a->m_sun.setDirection(sunDir);
+                a->updateUniforms();
+            }
+            glm::vec3 sunColor = a->m_sun.getColor();
+            if (ImGui::ColorEdit3("Sun color", glm::value_ptr(sunColor))) {
+                a->m_sun.setColor(sunColor);
+                a->updateUniforms();
+            }
+        }
+
+        ImGui::SeparatorText("Shaders");
+        {
+            if (ImGui::Checkbox("Wireframe", &a->m_wireframe)) {
+                a->getRenderer()->setDrawWireframe(a->m_wireframe);
+            }
+            ImGui::Checkbox("Draw Sponza", &a->m_drawSponza);
+
+            if (ImGui::Button("Show Depth")) {
+                a->m_currentShader = a->m_depthShader;
+            }
+            if (ImGui::Button("Show Render")) {
+                a->m_currentShader = a->m_shader;
+            }
+
+            // reload shaders ?
+            if (ImGui::Button("Reload Shaders")) {
+                a->m_shader->reload(false);
+                a->m_depthShader->reload(false);
+                render::PBRMaterial::SetupMaterialShader(a->m_shader.get());
+                a->updateUniforms();
+            }
+        }
+    }
+}

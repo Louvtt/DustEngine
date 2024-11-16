@@ -32,6 +32,12 @@ set(HEADER_LIST
     "${DustEngine_SOURCE_DIR}/include/dust/scripting/script.hpp"
 
     "${DustEngine_SOURCE_DIR}/include/dust/utils/string_utils.hpp"
+
+    "${DustEngine_SOURCE_DIR}/include/dust/editor/editor.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/editor/editor_scene_view.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/editor/imgui_extensions.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/editor/model_tool.hpp"
+    "${DustEngine_SOURCE_DIR}/include/dust/editor/model_tool.hpp"
 )
 
 add_library(dustlib
@@ -65,6 +71,11 @@ add_library(dustlib
     scripting/scriptingManager.cpp
 
     utils/string_utils.cpp
+
+    editor/editor.cpp
+    editor/editor_scene_view.cpp
+    editor/imgui_extensions.cpp
+    editor/model_tool.cpp
 )
 
 target_include_directories(dustlib PUBLIC "${DustEngine_SOURCE_DIR}/include")
@@ -78,6 +89,7 @@ PUBLIC
     imgui
     lua_library
     sol2::sol2
+    IconFontCppHeaders
 
 PRIVATE
     stb

@@ -18,7 +18,7 @@ private:
     bool m_depthEnabled{true};
 
 public:
-    Renderer(const Window &window);
+    explicit Renderer(const Window &window);
     ~Renderer();
 
     void newFrame();  // clear buffer

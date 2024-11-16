@@ -54,12 +54,6 @@ m_height(height)
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1); // TODO: Vsync option
 
-        if(!ImGui_ImplGlfw_InitForOpenGL(m_window, true)) {
-            DUST_ERROR("[GLFW][ImGui] Failed to load ImGui for GLFW/OpenGL3.");
-        } else {
-            DUST_INFO("[GLFW][ImGui] Loaded ImGui for GLFW/OpenGL3.");
-        }
-
         // glfw event bindings to event system
         glfwSetFramebufferSizeCallback(m_window, 
         [](GLFWwindow* _window, int w, int h) -> void {
@@ -75,8 +69,6 @@ m_height(height)
 dust::Window::~Window()
 {
     DUST_PROFILE;
-    ImGui_ImplGlfw_Shutdown();
-
     glfwMakeContextCurrent(nullptr);
     glfwDestroyWindow(m_window);
     DUST_INFO("[GLFW] Terminating glfw.");
@@ -90,8 +82,6 @@ void dust::Window::flush()
     DUST_PROFILE_SECTION("Window::flush");
     glfwPollEvents();
     swapBuffers();
-
-    ImGui_ImplGlfw_NewFrame();
 }
 
 void dust::Window::swapBuffers() 
